@@ -1,18 +1,18 @@
 // HPI 1.7-G
-import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { Instagram, ExternalLink, Lock, ArrowRight, Play } from 'lucide-react';
-import { BaseCrudService } from '@/integrations';
-import { PortraitGallery, ServiceCategories, FrequentlyAskedQuestions, ClientGalleries } from '@/entities';
-import { Image } from '@/components/ui/image';
+import Footer from '@/components/Footer';
+import Header from '@/components/Header';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
+import { Image } from '@/components/ui/image';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import WhatsAppButton from '@/components/WhatsAppButton';
+import { ClientGalleries, FrequentlyAskedQuestions, PortraitGallery, ServiceCategories } from '@/entities';
+import { BaseCrudService } from '@/integrations';
+import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion';
+import { ArrowRight, ExternalLink, Instagram, Lock, Play } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 // --- Constants & Styles ---
 const APERTURE_GRADIENT = "linear-gradient(to right, #ED1B23, #F4911C, #88C73F, #0072B4, #8A2889)";
@@ -149,7 +149,6 @@ export default function HomePage() {
             <h1 className="font-heading text-6xl md:text-8xl lg:text-9xl text-secondary tracking-tight leading-[0.9] mb-6">
               Portraits,<br />
               <span className="italic font-light text-secondary">shot like fine art.</span>
-               <span className="italic font-light text-secondary">fine art.</span>
             </h1>
           </motion.div>
 

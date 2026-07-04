@@ -61,7 +61,7 @@ export default function HomePage() {
         BaseCrudService.getAll<FrequentlyAskedQuestions>('faq'),
         BaseCrudService.getAll<ClientGalleries>('clientgalleries')
       ]);
-      
+
       setPortraits(portraitsRes.items);
       setServices(servicesRes.items.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0)));
       setFaqs(faqsRes.items.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0)));
@@ -124,16 +124,14 @@ export default function HomePage() {
           z-index: 10;
         }
       `}</style>
-
       <Header />
       <WhatsAppButton />
-
       {/* 1. HERO SECTION - Cinematic Parallax */}
       <section ref={heroRef} className="relative w-full h-[100vh] min-h-[800px] flex items-center justify-center overflow-hidden bg-background">
         <div className="noise-overlay" />
-        
+
         {/* Background Atmospheric Elements */}
-        <motion.div 
+        <motion.div
           style={{ y: heroY, opacity: heroOpacity }}
           className="absolute inset-0 flex items-center justify-center pointer-events-none"
         >
@@ -150,7 +148,8 @@ export default function HomePage() {
           >
             <h1 className="font-heading text-6xl md:text-8xl lg:text-9xl text-secondary tracking-tight leading-[0.9] mb-6">
               Portraits,<br />
-              <span className="italic font-light text-secondary/80">shot like fine art.</span>
+              <span className="italic font-light text-secondary">shot like fine art.</span>
+               <span className="italic font-light text-secondary">fine art.</span>
             </h1>
           </motion.div>
 
@@ -179,7 +178,7 @@ export default function HomePage() {
         </div>
 
         {/* Scroll Indicator */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.5, duration: 1 }}
@@ -187,7 +186,7 @@ export default function HomePage() {
         >
           <span className="font-paragraph text-xs uppercase tracking-[0.2em] text-secondary/40">Scroll</span>
           <div className="w-[1px] h-16 bg-secondary/20 relative overflow-hidden">
-            <motion.div 
+            <motion.div
               animate={{ y: ["-100%", "100%"] }}
               transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
               className="absolute top-0 left-0 w-full h-full bg-primary"
@@ -195,10 +194,8 @@ export default function HomePage() {
           </div>
         </motion.div>
       </section>
-
       {/* Aperture Divider */}
       <div className="w-full h-[2px]" style={{ background: APERTURE_GRADIENT }} />
-
       {/* 2. PORTRAIT GALLERY - The Core Feature */}
       <section id="gallery" ref={galleryRef} className="w-full max-w-[120rem] mx-auto px-6 lg:px-12 py-32 lg:py-48 relative">
         <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
@@ -212,7 +209,7 @@ export default function HomePage() {
               The <br/><span className="italic text-primary">Gallery</span>
             </h2>
           </motion.div>
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
@@ -222,7 +219,7 @@ export default function HomePage() {
             A curated selection of fine art portraits, where every frame is a study in light, emotion, and timeless elegance.
           </motion.p>
         </div>
-        
+
         <div className={`min-h-[600px] transition-opacity duration-1000 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
           {portraits.length > 0 ? (
             <div className="masonry-grid">
@@ -243,7 +240,7 @@ export default function HomePage() {
                       width={800}
                     />
                     <div className="absolute inset-0 bg-secondary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    
+
                     {/* Hover Content */}
                     <div className="absolute bottom-0 left-0 w-full p-8 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 ease-out flex flex-col justify-end">
                       <div className="w-8 h-[1px] bg-background mb-4 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-700 delay-100" />
@@ -265,12 +262,11 @@ export default function HomePage() {
           )}
         </div>
       </section>
-
       {/* 3. STATEMENT SECTION - Sticky & Cinematic */}
       <section ref={statementRef} className="w-full h-[150vh] relative bg-background">
         <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 bg-secondary/5" />
-          <motion.div 
+          <motion.div
             style={{ scale: statementScale, opacity: statementOpacity }}
             className="max-w-[100rem] mx-auto px-6 lg:px-12 text-center relative z-10"
           >
@@ -285,7 +281,6 @@ export default function HomePage() {
           </motion.div>
         </div>
       </section>
-
       {/* 4. SERVICES GRID - Editorial Layout */}
       <section id="services" className="w-full max-w-[120rem] mx-auto px-6 lg:px-12 py-32 lg:py-48">
         <div className="mb-24 flex flex-col items-center text-center">
@@ -295,7 +290,7 @@ export default function HomePage() {
           </h2>
           <div className="w-12 h-[1px] bg-secondary/20 mt-8" />
         </div>
-        
+
         <div className={`transition-opacity duration-1000 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
           {services.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-24">
@@ -320,7 +315,7 @@ export default function HomePage() {
                       <div className="absolute top-0 left-0 w-8 h-8 border-t border-l border-background/50 m-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                       <div className="absolute bottom-0 right-0 w-8 h-8 border-b border-r border-background/50 m-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     </div>
-                    
+
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <h3 className="font-heading text-2xl text-secondary mb-3 group-hover:text-primary transition-colors duration-300">
@@ -345,7 +340,6 @@ export default function HomePage() {
           )}
         </div>
       </section>
-
       {/* 5. FILMS SECTION - Split Narrative */}
       <section id="films" className="w-full bg-secondary/5 py-32 lg:py-48 relative overflow-hidden">
         {/* Decorative background text */}
@@ -355,7 +349,7 @@ export default function HomePage() {
 
         <div className="max-w-[120rem] mx-auto px-6 lg:px-12 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
-            
+
             <motion.div
               initial={{ opacity: 0, x: -50 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -370,7 +364,7 @@ export default function HomePage() {
               <p className="font-paragraph text-lg text-secondary/70 leading-relaxed">
                 With 8 years of experience as a cinematographer, Srikanth brings a fine art sensibility to motion pictures. From intimate documentaries to grand wedding films, every frame is composed with intention, light, and artistry.
               </p>
-              
+
               <div className="pt-8">
                 <a
                   href="https://www.imdb.com"
@@ -392,7 +386,7 @@ export default function HomePage() {
               className="lg:col-span-7 relative"
             >
               <div className="aspect-video bg-secondary relative group cursor-pointer overflow-hidden">
-                <Image 
+                <Image
                   src="https://static.wixstatic.com/media/897509_4462e04f22494fd68d9ea0a10369bff8~mv2.png?originWidth=576&originHeight=320"
                   alt="Showreel Cover"
                   className="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity duration-700"
@@ -402,7 +396,7 @@ export default function HomePage() {
                     <Play className="text-background ml-2" size={32} fill="currentColor" />
                   </div>
                 </div>
-                {/* Note: In a real implementation, clicking this would open a modal with the iframe. 
+                {/* Note: In a real implementation, clicking this would open a modal with the iframe.
                     Keeping the visual representation elegant as per design brief. */}
               </div>
               {/* Decorative offset border */}
@@ -412,7 +406,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
       {/* 6. INSTAGRAM FEED - Infinite Marquee Style */}
       <section id="instagram" className="w-full py-32 overflow-hidden bg-background">
         <div className="max-w-[120rem] mx-auto px-6 lg:px-12 mb-16 flex flex-col md:flex-row justify-between items-end gap-8">
@@ -431,7 +424,7 @@ export default function HomePage() {
             </a>
           </div>
         </div>
-        
+
         {/* Marquee Container */}
         <div className="relative w-full flex overflow-x-hidden">
           <motion.div
@@ -456,11 +449,10 @@ export default function HomePage() {
           </motion.div>
         </div>
       </section>
-
       {/* 7. CLIENT GALLERY - Minimalist Portal */}
       <section id="client-gallery" className="w-full bg-secondary text-background py-32 lg:py-48 relative">
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at center, #F6F5F2 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-        
+
         <div className="max-w-[100rem] mx-auto px-6 lg:px-12 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -478,7 +470,7 @@ export default function HomePage() {
             <p className="font-paragraph text-background/60 mb-12 font-light">
               Enter your unique access code to view and download your curated gallery.
             </p>
-            
+
             <div className="space-y-6">
               <div className="relative">
                 <Input
@@ -490,10 +482,10 @@ export default function HomePage() {
                 />
                 <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[1px] bg-primary transition-all duration-300 peer-focus:w-full" />
               </div>
-              
+
               <AnimatePresence>
                 {accessError && (
-                  <motion.p 
+                  <motion.p
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
@@ -514,7 +506,6 @@ export default function HomePage() {
           </motion.div>
         </div>
       </section>
-
       {/* 8. FAQ - Elegant Accordion */}
       <section id="faq" className="w-full max-w-[80rem] mx-auto px-6 lg:px-12 py-32 lg:py-48">
         <div className="text-center mb-20">
@@ -523,7 +514,7 @@ export default function HomePage() {
           </h2>
           <div className="w-12 h-[1px] bg-secondary/20 mx-auto" />
         </div>
-        
+
         <div className={`min-h-[300px] transition-opacity duration-1000 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
           {faqs.length > 0 ? (
             <Accordion type="single" collapsible className="w-full space-y-6">
@@ -553,12 +544,11 @@ export default function HomePage() {
           )}
         </div>
       </section>
-
       {/* 9. CONTACT - Editorial Split */}
       <section id="contact" className="w-full bg-background py-32 lg:py-48 border-t border-secondary/10">
         <div className="max-w-[120rem] mx-auto px-6 lg:px-12">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-24">
-            
+
             <motion.div
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -574,7 +564,7 @@ export default function HomePage() {
                   Whether you're planning a wedding, need a portrait session, or want to discuss a film project, we'd love to hear from you.
                 </p>
               </div>
-              
+
               <div className="space-y-12">
                 <div className="group">
                   <span className="font-paragraph text-xs uppercase tracking-[0.2em] text-secondary/40 block mb-2">Studio</span>
@@ -591,7 +581,7 @@ export default function HomePage() {
                 </div>
               </div>
             </motion.div>
-            
+
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -649,7 +639,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
       <Footer />
     </div>
   );

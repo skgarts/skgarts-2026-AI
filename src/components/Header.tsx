@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Image } from '@/components/ui/image';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -20,8 +21,13 @@ export default function Header() {
       <div className="max-w-[120rem] mx-auto px-6 lg:px-12 py-6">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="font-heading text-2xl lg:text-3xl text-secondary font-bold">
-            SKG Arts
+          <Link to="/" className="flex items-center">
+            <Image 
+              src="https://static.wixstatic.com/media/897509_46a058e553ed4113a420249d230b42fd~mv2.png" 
+              alt="SKG Arts Logo" 
+              width={180}
+              className="h-auto"
+            />
           </Link>
 
           {/* Desktop Navigation */}

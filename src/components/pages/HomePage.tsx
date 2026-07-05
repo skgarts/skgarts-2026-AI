@@ -60,14 +60,25 @@ export default function HomePage() {
       ]);
 
       setPortraits(portraitsRes.items);
-      // Reorder services: Portrait Photography and Fine Art Portraits first
+      // Reorder services: Fine Art Portraits and portrait services first, then weddings/events
       const reorderedServices = servicesRes.items.sort((a, b) => {
-        const portraitServices = ['Portrait Photography', 'Fine Art Portraits'];
+        const portraitServices = ['Fine Art Portraits', 'Portrait Photography'];
+        const weddingEventServices = ['Wedding', 'Event', 'Events'];
+        
         const aIsPortrait = portraitServices.some(p => a.serviceName?.includes(p));
         const bIsPortrait = portraitServices.some(p => b.serviceName?.includes(p));
+        const aIsWeddingEvent = weddingEventServices.some(p => a.serviceName?.includes(p));
+        const bIsWeddingEvent = weddingEventServices.some(p => b.serviceName?.includes(p));
         
+        // Portrait services first
         if (aIsPortrait && !bIsPortrait) return -1;
         if (!aIsPortrait && bIsPortrait) return 1;
+        
+        // Then wedding/event services
+        if (aIsWeddingEvent && !bIsWeddingEvent) return -1;
+        if (!aIsWeddingEvent && bIsWeddingEvent) return 1;
+        
+        // Otherwise maintain display order
         return (a.displayOrder || 0) - (b.displayOrder || 0);
       });
       setServices(reorderedServices);

@@ -15,7 +15,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 // --- Constants & Styles ---
-const APERTURE_GRADIENT = "linear-gradient(to right, #ED1B23, #F4911C, #88C73F, #007090, #8A2889)";
+const SPECTRUM_COLORS = ['#ED1B23', '#F4911C', '#F9C400', '#88C73F', '#007090', '#0072B4', '#2C3081', '#8A2889'];
+const SPECTRUM_GRADIENT = `linear-gradient(to right, ${SPECTRUM_COLORS.join(', ')})`;
 
 export default function HomePage() {
   // --- Canonical Data Sources ---
@@ -97,7 +98,7 @@ export default function HomePage() {
           left: 0;
           width: 100%;
           height: 2px;
-          background: ${APERTURE_GRADIENT};
+          background: ${SPECTRUM_GRADIENT};
           transform: scaleX(0);
           transform-origin: right;
           transition: transform 0.6s cubic-bezier(0.19, 1, 0.22, 1);
@@ -106,6 +107,35 @@ export default function HomePage() {
           transform: scaleX(1);
           transform-origin: left;
         }
+        .camera-aperture {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .aperture-blade {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+        }
+        .aperture-blade-1 { background: ${SPECTRUM_COLORS[0]}; transform: rotate(0deg) scale(0.95); opacity: 0.15; }
+        .aperture-blade-2 { background: ${SPECTRUM_COLORS[1]}; transform: rotate(45deg) scale(0.85); opacity: 0.12; }
+        .aperture-blade-3 { background: ${SPECTRUM_COLORS[2]}; transform: rotate(90deg) scale(0.75); opacity: 0.1; }
+        .aperture-blade-4 { background: ${SPECTRUM_COLORS[3]}; transform: rotate(135deg) scale(0.65); opacity: 0.08; }
+        .aperture-blade-5 { background: ${SPECTRUM_COLORS[4]}; transform: rotate(180deg) scale(0.55); opacity: 0.06; }
+        .aperture-blade-6 { background: ${SPECTRUM_COLORS[5]}; transform: rotate(225deg) scale(0.45); opacity: 0.04; }
+        .aperture-ring {
+          position: absolute;
+          border-radius: 50%;
+          border: 1px solid;
+        }
+        .aperture-ring-1 { width: 90%; height: 90%; border-color: ${SPECTRUM_COLORS[0]}; opacity: 0.2; }
+        .aperture-ring-2 { width: 70%; height: 70%; border-color: ${SPECTRUM_COLORS[2]}; opacity: 0.15; }
+        .aperture-ring-3 { width: 50%; height: 50%; border-color: ${SPECTRUM_COLORS[4]}; opacity: 0.1; }
+        .aperture-ring-4 { width: 30%; height: 30%; border-color: ${SPECTRUM_COLORS[6]}; opacity: 0.08; }
         .masonry-grid {
           column-count: 1;
           column-gap: 2rem;
@@ -135,8 +165,19 @@ export default function HomePage() {
           style={{ y: heroY, opacity: heroOpacity }}
           className="absolute inset-0 flex items-center justify-center pointer-events-none"
         >
-          <div className="w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] rounded-full border-[1px] border-secondary/5 absolute opacity-50" />
-          <div className="w-[60vw] h-[60vw] max-w-[600px] max-h-[600px] rounded-full border-[1px] border-secondary/10 absolute opacity-50" />
+          {/* Camera Aperture Motif */}
+          <div className="w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] rounded-full absolute camera-aperture">
+            <div className="aperture-blade aperture-blade-1" />
+            <div className="aperture-blade aperture-blade-2" />
+            <div className="aperture-blade aperture-blade-3" />
+            <div className="aperture-blade aperture-blade-4" />
+            <div className="aperture-blade aperture-blade-5" />
+            <div className="aperture-blade aperture-blade-6" />
+            <div className="aperture-ring aperture-ring-1" />
+            <div className="aperture-ring aperture-ring-2" />
+            <div className="aperture-ring aperture-ring-3" />
+            <div className="aperture-ring aperture-ring-4" />
+          </div>
         </motion.div>
 
         <div className="relative z-20 w-full max-w-[120rem] mx-auto px-6 lg:px-12 flex flex-col items-center text-center">
@@ -194,7 +235,7 @@ export default function HomePage() {
         </motion.div>
       </section>
       {/* Aperture Divider */}
-      <div className="w-full h-[2px]" style={{ background: APERTURE_GRADIENT }} />
+      <div className="w-full h-[2px]" style={{ background: SPECTRUM_GRADIENT }} />
       {/* 2. PORTRAIT GALLERY - The Core Feature */}
       <section id="gallery" ref={galleryRef} className="w-full max-w-[120rem] mx-auto px-6 lg:px-12 py-32 lg:py-48 relative">
         <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
@@ -339,6 +380,8 @@ export default function HomePage() {
           )}
         </div>
       </section>
+      {/* Spectrum Divider */}
+      <div className="w-full h-[2px]" style={{ background: SPECTRUM_GRADIENT }} />
       {/* 5. FILMS SECTION - Split Narrative */}
       <section id="films" className="w-full bg-secondary/5 py-32 lg:py-48 relative overflow-hidden">
         {/* Decorative background text */}
@@ -405,6 +448,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      {/* Spectrum Divider */}
+      <div className="w-full h-[2px]" style={{ background: SPECTRUM_GRADIENT }} />
       {/* 6. INSTAGRAM FEED - Infinite Marquee Style */}
       <section id="instagram" className="w-full py-32 overflow-hidden bg-background">
         <div className="max-w-[120rem] mx-auto px-6 lg:px-12 mb-16 flex flex-col md:flex-row justify-between items-end gap-8">
@@ -448,6 +493,8 @@ export default function HomePage() {
           </motion.div>
         </div>
       </section>
+      {/* Spectrum Divider */}
+      <div className="w-full h-[2px]" style={{ background: SPECTRUM_GRADIENT }} />
       {/* 7. CLIENT GALLERY - Minimalist Portal */}
       <section id="client-gallery" className="w-full bg-background text-secondary py-32 lg:py-48 relative border-t border-secondary/10">
         <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'radial-gradient(circle at center, #12355A 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
@@ -505,6 +552,8 @@ export default function HomePage() {
           </motion.div>
         </div>
       </section>
+      {/* Spectrum Divider */}
+      <div className="w-full h-[2px]" style={{ background: SPECTRUM_GRADIENT }} />
       {/* 8. FAQ - Elegant Accordion */}
       <section id="faq" className="w-full max-w-[80rem] mx-auto px-6 lg:px-12 py-32 lg:py-48">
         <div className="text-center mb-20">
@@ -543,6 +592,8 @@ export default function HomePage() {
           )}
         </div>
       </section>
+      {/* Spectrum Divider */}
+      <div className="w-full h-[2px]" style={{ background: SPECTRUM_GRADIENT }} />
       {/* 9. CONTACT - Editorial Split */}
       <section id="contact" className="w-full bg-background py-32 lg:py-48 border-t border-secondary/10">
         <div className="max-w-[120rem] mx-auto px-6 lg:px-12">
@@ -638,6 +689,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      {/* Spectrum Divider Above Footer */}
+      <div className="w-full h-[2px]" style={{ background: SPECTRUM_GRADIENT }} />
       <Footer />
     </div>
   );

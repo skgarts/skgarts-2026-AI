@@ -3,6 +3,7 @@ import Footer from '@/components/Footer';
 import Header from '@/components/Header';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Image } from '@/components/ui/image';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -23,6 +24,7 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [accessCode, setAccessCode] = useState('');
   const [accessError, setAccessError] = useState('');
+  const [isShowreelOpen, setIsShowreelOpen] = useState(false);
 
   // --- Refs for Scroll Animations ---
   const heroRef = useRef<HTMLDivElement>(null);
@@ -129,22 +131,23 @@ export default function HomePage() {
       <section ref={heroRef} className="relative w-full h-[100vh] min-h-[800px] flex items-center justify-center overflow-hidden bg-background">
         <div className="noise-overlay" />
 
-        {/* Spectrum Aperture Motif - Six Overlapping Blades */}
+        {/* Spectrum Aperture Motif - Six-Blade Camera Iris */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <svg className="w-[500px] h-[500px] opacity-15" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
   <g transform="translate(200,200)">
     <circle r="184" fill="none" stroke="url(#ringGradient)" strokeWidth="1.5" opacity="0.4" />
-    {['#ED1B23','#F4911C','#88C73F','#0072B4','#2C3081','#8A2889'].map((c,i)=>(
-      <path key={i} d="M0,-156 L92,-126 L40,-40 Z" fill={c} opacity="0.6" transform={`rotate(${i*60})`} />
+    {['#ED1B23','#F4911C','#88C73F','#007090','#2C3081','#8A2889'].map((c,i)=>(
+      <path key={i} d="M-90,-155.88 L90,-155.88 L5.75,-54.7 L-44.5,-32.3 Z" fill={c} opacity="0.75" transform={`rotate(${i*60})`} />
     ))}
     <circle r="44" fill="#F6F5F2" />
     <circle r="26" fill="#12355A" />
   </g>
   <defs>
     <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stopColor="#ED1B23"/><stop offset="20%" stopColor="#F4911C"/>
-      <stop offset="40%" stopColor="#88C73F"/><stop offset="60%" stopColor="#0072B4"/>
-      <stop offset="80%" stopColor="#2C3081"/><stop offset="100%" stopColor="#8A2889"/>
+      <stop offset="0%" stopColor="#ED1B23"/><stop offset="14%" stopColor="#F4911C"/>
+      <stop offset="28%" stopColor="#F9C400"/><stop offset="42%" stopColor="#88C73F"/>
+      <stop offset="57%" stopColor="#007090"/><stop offset="71%" stopColor="#0072B4"/>
+      <stop offset="85%" stopColor="#2C3081"/><stop offset="100%" stopColor="#8A2889"/>
     </linearGradient>
   </defs>
 </svg>
@@ -378,7 +381,7 @@ export default function HomePage() {
 
               <div className="pt-8">
                 <a
-                  href="https://www.imdb.com"
+                  href="https://www.imdb.com/name/nm12481877/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-3 font-paragraph text-sm uppercase tracking-widest text-secondary pb-2 hover:text-primary transition-colors"
@@ -396,7 +399,12 @@ export default function HomePage() {
               transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
               className="lg:col-span-7 relative"
             >
-              <div className="aspect-video bg-secondary relative group cursor-pointer overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setIsShowreelOpen(true)}
+                aria-label="Play showreel"
+                className="aspect-video w-full bg-secondary relative group cursor-pointer overflow-hidden block"
+              >
                 <Image
                   src="https://static.wixstatic.com/media/897509_4462e04f22494fd68d9ea0a10369bff8~mv2.png?originWidth=576&originHeight=320"
                   alt="Showreel Cover"
@@ -407,22 +415,36 @@ export default function HomePage() {
                     <Play className="text-background ml-2" size={32} fill="currentColor" />
                   </div>
                 </div>
-                {/* Note: In a real implementation, clicking this would open a modal with the iframe.
-                    Keeping the visual representation elegant as per design brief. */}
-              </div>
+              </button>
               {/* Decorative offset border */}
               <div className="absolute -inset-4 border border-secondary/10 -z-10 hidden lg:block" />
             </motion.div>
 
           </div>
         </div>
+
+        <Dialog open={isShowreelOpen} onOpenChange={setIsShowreelOpen}>
+          <DialogContent className="max-w-4xl w-full p-0 bg-black border-none overflow-hidden">
+            <div className="aspect-video w-full">
+              {isShowreelOpen && (
+                <iframe
+                  className="w-full h-full"
+                  src="https://www.youtube.com/embed/Em9FnP9kDoM?autoplay=1"
+                  title="SKG Arts Showreel"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </section>
       {/* 6. INSTAGRAM FEED - Infinite Marquee Style */}
       <section id="instagram" className="w-full py-32 overflow-hidden bg-background border-t border-[#ED1B23]/20" style={{ borderImage: 'linear-gradient(90deg, #ED1B23, #F4911C, #F9C400, #88C73F, #007090, #0072B4, #2C3081, #8A2889) 1' }}>
         <div className="max-w-[120rem] mx-auto px-6 lg:px-12 mb-16 flex flex-col md:flex-row justify-between items-end gap-8">
           <div>
             <h2 className="font-heading text-4xl lg:text-5xl text-secondary mb-4">
-              Journal & Process
+              Follow Along
             </h2>
             <a
               href="https://instagram.com/skg.arts"
@@ -521,7 +543,7 @@ export default function HomePage() {
       <section id="faq" className="w-full max-w-[80rem] mx-auto px-6 lg:px-12 py-32 lg:py-48 border-t border-[#ED1B23]/20" style={{ borderImage: 'linear-gradient(90deg, #ED1B23, #F4911C, #F9C400, #88C73F, #007090, #0072B4, #2C3081, #8A2889) 1' }}>
         <div className="text-center mb-20">
           <h2 className="font-heading text-4xl lg:text-5xl text-secondary mb-6">
-            Inquiries
+            Frequently Asked
           </h2>
           <div className="w-12 h-[1px] bg-secondary/20 mx-auto" />
         </div>

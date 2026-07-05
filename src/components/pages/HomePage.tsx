@@ -160,6 +160,7 @@ export default function HomePage() {
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
             className="overflow-hidden"
           >
+            <span className="eyebrow block text-sm md:text-base text-secondary/60 mb-4 tracking-widest uppercase font-paragraph font-semibold">Fine Art Portraiture · SKG Arts</span>
             <h1 className="font-heading text-6xl md:text-8xl lg:text-9xl text-secondary tracking-tight leading-[0.9] mb-6">
               Portraits,<br />
               <span className="italic font-light text-secondary">shot like fine art.</span>

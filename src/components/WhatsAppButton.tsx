@@ -2,7 +2,7 @@ import { MessageCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function WhatsAppButton() {
-  const whatsappNumber = '919876543210';
+  const whatsappNumber = '919740076381';
   const message = 'Hi! I\'d like to discuss a photography or film project with you.';
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
 
@@ -11,7 +11,7 @@ export default function WhatsAppButton() {
       href={whatsappUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-8 right-8 z-50 w-14 h-14 bg-primary hover:bg-primary/90 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110"
+      className="fixed bottom-8 right-8 z-50 w-14 h-14 bg-[#007090] hover:bg-[#005a6f] rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110"
       initial={{ scale: 0, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ delay: 1, duration: 0.5 }}

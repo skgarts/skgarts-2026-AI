@@ -118,34 +118,42 @@ export default function HomePage() {
       <section ref={heroRef} className="relative w-full h-[100vh] min-h-[800px] flex items-center justify-center overflow-hidden bg-background">
         <div className="noise-overlay" />
 
-        {/* Spectrum Aperture Motif */}
+        {/* Spectrum Aperture Motif - Six Overlapping Blades */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <svg className="w-96 h-96 opacity-20" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-            {/* Outer aperture ring */}
-            <circle cx="100" cy="100" r="95" fill="none" stroke="url(#spectrumGradient)" strokeWidth="2" />
-            {/* Inner aperture blades */}
-            <g stroke="url(#spectrumGradient)" strokeWidth="1.5" fill="none">
-              <line x1="100" y1="10" x2="100" y2="50" />
-              <line x1="100" y1="150" x2="100" y2="190" />
-              <line x1="10" y1="100" x2="50" y2="100" />
-              <line x1="150" y1="100" x2="190" y2="100" />
-              <line x1="30" y1="30" x2="60" y2="60" />
-              <line x1="140" y1="140" x2="170" y2="170" />
-              <line x1="170" y1="30" x2="140" y2="60" />
-              <line x1="60" y1="140" x2="30" y2="170" />
-            </g>
-            {/* Center circle */}
-            <circle cx="100" cy="100" r="30" fill="none" stroke="url(#spectrumGradient)" strokeWidth="1" />
+          <svg className="w-[500px] h-[500px] opacity-15" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+            {/* Six aperture blades arranged in a circle, each rotated 60 degrees */}
+            {/* Blade 1 - Red (#ED1B23) */}
+            <polygon points="200,200 200,80 280,140" fill="#ED1B23" opacity="0.6" />
+            {/* Blade 2 - Orange (#F4911C) */}
+            <polygon points="200,200 280,140 320,220" fill="#F4911C" opacity="0.6" />
+            {/* Blade 3 - Green (#88C73F) */}
+            <polygon points="200,200 320,220 280,300" fill="#88C73F" opacity="0.6" />
+            {/* Blade 4 - Teal (#0072B4) */}
+            <polygon points="200,200 280,300 200,320" fill="#0072B4" opacity="0.6" />
+            {/* Blade 5 - Dark Blue (#2C3081) */}
+            <polygon points="200,200 200,320 120,260" fill="#2C3081" opacity="0.6" />
+            {/* Blade 6 - Magenta (#8A2889) */}
+            <polygon points="200,200 120,260 80,180" fill="#8A2889" opacity="0.6" />
+            
+            {/* Center circle for depth */}
+            <circle cx="200" cy="200" r="45" fill="url(#centerGradient)" opacity="0.8" />
+            
+            {/* Outer ring accent */}
+            <circle cx="200" cy="200" r="140" fill="none" stroke="url(#ringGradient)" strokeWidth="1.5" opacity="0.4" />
+            
             <defs>
-              <linearGradient id="spectrumGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <radialGradient id="centerGradient" cx="50%" cy="50%" r="50%">
                 <stop offset="0%" stopColor="#ED1B23" />
-                <stop offset="14%" stopColor="#F4911C" />
-                <stop offset="28%" stopColor="#F9C400" />
-                <stop offset="42%" stopColor="#88C73F" />
-                <stop offset="57%" stopColor="#007090" />
-                <stop offset="71%" stopColor="#0072B4" />
-                <stop offset="85%" stopColor="#2C3081" />
                 <stop offset="100%" stopColor="#8A2889" />
+              </radialGradient>
+              <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#ED1B23" />
+                <stop offset="16.67%" stopColor="#F4911C" />
+                <stop offset="33.33%" stopColor="#88C73F" />
+                <stop offset="50%" stopColor="#0072B4" />
+                <stop offset="66.67%" stopColor="#2C3081" />
+                <stop offset="83.33%" stopColor="#8A2889" />
+                <stop offset="100%" stopColor="#ED1B23" />
               </linearGradient>
             </defs>
           </svg>

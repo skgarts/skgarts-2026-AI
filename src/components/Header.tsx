@@ -36,7 +36,7 @@ export default function Header() {
               </a>
             ))}
             <a href="/#contact">
-              <button className="bg-transparent border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground font-paragraph font-bold px-6 py-3 rounded-full text-sm transition-all duration-300">
+              <button className="bg-gradient-to-r from-primary to-accent-blue text-primary-foreground hover:shadow-lg hover:scale-105 font-paragraph font-bold px-8 py-3 rounded-full text-sm transition-all duration-300">
                 Contact Us
               </button>
             </a>
@@ -74,7 +74,7 @@ export default function Header() {
                   </a>
                 ))}
                 <a href="/#contact" onClick={() => setIsMenuOpen(false)}>
-                  <button className="w-full bg-transparent border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground font-paragraph font-bold px-6 py-3 rounded-full text-sm transition-all duration-300">
+                  <button className="w-full bg-gradient-to-r from-primary to-accent-blue text-primary-foreground hover:shadow-lg hover:scale-105 font-paragraph font-bold px-6 py-3 rounded-full text-sm transition-all duration-300">
                     Contact Us
                   </button>
                 </a>

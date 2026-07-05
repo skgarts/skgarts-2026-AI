@@ -4,6 +4,7 @@ import { ScrollToTop } from '@/lib/scroll-to-top';
 import ErrorPage from '@/integrations/errorHandlers/ErrorPage';
 import HomePage from '@/components/pages/HomePage';
 import ServiceDetailPage from '@/components/pages/ServiceDetailPage';
+import ProfilePage from '@/components/pages/ProfilePage';
 
 // Layout component that includes ScrollToTop
 function Layout() {
@@ -33,6 +34,13 @@ const router = createBrowserRouter([
         element: <ServiceDetailPage />,
         routeMetadata: {
           pageIdentifier: 'service-detail',
+        },
+      },
+      {
+        path: "profile",
+        element: <ProfilePage />,
+        routeMetadata: {
+          pageIdentifier: 'profile',
         },
       },
       {

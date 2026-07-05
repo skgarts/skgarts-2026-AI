@@ -172,9 +172,7 @@ export default function HomePage() {
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.4 }}
             className="font-paragraph text-lg md:text-xl text-secondary/70 max-w-2xl mx-auto mb-12 font-light tracking-wide"
-          >
-            Portraits that hold a stare. Weddings that play back like a film. Stills and motion, made to be unmistakably yours.
-          </motion.p>
+          >Soulful, gallery-grade portraits — plus weddings, editorial and films — captured across India and beyond by Srikanth Gumma.</motion.p>
 
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -295,7 +293,6 @@ export default function HomePage() {
       </section>
       {/* Rainbow Spectrum Divider */}
       <div className="w-full h-[2px] bg-gradient-to-r from-[#ED1B23] via-[#F4911C] via-[#F9C400] via-[#88C73F] via-[#007090] via-[#0072B4] via-[#2C3081] to-[#8A2889]" />
-
       {/* 4. SERVICES GRID - Editorial Layout */}
       <section id="services" className="w-full max-w-[120rem] mx-auto px-6 lg:px-12 py-32 lg:py-48">
         <div className="mb-24 flex flex-col items-center text-center">

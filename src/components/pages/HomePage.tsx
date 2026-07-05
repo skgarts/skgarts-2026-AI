@@ -64,20 +64,20 @@ export default function HomePage() {
       const reorderedServices = servicesRes.items.sort((a, b) => {
         const portraitServices = ['Fine Art Portraits', 'Portrait Photography'];
         const weddingEventServices = ['Wedding', 'Event', 'Events'];
-        
+
         const aIsPortrait = portraitServices.some(p => a.serviceName?.includes(p));
         const bIsPortrait = portraitServices.some(p => b.serviceName?.includes(p));
         const aIsWeddingEvent = weddingEventServices.some(p => a.serviceName?.includes(p));
         const bIsWeddingEvent = weddingEventServices.some(p => b.serviceName?.includes(p));
-        
+
         // Portrait services first
         if (aIsPortrait && !bIsPortrait) return -1;
         if (!aIsPortrait && bIsPortrait) return 1;
-        
+
         // Then wedding/event services
         if (aIsWeddingEvent && !bIsWeddingEvent) return -1;
         if (!aIsWeddingEvent && bIsWeddingEvent) return 1;
-        
+
         // Otherwise maintain display order
         return (a.displayOrder || 0) - (b.displayOrder || 0);
       });
@@ -132,42 +132,22 @@ export default function HomePage() {
         {/* Spectrum Aperture Motif - Six Overlapping Blades */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <svg className="w-[500px] h-[500px] opacity-15" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
-            {/* Six aperture blades arranged in a circle, each rotated 60 degrees */}
-            {/* Blade 1 - Red (#ED1B23) */}
-            <polygon points="200,200 200,80 280,140" fill="#ED1B23" opacity="0.6" />
-            {/* Blade 2 - Orange (#F4911C) */}
-            <polygon points="200,200 280,140 320,220" fill="#F4911C" opacity="0.6" />
-            {/* Blade 3 - Green (#88C73F) */}
-            <polygon points="200,200 320,220 280,300" fill="#88C73F" opacity="0.6" />
-            {/* Blade 4 - Teal (#0072B4) */}
-            <polygon points="200,200 280,300 200,320" fill="#0072B4" opacity="0.6" />
-            {/* Blade 5 - Dark Blue (#2C3081) */}
-            <polygon points="200,200 200,320 120,260" fill="#2C3081" opacity="0.6" />
-            {/* Blade 6 - Magenta (#8A2889) */}
-            <polygon points="200,200 120,260 80,180" fill="#8A2889" opacity="0.6" />
-            
-            {/* Center circle for depth */}
-            <circle cx="200" cy="200" r="45" fill="url(#centerGradient)" opacity="0.8" />
-            
-            {/* Outer ring accent */}
-            <circle cx="200" cy="200" r="140" fill="none" stroke="url(#ringGradient)" strokeWidth="1.5" opacity="0.4" />
-            
-            <defs>
-              <radialGradient id="centerGradient" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="#ED1B23" />
-                <stop offset="100%" stopColor="#8A2889" />
-              </radialGradient>
-              <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#ED1B23" />
-                <stop offset="16.67%" stopColor="#F4911C" />
-                <stop offset="33.33%" stopColor="#88C73F" />
-                <stop offset="50%" stopColor="#0072B4" />
-                <stop offset="66.67%" stopColor="#2C3081" />
-                <stop offset="83.33%" stopColor="#8A2889" />
-                <stop offset="100%" stopColor="#ED1B23" />
-              </linearGradient>
-            </defs>
-          </svg>
+  <g transform="translate(200,200)">
+    <circle r="184" fill="none" stroke="url(#ringGradient)" strokeWidth="1.5" opacity="0.4" />
+    {['#ED1B23','#F4911C','#88C73F','#0072B4','#2C3081','#8A2889'].map((c,i)=>(
+      <path key={i} d="M0,-156 L92,-126 L40,-40 Z" fill={c} opacity="0.6" transform={`rotate(${i*60})`} />
+    ))}
+    <circle r="44" fill="#F6F5F2" />
+    <circle r="26" fill="#12355A" />
+  </g>
+  <defs>
+    <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#ED1B23"/><stop offset="20%" stopColor="#F4911C"/>
+      <stop offset="40%" stopColor="#88C73F"/><stop offset="60%" stopColor="#0072B4"/>
+      <stop offset="80%" stopColor="#2C3081"/><stop offset="100%" stopColor="#8A2889"/>
+    </linearGradient>
+  </defs>
+</svg>
         </div>
 
         <div className="relative z-20 w-full max-w-[120rem] mx-auto px-6 lg:px-12 flex flex-col items-center text-center">

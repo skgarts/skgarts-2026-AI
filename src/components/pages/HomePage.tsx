@@ -171,7 +171,7 @@ export default function HomePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.4 }}
-            className="tag font-paragraph text-lg md:text-xl text-secondary/70 max-w-2xl mx-auto mb-12 font-light tracking-wide"
+            className="tag font-paragraph text-lg md:text-xl text-secondary/70 max-w-2xl mx-auto mb-12 font-light tracking-wide -mt-4"
           >Soulful, gallery-grade portraits — plus weddings, editorial and films — captured across India and beyond by Srikanth Gumma.</motion.p>
 
           <motion.div

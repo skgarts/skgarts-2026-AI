@@ -449,8 +449,8 @@ export default function HomePage() {
         </div>
       </section>
       {/* 7. CLIENT GALLERY - Minimalist Portal */}
-      <section id="client-gallery" className="w-full bg-secondary text-background py-32 lg:py-48 relative">
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at center, #F6F5F2 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+      <section id="client-gallery" className="w-full bg-background text-secondary py-32 lg:py-48 relative border-t border-secondary/10">
+        <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'radial-gradient(circle at center, #12355A 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
         <div className="max-w-[100rem] mx-auto px-6 lg:px-12 relative z-10">
           <motion.div
@@ -460,13 +460,13 @@ export default function HomePage() {
             transition={{ duration: 0.8 }}
             className="max-w-xl mx-auto text-center"
           >
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full border border-background/20 mb-8">
-              <Lock className="text-background/80" size={24} />
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full border border-secondary/20 mb-8">
+              <Lock className="text-secondary/60" size={24} />
             </div>
-            <h2 className="font-heading text-4xl lg:text-5xl mb-6">
+            <h2 className="font-heading text-4xl lg:text-5xl mb-6 text-secondary">
               Private Collection
             </h2>
-            <p className="font-paragraph text-background/60 mb-12 font-light">
+            <p className="font-paragraph text-secondary/60 mb-12 font-light">
               Enter your unique access code to view and download your curated gallery.
             </p>
 
@@ -477,7 +477,7 @@ export default function HomePage() {
                   placeholder="Enter Access Code"
                   value={accessCode}
                   onChange={(e) => setAccessCode(e.target.value)}
-                  className="w-full bg-transparent border-0 border-b border-background/30 rounded-none px-0 py-4 text-center font-paragraph text-xl text-background placeholder:text-background/30 focus-visible:ring-0 focus-visible:border-background transition-colors"
+                  className="w-full bg-transparent border-0 border-b border-secondary/20 rounded-none px-0 py-4 text-center font-paragraph text-xl text-secondary placeholder:text-secondary/30 focus-visible:ring-0 focus-visible:border-primary transition-colors"
                 />
                 <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[1px] bg-primary transition-all duration-300 peer-focus:w-full" />
               </div>
@@ -497,7 +497,7 @@ export default function HomePage() {
 
               <Button
                 onClick={handleAccessGallery}
-                className="w-full bg-background text-secondary hover:bg-primary hover:text-background font-paragraph uppercase tracking-widest text-sm py-8 rounded-none transition-all duration-500 mt-8"
+                className="w-full bg-primary text-background hover:bg-primary/90 font-paragraph uppercase tracking-widest text-sm py-8 rounded-none transition-all duration-500 mt-8"
               >
                 Enter Gallery
               </Button>

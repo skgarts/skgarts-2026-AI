@@ -60,7 +60,17 @@ export default function HomePage() {
       ]);
 
       setPortraits(portraitsRes.items);
-      setServices(servicesRes.items.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0)));
+      // Reorder services: Portrait Photography and Fine Art Portraits first
+      const reorderedServices = servicesRes.items.sort((a, b) => {
+        const portraitServices = ['Portrait Photography', 'Fine Art Portraits'];
+        const aIsPortrait = portraitServices.some(p => a.serviceName?.includes(p));
+        const bIsPortrait = portraitServices.some(p => b.serviceName?.includes(p));
+        
+        if (aIsPortrait && !bIsPortrait) return -1;
+        if (!aIsPortrait && bIsPortrait) return 1;
+        return (a.displayOrder || 0) - (b.displayOrder || 0);
+      });
+      setServices(reorderedServices);
       setFaqs(faqsRes.items.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0)));
       setClientGalleries(galleriesRes.items);
     } catch (error) {
@@ -108,6 +118,39 @@ export default function HomePage() {
       <section ref={heroRef} className="relative w-full h-[100vh] min-h-[800px] flex items-center justify-center overflow-hidden bg-background">
         <div className="noise-overlay" />
 
+        {/* Spectrum Aperture Motif */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <svg className="w-96 h-96 opacity-20" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            {/* Outer aperture ring */}
+            <circle cx="100" cy="100" r="95" fill="none" stroke="url(#spectrumGradient)" strokeWidth="2" />
+            {/* Inner aperture blades */}
+            <g stroke="url(#spectrumGradient)" strokeWidth="1.5" fill="none">
+              <line x1="100" y1="10" x2="100" y2="50" />
+              <line x1="100" y1="150" x2="100" y2="190" />
+              <line x1="10" y1="100" x2="50" y2="100" />
+              <line x1="150" y1="100" x2="190" y2="100" />
+              <line x1="30" y1="30" x2="60" y2="60" />
+              <line x1="140" y1="140" x2="170" y2="170" />
+              <line x1="170" y1="30" x2="140" y2="60" />
+              <line x1="60" y1="140" x2="30" y2="170" />
+            </g>
+            {/* Center circle */}
+            <circle cx="100" cy="100" r="30" fill="none" stroke="url(#spectrumGradient)" strokeWidth="1" />
+            <defs>
+              <linearGradient id="spectrumGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#ED1B23" />
+                <stop offset="14%" stopColor="#F4911C" />
+                <stop offset="28%" stopColor="#F9C400" />
+                <stop offset="42%" stopColor="#88C73F" />
+                <stop offset="57%" stopColor="#007090" />
+                <stop offset="71%" stopColor="#0072B4" />
+                <stop offset="85%" stopColor="#2C3081" />
+                <stop offset="100%" stopColor="#8A2889" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+
         <div className="relative z-20 w-full max-w-[120rem] mx-auto px-6 lg:px-12 flex flex-col items-center text-center">
           <motion.div
             initial={{ opacity: 0, y: 40 }}
@@ -127,7 +170,7 @@ export default function HomePage() {
             transition={{ duration: 1, delay: 0.4 }}
             className="font-paragraph text-lg md:text-xl text-secondary/70 max-w-2xl mx-auto mb-12 font-light tracking-wide"
           >
-            Fine art photography and cinematography by Srikanth Gumma — 8 years of capturing souls across Singapore and India.
+            Portraits that hold a stare. Weddings that play back like a film. Stills and motion, made to be unmistakably yours.
           </motion.p>
 
           <motion.div
@@ -247,6 +290,9 @@ export default function HomePage() {
           </motion.div>
         </div>
       </section>
+      {/* Rainbow Spectrum Divider */}
+      <div className="w-full h-[2px] bg-gradient-to-r from-[#ED1B23] via-[#F4911C] via-[#F9C400] via-[#88C73F] via-[#007090] via-[#0072B4] via-[#2C3081] to-[#8A2889]" />
+
       {/* 4. SERVICES GRID - Editorial Layout */}
       <section id="services" className="w-full max-w-[120rem] mx-auto px-6 lg:px-12 py-32 lg:py-48">
         <div className="mb-24 flex flex-col items-center text-center">
@@ -307,7 +353,7 @@ export default function HomePage() {
         </div>
       </section>
       {/* 5. FILMS SECTION - Split Narrative */}
-      <section id="films" className="w-full bg-secondary/5 py-32 lg:py-48 relative overflow-hidden">
+      <section id="films" className="w-full bg-secondary/5 py-32 lg:py-48 relative overflow-hidden border-t border-[#ED1B23]/20" style={{ borderImage: 'linear-gradient(90deg, #ED1B23, #F4911C, #F9C400, #88C73F, #007090, #0072B4, #2C3081, #8A2889) 1' }}>
         {/* Decorative background text */}
         <div className="absolute top-1/2 left-0 -translate-y-1/2 -translate-x-1/4 opacity-[0.03] pointer-events-none whitespace-nowrap">
           <span className="font-heading text-[20vw] leading-none">CINEMA</span>
@@ -373,7 +419,7 @@ export default function HomePage() {
         </div>
       </section>
       {/* 6. INSTAGRAM FEED - Infinite Marquee Style */}
-      <section id="instagram" className="w-full py-32 overflow-hidden bg-background">
+      <section id="instagram" className="w-full py-32 overflow-hidden bg-background border-t border-[#ED1B23]/20" style={{ borderImage: 'linear-gradient(90deg, #ED1B23, #F4911C, #F9C400, #88C73F, #007090, #0072B4, #2C3081, #8A2889) 1' }}>
         <div className="max-w-[120rem] mx-auto px-6 lg:px-12 mb-16 flex flex-col md:flex-row justify-between items-end gap-8">
           <div>
             <h2 className="font-heading text-4xl lg:text-5xl text-secondary mb-4">
@@ -416,7 +462,7 @@ export default function HomePage() {
         </div>
       </section>
       {/* 7. CLIENT GALLERY - Minimalist Portal */}
-      <section id="client-gallery" className="w-full bg-background text-secondary py-32 lg:py-48 relative border-t border-secondary/10">
+      <section id="client-gallery" className="w-full bg-background text-secondary py-32 lg:py-48 relative border-t border-[#ED1B23]/20" style={{ borderImage: 'linear-gradient(90deg, #ED1B23, #F4911C, #F9C400, #88C73F, #007090, #0072B4, #2C3081, #8A2889) 1' }}>
         <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'radial-gradient(circle at center, #12355A 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
         <div className="max-w-[100rem] mx-auto px-6 lg:px-12 relative z-10">
@@ -473,7 +519,7 @@ export default function HomePage() {
         </div>
       </section>
       {/* 8. FAQ - Elegant Accordion */}
-      <section id="faq" className="w-full max-w-[80rem] mx-auto px-6 lg:px-12 py-32 lg:py-48">
+      <section id="faq" className="w-full max-w-[80rem] mx-auto px-6 lg:px-12 py-32 lg:py-48 border-t border-[#ED1B23]/20" style={{ borderImage: 'linear-gradient(90deg, #ED1B23, #F4911C, #F9C400, #88C73F, #007090, #0072B4, #2C3081, #8A2889) 1' }}>
         <div className="text-center mb-20">
           <h2 className="font-heading text-4xl lg:text-5xl text-secondary mb-6">
             Inquiries
@@ -511,7 +557,7 @@ export default function HomePage() {
         </div>
       </section>
       {/* 9. CONTACT - Editorial Split */}
-      <section id="contact" className="w-full bg-background py-32 lg:py-48 border-t border-secondary/10">
+      <section id="contact" className="w-full bg-background py-32 lg:py-48 border-t border-[#ED1B23]/20" style={{ borderImage: 'linear-gradient(90deg, #ED1B23, #F4911C, #F9C400, #88C73F, #007090, #0072B4, #2C3081, #8A2889) 1' }}>
         <div className="max-w-[120rem] mx-auto px-6 lg:px-12">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-24">
 

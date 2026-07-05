@@ -18,7 +18,7 @@ export default function Footer() {
             <h4 className="font-paragraph text-lg font-bold text-secondary">Quick Links</h4>
             <nav className="flex flex-col space-y-2">
               <a href="/#gallery" className="font-paragraph text-sm text-primary hover:text-primary/80 transition-colors">
-                Gallery
+                Portraits
               </a>
               <a href="/#services" className="font-paragraph text-sm text-primary hover:text-primary/80 transition-colors">
                 Services
@@ -98,8 +98,8 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Aperture Divider */}
-        <div className="w-full h-px bg-gradient-to-r from-accent-red via-accent-orange via-accent-green via-accent-blue to-accent-magenta opacity-40 mb-8" />
+        {/* Rainbow Spectrum Divider */}
+        <div className="w-full h-[2px] bg-gradient-to-r from-[#ED1B23] via-[#F4911C] via-[#F9C400] via-[#88C73F] via-[#007090] via-[#0072B4] via-[#2C3081] to-[#8A2889] mb-8" />
 
         {/* Copyright */}
         <div className="text-center">

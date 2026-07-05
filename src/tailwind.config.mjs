@@ -26,7 +26,7 @@ export default {
                 'accent-red': '#ED1B23',
                 'accent-orange': '#F4911C',
                 'accent-green': '#88C73F',
-                'accent-blue': '#0072B4',
+                'accent-blue': '#007090',
                 'accent-magenta': '#8A2889',
                 destructive: '#FF0000',
                 'destructive-foreground': '#FFFFFF',

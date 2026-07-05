@@ -15,7 +15,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 // --- Constants & Styles ---
-const APERTURE_GRADIENT = "linear-gradient(to right, #ED1B23, #F4911C, #88C73F, #0072B4, #8A2889)";
+const APERTURE_GRADIENT = "linear-gradient(to right, #ED1B23, #F4911C, #88C73F, #007090, #8A2889)";
 
 export default function HomePage() {
   // --- Canonical Data Sources ---

@@ -128,7 +128,7 @@ export default function HomePage() {
       <Header />
       <WhatsAppButton />
       {/* 1. HERO SECTION - Cinematic Parallax */}
-      <section ref={heroRef} className="relative w-full h-[100vh] min-h-[800px] flex items-center justify-center overflow-hidden bg-background">
+      <section ref={heroRef} className="relative w-full h-[140vh] min-h-[1000px] flex items-center justify-center overflow-hidden bg-background">
         <div className="noise-overlay" />
 
         {/* Spectrum Aperture Motif - Six-Blade Camera Iris */}

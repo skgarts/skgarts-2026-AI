@@ -128,12 +128,12 @@ export default function HomePage() {
       <Header />
       <WhatsAppButton />
       {/* 1. HERO SECTION - Cinematic Parallax */}
-      <section ref={heroRef} className="relative w-full h-screen flex items-center justify-center overflow-hidden bg-background">
+      <section ref={heroRef} className="relative w-full h-[100vh] min-h-[800px] flex items-center justify-center overflow-hidden bg-background">
         <div className="noise-overlay" />
 
-        {/* Background Container - Spectrum Aperture Motif - Six-Blade Camera Iris */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
-          <svg className="w-[500px] h-[500px] opacity-80 scale-[6.25]" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+        {/* Spectrum Aperture Motif - Six-Blade Camera Iris */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <svg className="w-[500px] h-[500px] opacity-15" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
   <g transform="translate(200,200)">
     <circle r="184" fill="none" stroke="url(#ringGradient)" strokeWidth="1.5" opacity="0.4" />
     {['#ED1B23','#F4911C','#88C73F','#007090','#2C3081','#8A2889'].map((c,i)=>(
@@ -153,7 +153,6 @@ export default function HomePage() {
 </svg>
         </div>
 
-        {/* Text Content Container */}
         <div className="relative z-20 w-full max-w-[120rem] mx-auto px-6 lg:px-12 flex flex-col items-center text-center">
           <motion.div
             initial={{ opacity: 0, y: 40 }}
@@ -163,8 +162,8 @@ export default function HomePage() {
           >
             <span className="eyebrow block text-sm md:text-base text-secondary/60 mb-4 tracking-widest uppercase font-paragraph font-semibold">Fine Art Portraiture · SKG Arts</span>
             <h1 className="font-heading text-6xl md:text-8xl lg:text-9xl text-secondary tracking-tight leading-[0.9] mb-6">
-              Portraits <br />
-              shot like <em className="italic font-light text-accent-blue">fine art</em>.
+              Portraits,<br />
+              <span className="italic font-light text-secondary">shot like fine art.</span>
             </h1>
           </motion.div>
 
@@ -172,8 +171,10 @@ export default function HomePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.4 }}
-            className="tag font-paragraph text-lg md:text-xl text-secondary/70 max-w-2xl mx-auto mb-12 font-light tracking-wide -mt-16"
-          >Soulful, gallery-grade portraits — plus weddings, editorial and films — captured across India and beyond by Srikanth Gumma.</motion.p>
+            className="font-paragraph text-lg md:text-xl text-secondary/70 max-w-2xl mx-auto mb-12 font-light tracking-wide"
+          >
+            Portraits that hold a stare. Weddings that play back like a film. Stills and motion, made to be unmistakably yours.
+          </motion.p>
 
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -274,7 +275,7 @@ export default function HomePage() {
         </div>
       </section>
       {/* 3. STATEMENT SECTION - Sticky & Cinematic */}
-      <section ref={statementRef} className="w-full h-[350vh] relative bg-background">
+      <section ref={statementRef} className="w-full h-[150vh] relative bg-background">
         <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 bg-secondary/5" />
           <motion.div
@@ -294,6 +295,7 @@ export default function HomePage() {
       </section>
       {/* Rainbow Spectrum Divider */}
       <div className="w-full h-[2px] bg-gradient-to-r from-[#ED1B23] via-[#F4911C] via-[#F9C400] via-[#88C73F] via-[#007090] via-[#0072B4] via-[#2C3081] to-[#8A2889]" />
+
       {/* 4. SERVICES GRID - Editorial Layout */}
       <section id="services" className="w-full max-w-[120rem] mx-auto px-6 lg:px-12 py-32 lg:py-48">
         <div className="mb-24 flex flex-col items-center text-center">

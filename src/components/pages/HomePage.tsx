@@ -132,8 +132,8 @@ export default function HomePage() {
         <div className="noise-overlay" />
 
         {/* Spectrum Aperture Motif - Six-Blade Camera Iris */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <svg className="w-[500px] h-[500px] opacity-15" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
+          <svg className="w-[500px] h-[500px] opacity-80 scale-25" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
   <g transform="translate(200,200)">
     <circle r="184" fill="none" stroke="url(#ringGradient)" strokeWidth="1.5" opacity="0.4" />
     {['#ED1B23','#F4911C','#88C73F','#007090','#2C3081','#8A2889'].map((c,i)=>(

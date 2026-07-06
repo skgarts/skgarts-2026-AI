@@ -131,7 +131,7 @@ export default function HomePage() {
       <section ref={heroRef} className="relative w-full h-[140vh] min-h-[1000px] flex items-center justify-center overflow-hidden bg-background">
         <div className="noise-overlay" />
 
-        {/* Spectrum Aperture Motif - Six-Blade Camera Iris */}
+        {/* Background Container - Spectrum Aperture Motif - Six-Blade Camera Iris */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
           <svg className="w-[500px] h-[500px] opacity-80 scale-25" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
   <g transform="translate(200,200)">
@@ -153,6 +153,7 @@ export default function HomePage() {
 </svg>
         </div>
 
+        {/* Text Content Container */}
         <div className="relative z-20 w-full max-w-[120rem] mx-auto px-6 lg:px-12 flex flex-col items-center text-center">
           <motion.div
             initial={{ opacity: 0, y: 40 }}

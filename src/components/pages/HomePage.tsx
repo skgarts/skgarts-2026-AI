@@ -273,7 +273,7 @@ export default function HomePage() {
         </div>
       </section>
       {/* 3. STATEMENT SECTION - Sticky & Cinematic */}
-      <section ref={statementRef} className="w-full h-[150vh] relative bg-background">
+      <section ref={statementRef} className="w-full h-[350vh] relative bg-background">
         <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 bg-secondary/5" />
           <motion.div

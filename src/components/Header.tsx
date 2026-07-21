@@ -12,7 +12,6 @@ export default function Header() {
     { name: 'Portraits', href: '/#gallery' },
     { name: 'Services', href: '/#services' },
     { name: 'Films', href: '/#films' },
-    { name: 'Client Albums', href: '/albums' },
     { name: 'FAQ', href: '/#faq' },
   ];
 

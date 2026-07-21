@@ -68,6 +68,12 @@ function GalleryManagementContent() {
 
   const handleSaveGallery = async () => {
     try {
+      // Ensure gallery link has proper protocol
+      let galleryLink = formData.galleryLink;
+      if (galleryLink && !galleryLink.startsWith('http://') && !galleryLink.startsWith('https://')) {
+        galleryLink = 'https://' + galleryLink;
+      }
+
       if (editingGallery) {
         // Update existing gallery
         await BaseCrudService.update<ClientGalleries>('clientgalleries', {
@@ -75,7 +81,7 @@ function GalleryManagementContent() {
           clientName: formData.clientName,
           description: formData.description,
           accessCode: formData.accessCode,
-          galleryLink: formData.galleryLink,
+          galleryLink: galleryLink,
           eventDate: formData.eventDate ? new Date(formData.eventDate) : undefined,
         });
       } else {
@@ -85,7 +91,7 @@ function GalleryManagementContent() {
           clientName: formData.clientName,
           description: formData.description,
           accessCode: formData.accessCode,
-          galleryLink: formData.galleryLink,
+          galleryLink: galleryLink,
           eventDate: formData.eventDate ? new Date(formData.eventDate) : undefined,
         });
       }

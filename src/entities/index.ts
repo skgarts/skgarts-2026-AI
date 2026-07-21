@@ -48,6 +48,27 @@ export interface FrequentlyAskedQuestions {
 
 
 /**
+ * Collection ID: galleryphotos
+ * Interface for GalleryPhotos
+ */
+export interface GalleryPhotos {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  title?: string;
+  /** @wixFieldType text */
+  description?: string;
+  /** @wixFieldType image - Contains image URL, render with <Image> component, NOT as text */
+  imageFile?: string;
+  /** @wixFieldType text */
+  galleryId?: string;
+  /** @wixFieldType datetime */
+  uploadDate?: Date | string;
+}
+
+
+/**
  * Collection ID: portraitgallery
  * Interface for PortraitGallery
  */

@@ -9,9 +9,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Image } from '@/components/ui/image';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { BaseCrudService } from '@/integrations';
-import { ClientGalleries } from '@/entities';
+import { ClientGalleries, GalleryPhotos } from '@/entities';
 import { motion } from 'framer-motion';
-import { Plus, Trash2, Edit2, Upload } from 'lucide-react';
+import { Plus, Trash2, Edit2, Upload, Link as LinkIcon, Copy, Check } from 'lucide-react';
 
 function GalleryManagementContent() {
   const { member } = useMember();
@@ -19,6 +19,10 @@ function GalleryManagementContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingGallery, setEditingGallery] = useState<ClientGalleries | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [photos, setPhotos] = useState<GalleryPhotos[]>([]);
+  const [isPhotosDialogOpen, setIsPhotosDialogOpen] = useState(false);
+  const [selectedGalleryForPhotos, setSelectedGalleryForPhotos] = useState<ClientGalleries | null>(null);
   const [formData, setFormData] = useState({
     clientName: '',
     description: '',
@@ -36,6 +40,10 @@ function GalleryManagementContent() {
     try {
       const result = await BaseCrudService.getAll<ClientGalleries>('clientgalleries');
       setGalleries(result.items);
+      
+      // Load all photos
+      const photosResult = await BaseCrudService.getAll<GalleryPhotos>('galleryphotos');
+      setPhotos(photosResult.items);
     } catch (error) {
       console.error('Error loading galleries:', error);
     } finally {
@@ -113,6 +121,26 @@ function GalleryManagementContent() {
     }
   };
 
+  const getGalleryLink = (galleryId: string) => {
+    const baseUrl = window.location.origin;
+    return `${baseUrl}/gallery/${galleryId}`;
+  };
+
+  const copyToClipboard = (text: string, id: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const openPhotosDialog = (gallery: ClientGalleries) => {
+    setSelectedGalleryForPhotos(gallery);
+    setIsPhotosDialogOpen(true);
+  };
+
+  const getGalleryPhotos = (galleryId: string) => {
+    return photos.filter(p => p.galleryId === galleryId);
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header />
@@ -182,14 +210,36 @@ function GalleryManagementContent() {
                     <p className="font-paragraph text-xs text-secondary/60">
                       <span className="font-semibold">Access Code:</span> {gallery.accessCode || 'N/A'}
                     </p>
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={getGalleryLink(gallery._id)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-paragraph text-xs text-primary hover:text-primary/80 flex-1 truncate"
+                      >
+                        {getGalleryLink(gallery._id)}
+                      </a>
+                      <button
+                        onClick={() => copyToClipboard(getGalleryLink(gallery._id), gallery._id)}
+                        className="p-1 hover:bg-secondary/10 rounded transition-colors"
+                        title="Copy gallery link"
+                      >
+                        {copiedId === gallery._id ? (
+                          <Check size={14} className="text-accent-green" />
+                        ) : (
+                          <Copy size={14} className="text-secondary/60" />
+                        )}
+                      </button>
+                    </div>
                     {gallery.galleryLink && (
                       <a
                         href={gallery.galleryLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="font-paragraph text-xs text-primary hover:text-primary/80 break-all"
+                        className="font-paragraph text-xs text-secondary/60 hover:text-primary break-all flex items-center gap-1"
                       >
-                        View Gallery →
+                        <LinkIcon size={12} />
+                        External Gallery →
                       </a>
                     )}
                   </div>

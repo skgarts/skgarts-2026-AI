@@ -128,7 +128,11 @@ export default function HomePage() {
       <Header />
       <WhatsAppButton />
       {/* 1. HERO SECTION - Cinematic Parallax */}
-      <section ref={heroRef} className="relative w-full h-[100vh] min-h-[800px] flex items-center justify-center overflow-hidden bg-background">
+      <motion.section 
+        ref={heroRef} 
+        className="relative w-full h-[100vh] min-h-[800px] flex items-center justify-center overflow-hidden bg-background"
+        style={{ y: heroY, opacity: heroOpacity }}
+      >
         <div className="noise-overlay" />
 
         {/* Spectrum Aperture Motif - Six-Blade Camera Iris */}
@@ -154,28 +158,42 @@ export default function HomePage() {
         </div>
 
         <div className="relative z-20 w-full max-w-[120rem] mx-auto px-6 lg:px-12 flex flex-col items-center text-center">
+          {/* Eyebrow Container - Separate movable element */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-            className="overflow-hidden"
+            className="overflow-hidden mb-4"
           >
-            <span className="eyebrow block text-sm md:text-base text-secondary/60 mb-4 tracking-widest uppercase font-paragraph font-semibold">Fine Art Portraiture · SKG Arts</span>
-            <h1 className="font-heading text-6xl md:text-8xl lg:text-9xl text-secondary tracking-tight leading-[0.9] mb-6">
+            <span className="eyebrow block text-sm md:text-base text-secondary/60 tracking-widest uppercase font-paragraph font-semibold">Fine Art Portraiture · SKG Arts</span>
+          </motion.div>
+
+          {/* Heading Container - Separate movable element */}
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+            className="overflow-hidden mb-6"
+          >
+            <h1 className="font-heading text-6xl md:text-8xl lg:text-9xl text-secondary tracking-tight leading-[0.9]">
               Portraits,<br />
               <span className="italic font-light text-secondary">shot like fine art.</span>
             </h1>
           </motion.div>
 
-          <motion.p
+          {/* Description Container - Separate movable element */}
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.4 }}
-            className="font-paragraph text-lg md:text-xl text-secondary/70 max-w-2xl mx-auto mb-12 font-light tracking-wide"
+            className="mb-12"
           >
-            Portraits that hold a stare. Weddings that play back like a film. Stills and motion, made to be unmistakably yours.
-          </motion.p>
+            <p className="font-paragraph text-lg md:text-xl text-secondary/70 max-w-2xl mx-auto font-light tracking-wide">
+              Portraits that hold a stare. Weddings that play back like a film. Stills and motion, made to be unmistakably yours.
+            </p>
+          </motion.div>
 
+          {/* Button Container - Separate movable element */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -207,7 +225,7 @@ export default function HomePage() {
             />
           </div>
         </motion.div>
-      </section>
+      </motion.section>
       {/* 2. PORTRAIT GALLERY - The Core Feature */}
       <section id="gallery" ref={galleryRef} className="w-full max-w-[120rem] mx-auto px-6 lg:px-12 py-32 lg:py-48 relative">
         <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">

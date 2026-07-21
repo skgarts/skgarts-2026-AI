@@ -5,6 +5,7 @@ import ErrorPage from '@/integrations/errorHandlers/ErrorPage';
 import HomePage from '@/components/pages/HomePage';
 import ServiceDetailPage from '@/components/pages/ServiceDetailPage';
 import ProfilePage from '@/components/pages/ProfilePage';
+import GalleryManagementPage from '@/components/pages/GalleryManagementPage';
 
 // Layout component that includes ScrollToTop
 function Layout() {
@@ -41,6 +42,13 @@ const router = createBrowserRouter([
         element: <ProfilePage />,
         routeMetadata: {
           pageIdentifier: 'profile',
+        },
+      },
+      {
+        path: "gallery-management",
+        element: <GalleryManagementPage />,
+        routeMetadata: {
+          pageIdentifier: 'gallery-management',
         },
       },
       {

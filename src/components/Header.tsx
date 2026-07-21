@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Image } from '@/components/ui/image';
+import { useMember } from '@/integrations';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { isAuthenticated, actions } = useMember();
 
   const navLinks = [
     { name: 'Home', href: '/' },
@@ -40,11 +42,35 @@ export default function Header() {
                 {link.name}
               </a>
             ))}
+            {isAuthenticated && (
+              <Link
+                to="/gallery-management"
+                className="font-paragraph text-base text-foreground hover:text-primary transition-colors font-medium"
+              >
+                Edit Gallery
+              </Link>
+            )}
             <a href="/#contact">
               <button className="bg-gradient-to-r from-primary to-accent-blue text-primary-foreground hover:shadow-lg hover:scale-105 font-paragraph font-bold px-8 py-3 rounded-full text-sm transition-all duration-300">
                 Contact Us
               </button>
             </a>
+            {isAuthenticated && (
+              <button
+                onClick={actions.logout}
+                className="font-paragraph text-base text-foreground hover:text-primary transition-colors font-medium"
+              >
+                Sign Out
+              </button>
+            )}
+            {!isAuthenticated && (
+              <button
+                onClick={actions.login}
+                className="font-paragraph text-base text-foreground hover:text-primary transition-colors font-medium"
+              >
+                Sign In
+              </button>
+            )}
           </nav>
 
           {/* Mobile Menu Button */}
@@ -78,11 +104,42 @@ export default function Header() {
                     {link.name}
                   </a>
                 ))}
+                {isAuthenticated && (
+                  <Link
+                    to="/gallery-management"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="block font-paragraph text-base text-foreground hover:text-primary transition-colors font-medium py-2"
+                  >
+                    Edit Gallery
+                  </Link>
+                )}
                 <a href="/#contact" onClick={() => setIsMenuOpen(false)}>
                   <button className="w-full bg-gradient-to-r from-primary to-accent-blue text-primary-foreground hover:shadow-lg hover:scale-105 font-paragraph font-bold px-6 py-3 rounded-full text-sm transition-all duration-300">
                     Contact Us
                   </button>
                 </a>
+                {isAuthenticated && (
+                  <button
+                    onClick={() => {
+                      actions.logout();
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full font-paragraph text-base text-foreground hover:text-primary transition-colors font-medium py-2"
+                  >
+                    Sign Out
+                  </button>
+                )}
+                {!isAuthenticated && (
+                  <button
+                    onClick={() => {
+                      actions.login();
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full font-paragraph text-base text-foreground hover:text-primary transition-colors font-medium py-2"
+                  >
+                    Sign In
+                  </button>
+                )}
               </div>
             </motion.nav>
           )}

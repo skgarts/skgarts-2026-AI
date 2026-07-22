@@ -158,15 +158,15 @@ export default function HomePage() {
         </div>
 
         <div className="relative z-20 w-full max-w-[120rem] mx-auto px-6 lg:px-12 flex flex-col items-center text-center">
-          {/* Eyebrow Container - Separate movable element */}
-          <motion.div
+          {/* Eyebrow Span - Movable element */}
+          <motion.span
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-            className="overflow-hidden mb-4"
+            className="eyebrow block text-sm md:text-base text-secondary/60 tracking-widest uppercase font-paragraph font-semibold mb-4"
           >
-            <span className="eyebrow block text-sm md:text-base text-secondary/60 tracking-widest uppercase font-paragraph font-semibold">Fine Art Portraiture · SKG Arts</span>
-          </motion.div>
+            Fine Art Portraiture · SKG Arts
+          </motion.span>
 
           {/* Heading Container - Separate movable element */}
           <motion.div
@@ -313,7 +313,6 @@ export default function HomePage() {
       </section>
       {/* Rainbow Spectrum Divider */}
       <div className="w-full h-[2px] bg-gradient-to-r from-[#ED1B23] via-[#F4911C] via-[#F9C400] via-[#88C73F] via-[#007090] via-[#0072B4] via-[#2C3081] to-[#8A2889]" />
-
       {/* 4. SERVICES GRID - Editorial Layout */}
       <section id="services" className="w-full max-w-[120rem] mx-auto px-6 lg:px-12 py-32 lg:py-48">
         <div className="mb-24 flex flex-col items-center text-center">

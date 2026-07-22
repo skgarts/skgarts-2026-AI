@@ -196,8 +196,13 @@ export default function HomePage() {
             transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
             className="flex justify-center"
           >
-            <a href="#contact" className="group relative flex items-center justify-center px-10 py-5 overflow-hidden rounded-full bg-transparent border border-secondary/20 text-secondary font-paragraph text-sm uppercase tracking-widest transition-all duration-500 hover:border-primary hover:text-primary">
-              <span className="absolute inset-0 w-full h-full bg-primary/5 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
+            <a href="#contact" className="group relative flex items-center justify-center px-10 py-5 overflow-visible rounded-full bg-transparent border border-secondary/20 text-secondary font-paragraph text-sm uppercase tracking-widest transition-all duration-500 hover:border-primary hover:text-primary">
+              <motion.span 
+                drag
+                dragElastic={0.2}
+                dragMomentum={false}
+                className="absolute inset-0 w-full h-full bg-primary/5 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" 
+              />
               <span className="relative flex items-center gap-3">
                 Get in touch
                 <ArrowRight size={16} className="transform group-hover:translate-x-1 transition-transform" />

@@ -172,6 +172,8 @@ export default function HomePage() {
           </motion.span>
 
           {/* Heading - Movable element */}
+          {/* Description - Movable element */}
+          {/* Button Container - Separate movable element */}
           <motion.h1
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
@@ -185,8 +187,6 @@ export default function HomePage() {
             <span className="italic font-light text-secondary">shot like fine art.</span>
           </motion.h1>
 
-          {/* Description - Movable element */}
-          {/* Button Container - Separate movable element */}
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

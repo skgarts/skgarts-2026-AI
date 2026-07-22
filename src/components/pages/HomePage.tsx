@@ -180,6 +180,7 @@ export default function HomePage() {
           </motion.h1>
 
           {/* Description - Movable element */}
+          {/* Button Container - Separate movable element */}
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -189,7 +190,6 @@ export default function HomePage() {
             Portraits that hold a stare. Weddings that play back like a film. Stills and motion, made to be unmistakably yours.
           </motion.p>
 
-          {/* Button Container - Separate movable element */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}

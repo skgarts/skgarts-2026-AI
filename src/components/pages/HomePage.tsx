@@ -25,6 +25,8 @@ export default function HomePage() {
   const [accessCode, setAccessCode] = useState('');
   const [accessError, setAccessError] = useState('');
   const [isShowreelOpen, setIsShowreelOpen] = useState(false);
+  const [containerWidth, setContainerWidth] = useState(100);
+  const [containerHeight, setContainerHeight] = useState(120);
 
   // --- Refs for Scroll Animations ---
   const heroRef = useRef<HTMLDivElement>(null);
@@ -157,7 +159,12 @@ export default function HomePage() {
 </svg>
         </div>
 
-        <div className="relative z-20 w-full max-w-[120rem] mx-auto px-6 lg:px-12 flex flex-col items-center text-center h-full justify-center">
+        <motion.div 
+          drag
+          dragElastic={0.2}
+          dragMomentum={false}
+          className="relative z-20 w-full max-w-[120rem] mx-auto px-6 lg:px-12 flex flex-col items-center text-center h-full justify-center cursor-grab active:cursor-grabbing"
+        >
           {/* Eyebrow Span - Movable element */}
           <motion.span
             initial={{ opacity: 0, y: 40 }}
@@ -218,7 +225,7 @@ export default function HomePage() {
               </span>
             </a>
           </motion.div>
-        </div>
+        </motion.div>
 
         {/* Scroll Indicator */}
         <motion.div

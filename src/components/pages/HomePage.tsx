@@ -168,30 +168,26 @@ export default function HomePage() {
             Fine Art Portraiture · SKG Arts
           </motion.span>
 
-          {/* Heading Container - Separate movable element */}
-          <motion.div
+          {/* Heading - Movable element */}
+          <motion.h1
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-            className="overflow-hidden mb-6"
+            className="font-heading text-6xl md:text-8xl lg:text-9xl text-secondary tracking-tight leading-[0.9] overflow-hidden mb-6"
           >
-            <h1 className="font-heading text-6xl md:text-8xl lg:text-9xl text-secondary tracking-tight leading-[0.9]">
-              Portraits,<br />
-              <span className="italic font-light text-secondary">shot like fine art.</span>
-            </h1>
-          </motion.div>
+            Portraits,<br />
+            <span className="italic font-light text-secondary">shot like fine art.</span>
+          </motion.h1>
 
-          {/* Description Container - Separate movable element */}
-          <motion.div
+          {/* Description - Movable element */}
+          <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.4 }}
-            className="mb-12"
+            className="font-paragraph text-lg md:text-xl text-secondary/70 max-w-2xl mx-auto font-light tracking-wide mb-12"
           >
-            <p className="font-paragraph text-lg md:text-xl text-secondary/70 max-w-2xl mx-auto font-light tracking-wide">
-              Portraits that hold a stare. Weddings that play back like a film. Stills and motion, made to be unmistakably yours.
-            </p>
-          </motion.div>
+            Portraits that hold a stare. Weddings that play back like a film. Stills and motion, made to be unmistakably yours.
+          </motion.p>
 
           {/* Button Container - Separate movable element */}
           <motion.div

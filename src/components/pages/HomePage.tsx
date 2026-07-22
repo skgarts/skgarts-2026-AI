@@ -163,7 +163,10 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-            className="eyebrow block text-sm md:text-base text-secondary/60 tracking-widest uppercase font-paragraph font-semibold mb-4"
+            drag
+            dragElastic={0.2}
+            dragMomentum={false}
+            className="eyebrow block text-sm md:text-base text-secondary/60 tracking-widest uppercase font-paragraph font-semibold mb-4 cursor-grab active:cursor-grabbing w-fit"
           >
             Fine Art Portraiture · SKG Arts
           </motion.span>

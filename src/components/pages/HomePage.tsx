@@ -130,7 +130,7 @@ export default function HomePage() {
       {/* 1. HERO SECTION - Cinematic Parallax */}
       <motion.section 
         ref={heroRef} 
-        className="relative w-full h-[100vh] min-h-[800px] flex items-center justify-center overflow-hidden bg-background"
+        className="relative w-full h-[120vh] min-h-[900px] flex items-center justify-center overflow-hidden bg-background"
         style={{ y: heroY, opacity: heroOpacity }}
       >
         <div className="noise-overlay" />
@@ -157,7 +157,7 @@ export default function HomePage() {
 </svg>
         </div>
 
-        <div className="relative z-20 w-full max-w-[120rem] mx-auto px-6 lg:px-12 flex flex-col items-center text-center">
+        <div className="relative z-20 w-full max-w-[120rem] mx-auto px-6 lg:px-12 flex flex-col items-center text-center h-full justify-center">
           {/* Eyebrow Span - Movable element */}
           <motion.span
             initial={{ opacity: 0, y: 40 }}

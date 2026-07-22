@@ -185,7 +185,7 @@ export default function HomePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.4 }}
-            className="font-paragraph text-lg md:text-xl text-secondary/70 max-w-2xl mx-auto font-light tracking-wide mb-12"
+            className="font-paragraph text-sm md:text-base text-secondary/70 max-w-2xl mx-auto font-light tracking-wide mb-12"
           >
             Portraits that hold a stare. Weddings that play back like a film. Stills and motion, made to be unmistakably yours.
           </motion.p>

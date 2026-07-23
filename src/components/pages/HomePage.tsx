@@ -326,7 +326,7 @@ export default function HomePage() {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="bg-secondary/5 border border-secondary/10 rounded-lg p-12 lg:p-16"
         >
-          <div className="max-w-3xl">
+          <div className="w-full text-center">
             <h2 className="font-heading text-5xl lg:text-6xl text-secondary leading-tight mb-4">
               8 years. 14+ genres.
             </h2>

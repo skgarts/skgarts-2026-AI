@@ -318,27 +318,25 @@ export default function HomePage() {
         </div>
       </section>
       {/* 2.5 WRAP REVEAL SECTION - About SKG Arts */}
-      <section className="w-full max-w-[120rem] mx-auto lg:px-12 lg:py-48 relative py-48 px-0">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="bg-secondary/5 border border-secondary/10 rounded-lg p-12 lg:p-16"
-        >
-          <div className="w-full text-center">
-            <h2 className="font-heading text-5xl lg:text-6xl text-secondary leading-tight mb-4">
-              8 years. 14+ genres.
-            </h2>
-            <h3 className="font-heading text-3xl lg:text-4xl text-primary mb-8">
-              across Singapore & India.
-            </h3>
-            <p className="font-paragraph text-xs lg:text-sm text-secondary/80 leading-relaxed">
-              SKG Arts is the work of Srikanth Gumma — a fine art photographer and DOP based in Hyderabad, making photographs and films for people who wanted something that feels like them.
-            </p>
-          </div>
-        </motion.div>
-      </section>
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="w-full max-w-[120rem] mx-auto lg:px-12 lg:py-48 relative py-48 px-6 bg-secondary/5 border border-secondary/10 rounded-lg p-12 lg:p-16"
+      >
+        <div className="w-full text-center">
+          <h2 className="font-heading text-5xl lg:text-6xl text-secondary leading-tight mb-4">
+            8 years. 14+ genres.
+          </h2>
+          <h3 className="font-heading text-3xl lg:text-4xl text-primary mb-8">
+            across Singapore & India.
+          </h3>
+          <p className="font-paragraph text-xs lg:text-sm text-secondary/80 leading-relaxed">
+            SKG Arts is the work of Srikanth Gumma — a fine art photographer and DOP based in Hyderabad, making photographs and films for people who wanted something that feels like them.
+          </p>
+        </div>
+      </motion.div>
       {/* 3. STATEMENT SECTION - Sticky & Cinematic */}
       <section ref={statementRef} className="w-full h-[150vh] relative bg-background">
         <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">

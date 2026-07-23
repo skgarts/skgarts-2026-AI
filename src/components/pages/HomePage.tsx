@@ -343,20 +343,14 @@ export default function HomePage() {
       </motion.div>
       {/* NEW: FINE ART GALLERY SECTION */}
       <section className="w-full max-w-[120rem] mx-auto px-6 lg:px-12 py-32 lg:py-48">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="mb-20"
-        >
-          <h2 className="font-heading text-5xl lg:text-6xl text-secondary leading-tight mb-4">
-            Fine Art <span className="italic text-primary">Collection</span>
-          </h2>
-          <p className="font-paragraph text-secondary/60 max-w-2xl">
-            A curated selection of fine art pieces that showcase artistic vision and creative expression.
+        <div className="mb-16">
+          <p className="font-paragraph text-sm text-secondary/70 uppercase tracking-widest mb-6">
+            The heart of my work
           </p>
-        </motion.div>
+          <h1 className="font-heading text-5xl lg:text-6xl leading-tight mb-8">
+            <span className="text-secondary">Fine art</span> <span className="text-accent-blue">collection.</span>
+          </h1>
+        </div>
 
         <div className={`transition-opacity duration-1000 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
           {fineArtGallery.length > 0 ? (

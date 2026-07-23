@@ -356,6 +356,54 @@ export default function HomePage() {
           </motion.div>
         </div>
       </section>
+      {/* 3.5 PORTRAIT GALLERY SECTION */}
+      <section className="w-full max-w-[100rem] mx-auto px-6 lg:px-12 py-24 lg:py-32">
+        <div className="mb-16">
+          <p className="font-paragraph text-sm text-secondary/70 uppercase tracking-widest mb-6">
+            The heart of my work
+          </p>
+          <h1 className="font-heading text-5xl lg:text-6xl leading-tight mb-8">
+            <span className="text-secondary">Fine art</span> <span className="text-accent-blue">portraits.</span>
+          </h1>
+          <p className="font-paragraph text-sm text-secondary leading-relaxed max-w-3xl mb-8">
+            A portrait isn't a record of a face — it's a feeling you can hold. Light, texture, stillness, and the split-second someone forgets the camera is there. This is where I feel most at home: studio or on location, personal or editorial, always made to hang on a wall.
+          </p>
+          <p className="font-paragraph text-sm text-secondary/60 italic">
+            Explore the portrait portfolio
+          </p>
+        </div>
+
+        {/* 8-Photo Gallery Grid */}
+        <div className={`transition-opacity duration-1000 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
+          {portraits.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {portraits.slice(0, 8).map((portrait, index) => (
+                <motion.div
+                  key={portrait._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{ duration: 0.6, delay: (index % 8) * 0.05 }}
+                  className="group relative overflow-hidden aspect-square bg-secondary/5"
+                >
+                  <Image
+                    src={portrait.image || 'https://static.wixstatic.com/media/897509_b774ec0038ec4f98b39b7de7ab4d2e56~mv2.png?originWidth=384&originHeight=384'}
+                    alt={portrait.altText || portrait.title || 'Portrait'}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    width={400}
+                  />
+                  {/* Overlay on hover */}
+                  <div className="absolute inset-0 bg-secondary/0 group-hover:bg-secondary/20 transition-colors duration-300" />
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <div className="w-full h-[40vh] flex items-center justify-center border border-secondary/10">
+              <p className="text-secondary/40 font-paragraph uppercase tracking-widest text-sm">Loading portraits...</p>
+            </div>
+          )}
+        </div>
+      </section>
       {/* Rainbow Spectrum Divider */}
       <div className="w-full h-[2px] bg-gradient-to-r from-[#ED1B23] via-[#F4911C] via-[#F9C400] via-[#88C73F] via-[#007090] via-[#0072B4] via-[#2C3081] to-[#8A2889]" />
       {/* 4. SERVICES GRID - Editorial Layout */}

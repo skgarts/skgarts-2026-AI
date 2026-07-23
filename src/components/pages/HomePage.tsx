@@ -318,12 +318,13 @@ export default function HomePage() {
         </div>
       </section>
       {/* 2.5 WRAP REVEAL SECTION - About SKG Arts */}
+      {/* 3. STATEMENT SECTION - Sticky & Cinematic */}
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className="w-full max-w-[120rem] mx-auto lg:px-12 lg:py-48 relative py-48 px-6 bg-secondary/5 border border-secondary/10 rounded-lg p-12 lg:p-16"
+        className="w-full lg:px-12 lg:py-48 relative py-48 px-6 bg-secondary/5 border border-secondary/10 rounded-lg p-12 lg:p-16"
       >
         <div className="w-full text-center">
           <h2 className="font-heading text-5xl lg:text-6xl text-secondary leading-tight mb-4">
@@ -337,7 +338,6 @@ export default function HomePage() {
           </p>
         </div>
       </motion.div>
-      {/* 3. STATEMENT SECTION - Sticky & Cinematic */}
       <section ref={statementRef} className="w-full h-[150vh] relative bg-background">
         <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 bg-secondary/5" />

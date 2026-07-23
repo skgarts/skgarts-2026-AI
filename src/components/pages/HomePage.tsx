@@ -25,6 +25,9 @@ export default function HomePage() {
   const [accessCode, setAccessCode] = useState('');
   const [accessError, setAccessError] = useState('');
   const [isShowreelOpen, setIsShowreelOpen] = useState(false);
+  const [containerWidth, setContainerWidth] = useState(100);
+  const [containerHeight, setContainerHeight] = useState(120);
+  const [headerHeight, setHeaderHeight] = useState(0);
 
   // --- Refs for Scroll Animations ---
   const heroRef = useRef<HTMLDivElement>(null);
@@ -49,6 +52,18 @@ export default function HomePage() {
   // --- Data Fetching (Preserved) ---
   useEffect(() => {
     loadData();
+  }, []);
+
+  // --- Measure the fixed header so the hero can sit right below it ---
+  useEffect(() => {
+    const header = document.querySelector('header');
+    if (!header) return;
+
+    const update = () => setHeaderHeight(header.getBoundingClientRect().height);
+    update();
+
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
   }, []);
 
   const loadData = async () => {
@@ -130,84 +145,95 @@ export default function HomePage() {
       {/* 1. HERO SECTION - Cinematic Parallax */}
       <motion.section
         ref={heroRef}
-        className="relative w-full h-[100vh] min-h-[800px] flex items-center justify-center overflow-hidden bg-background"
-        style={{ y: heroY, opacity: heroOpacity }}
+        className="relative w-full flex items-center justify-center overflow-hidden bg-background"
+        style={{
+          y: heroY,
+          opacity: heroOpacity,
+          height: `calc(100dvh - ${headerHeight}px)`,
+          marginTop: `${headerHeight}px`
+        }}
       >
         <div className="noise-overlay" />
 
-        {/* Spectrum Aperture Motif - Six-Blade Camera Iris */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <svg className="w-[60px] h-[60px] opacity-20" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
-  <g transform="translate(200,200)">
-    <circle r="184" fill="none" stroke="url(#ringGradient)" strokeWidth="1.5" opacity="0.4" />
-    {['#ED1B23','#F4911C','#88C73F','#007090','#2C3081','#8A2889'].map((c,i)=>(
-      <path key={i} d="M-90,-155.88 L90,-155.88 L5.75,-54.7 L-44.5,-32.3 Z" fill={c} opacity="0.75" transform={`rotate(${i*60})`} />
-    ))}
-    <circle r="44" fill="#F6F5F2" />
-    <circle r="26" fill="#12355A" />
-  </g>
-  <defs>
-    <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stopColor="#ED1B23"/><stop offset="14%" stopColor="#F4911C"/>
-      <stop offset="28%" stopColor="#F9C400"/><stop offset="42%" stopColor="#88C73F"/>
-      <stop offset="57%" stopColor="#007090"/><stop offset="71%" stopColor="#0072B4"/>
-      <stop offset="85%" stopColor="#2C3081"/><stop offset="100%" stopColor="#8A2889"/>
-    </linearGradient>
-  </defs>
-</svg>
-        </div>
-
-        <div className="relative z-20 w-full max-w-[120rem] mx-auto px-6 lg:px-12 flex flex-col items-center text-center">
-          {/* Eyebrow Container - Separate movable element */}
-          <motion.div
+        <motion.div
+          className="relative z-20 w-full max-w-[120rem] mx-auto px-6 lg:px-12 flex flex-col items-center text-center h-full justify-center"
+        >
+          {/* Eyebrow Span */}
+          <motion.span
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-            className="overflow-hidden mb-4"
+            className="eyebrow block text-sm md:text-base text-primary tracking-[0.2em] uppercase font-paragraph font-semibold mb-6"
           >
-            <span className="eyebrow block text-sm md:text-base text-secondary/60 tracking-widest uppercase font-paragraph font-semibold">Fine Art Portraiture · SKG Arts</span>
-          </motion.div>
+            Fine Art Portraiture · SKG Arts
+          </motion.span>
 
-          {/* Heading Container - Separate movable element */}
-          <motion.div
+          <motion.h1
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-            className="overflow-hidden mb-6"
+            className="font-heading text-6xl md:text-8xl text-secondary tracking-tight leading-[0.95] mb-8 max-w-4xl mx-auto"
           >
-            <h1 className="font-heading text-6xl md:text-8xl lg:text-9xl text-secondary tracking-tight leading-[0.9]">
-              Portraits,<br />
-              <span className="italic font-light text-secondary">shot like fine art.</span>
-            </h1>
-          </motion.div>
+            Portraits, shot<br />like <span className="italic text-primary">fine art</span>.
+          </motion.h1>
 
-          {/* Description Container - Separate movable element */}
-          <motion.div
+          <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.4 }}
-            className="mb-12"
+            className="font-paragraph text-lg md:text-xl text-secondary/70 max-w-2xl font-light leading-relaxed mb-12 mx-auto"
           >
-            <p className="font-paragraph text-lg md:text-xl text-secondary/70 max-w-2xl mx-auto font-light tracking-wide">
-              Portraits that hold a stare. Weddings that play back like a film. Stills and motion, made to be unmistakably yours.
-            </p>
-          </motion.div>
+            Soulful, gallery-grade portraits — plus weddings, editorial and films — captured across India and beyond by Srikanth Gumma.
+          </motion.p>
 
-          {/* Button Container - Separate movable element */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
+            className="flex justify-center"
           >
-            <a href="#contact" className="group relative inline-flex items-center justify-center px-10 py-5 overflow-hidden rounded-full bg-transparent border border-secondary/20 text-secondary font-paragraph text-sm uppercase tracking-widest transition-all duration-500 hover:border-primary hover:text-primary">
-              <span className="absolute inset-0 w-full h-full bg-primary/5 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
+            <a href="#contact" className="group relative flex items-center justify-center px-10 py-5 overflow-visible rounded-full bg-transparent border border-secondary/20 text-secondary font-paragraph text-sm uppercase tracking-widest transition-all duration-500 hover:border-primary hover:text-primary">
+              <span
+                className="absolute inset-0 w-full h-full bg-primary/5 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left rounded-full"
+              />
               <span className="relative flex items-center gap-3">
                 Get in touch
                 <ArrowRight size={16} className="transform group-hover:translate-x-1 transition-transform" />
               </span>
             </a>
           </motion.div>
-        </div>
+
+          {/* Spectrum Aperture Motif - Six-Blade Camera Iris (rotates clockwise) */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1, rotate: 360 }}
+            transition={{
+              opacity: { duration: 0.8, delay: 0.8, ease: "easeOut" },
+              scale: { duration: 0.8, delay: 0.8, ease: "easeOut" },
+              rotate: { repeat: Infinity, duration: 16, ease: "linear" }
+            }}
+            className="mt-16"
+          >
+            <svg className="w-[64px] h-[64px]" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+              <g transform="translate(200,200)">
+                <circle r="184" fill="none" stroke="url(#ringGradient)" strokeWidth="1.5" opacity="0.4" />
+                {['#ED1B23','#F4911C','#88C73F','#007090','#2C3081','#8A2889'].map((c,i)=>(
+                  <path key={i} d="M-90,-155.88 L90,-155.88 L5.75,-54.7 L-44.5,-32.3 Z" fill={c} opacity="0.85" transform={`rotate(${i*60})`} />
+                ))}
+                <circle r="44" fill="#F6F5F2" />
+                <circle r="26" fill="#12355A" />
+              </g>
+              <defs>
+                <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#ED1B23"/><stop offset="14%" stopColor="#F4911C"/>
+                  <stop offset="28%" stopColor="#F9C400"/><stop offset="42%" stopColor="#88C73F"/>
+                  <stop offset="57%" stopColor="#007090"/><stop offset="71%" stopColor="#0072B4"/>
+                  <stop offset="85%" stopColor="#2C3081"/><stop offset="100%" stopColor="#8A2889"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </motion.div>
+        </motion.div>
 
         {/* Scroll Indicator */}
         <motion.div
@@ -313,7 +339,6 @@ export default function HomePage() {
       </section>
       {/* Rainbow Spectrum Divider */}
       <div className="w-full h-[2px] bg-gradient-to-r from-[#ED1B23] via-[#F4911C] via-[#F9C400] via-[#88C73F] via-[#007090] via-[#0072B4] via-[#2C3081] to-[#8A2889]" />
-
       {/* 4. SERVICES GRID - Editorial Layout */}
       <section id="services" className="w-full max-w-[120rem] mx-auto px-6 lg:px-12 py-32 lg:py-48">
         <div className="mb-24 flex flex-col items-center text-center">

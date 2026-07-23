@@ -47,9 +47,7 @@ export default function Footer() {
               </div>
               <div className="flex items-center gap-3">
                 <Mail size={18} className="flex-shrink-0 text-secondary" />
-                <a href="mailto:hello@skgarts.com" className="font-paragraph text-sm text-primary hover:text-primary/80 transition-colors">
-                  hello@skgarts.com
-                </a>
+                <a href="mailto:hello@skgarts.com" className="font-paragraph text-sm text-primary hover:text-primary/80 transition-colors">srikanth@skgarts.com</a>
               </div>
               <div className="flex items-center gap-3">
                 <Phone size={18} className="flex-shrink-0 text-secondary" />
@@ -65,7 +63,7 @@ export default function Footer() {
             <h4 className="font-paragraph text-lg font-bold text-secondary">Follow Us</h4>
             <div className="flex gap-4">
               <a
-                href="https://instagram.com/skg.arts"
+                href="https://www.instagram.com/skg.arts/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-colors text-primary"

@@ -739,12 +739,8 @@ export default function HomePage() {
                 </div>
                 <div className="group">
                   <span className="font-paragraph text-xs uppercase tracking-[0.2em] text-secondary/40 block mb-2">Direct</span>
-                  <a href="mailto:hello@skgarts.com" className="font-heading text-2xl text-secondary hover:text-primary transition-colors block">
-                    hello@skgarts.com
-                  </a>
-                  <a href="tel:+919876543210" className="font-heading text-2xl text-secondary hover:text-primary transition-colors block mt-2">
-                    +91 98765 43210
-                  </a>
+                  <a href="mailto:hello@skgarts.com" className="font-heading text-2xl text-secondary hover:text-primary transition-colors block">srikanth@skgarts.com</a>
+                  <a href="tel:+919876543210" className="font-heading text-2xl text-secondary hover:text-primary transition-colors block mt-2">+91 97400 76381</a>
                 </div>
               </div>
             </motion.div>

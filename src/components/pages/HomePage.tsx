@@ -559,13 +559,15 @@ export default function HomePage() {
           <DialogContent className="max-w-4xl w-full p-0 bg-black border-none overflow-hidden">
             <div className="aspect-video w-full">
               {isShowreelOpen && (
-                <iframe
+                <video
                   className="w-full h-full"
-                  src="https://www.youtube.com/embed/Em9FnP9kDoM?autoplay=1"
+                  controls
+                  autoPlay
                   title="SKG Arts Showreel"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
+                >
+                  <source src="https://video.wixstatic.com/video/897509_7880f4a3912c4810806318604bbfd39b/1080p/mp4/file.mp4" type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
               )}
             </div>
           </DialogContent>

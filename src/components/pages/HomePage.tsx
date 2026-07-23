@@ -341,61 +341,27 @@ export default function HomePage() {
           </p>
         </div>
       </motion.div>
-      {/* NEW: FINE ART GALLERY SECTION */}
-      <section className="w-full max-w-[120rem] mx-auto px-6 lg:px-12 py-32 lg:py-48">
-        <div className="mb-16">
+      {/* HEART OF MY WORK - Fine Art Portraits */}
+      <section className="w-full max-w-[100rem] mx-auto px-6 lg:px-12 py-24 lg:py-32">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+        >
           <p className="font-paragraph text-sm text-secondary/70 uppercase tracking-widest mb-6">
             The heart of my work
           </p>
           <h1 className="font-heading text-5xl lg:text-6xl leading-tight mb-8">
-            <span className="text-secondary">Fine art</span> <span className="text-accent-blue">collection.</span>
+            <span className="text-secondary">Fine art</span> <span className="text-accent-blue">portraits.</span>
           </h1>
-        </div>
-
-        <div className={`transition-opacity duration-1000 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
-          {fineArtGallery.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {fineArtGallery.map((item, index) => (
-                <motion.div
-                  key={item._id}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-50px" }}
-                  transition={{ duration: 0.6, delay: (index % 3) * 0.1 }}
-                  className="group relative overflow-hidden"
-                >
-                  <div className="relative overflow-hidden aspect-square bg-secondary/5">
-                    <Image
-                      src={item.image || 'https://static.wixstatic.com/media/897509_555ffd7d31fc41f28c7c854b3b34debb~mv2.png?originWidth=768&originHeight=576'}
-                      alt={item.title || 'Fine art piece'}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                      width={600}
-                    />
-                    <div className="absolute inset-0 bg-secondary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    {item.title && (
-                      <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-secondary/80 to-transparent translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
-                        <h3 className="font-heading text-xl text-background">{item.title}</h3>
-                        {item.medium && (
-                          <p className="font-paragraph text-xs text-background/80 mt-2">{item.medium}</p>
-                        )}
-                        {item.yearCreated && (
-                          <p className="font-paragraph text-xs text-background/80">{item.yearCreated}</p>
-                        )}
-                        {item.description && (
-                          <p className="font-paragraph text-xs text-background/80 mt-2 line-clamp-2">{item.description}</p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          ) : (
-            <div className="w-full h-[40vh] flex items-center justify-center border border-secondary/10">
-              <p className="text-secondary/40 font-paragraph uppercase tracking-widest text-sm">Loading fine art collection...</p>
-            </div>
-          )}
-        </div>
+          <p className="font-paragraph text-sm text-secondary leading-relaxed max-w-3xl mb-8">
+            A portrait isn't a record of a face — it's a feeling you can hold. Light, texture, stillness, and the split-second someone forgets the camera is there. This is where I feel most at home: studio or on location, personal or editorial, always made to hang on a wall.
+          </p>
+          <p className="font-paragraph text-sm text-secondary/60 italic">
+            Explore the portrait portfolio
+          </p>
+        </motion.div>
       </section>
       <section ref={statementRef} className="w-full h-[150vh] relative bg-background">
         <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
@@ -413,54 +379,6 @@ export default function HomePage() {
               <div className="w-[1px] h-24 bg-secondary/20" />
             </div>
           </motion.div>
-        </div>
-      </section>
-      {/* 3.5 PORTRAIT GALLERY SECTION */}
-      <section className="w-full max-w-[100rem] mx-auto px-6 lg:px-12 py-24 lg:py-32">
-        <div className="mb-16">
-          <p className="font-paragraph text-sm text-secondary/70 uppercase tracking-widest mb-6">
-            The heart of my work
-          </p>
-          <h1 className="font-heading text-5xl lg:text-6xl leading-tight mb-8">
-            <span className="text-secondary">Fine art</span> <span className="text-accent-blue">portraits.</span>
-          </h1>
-          <p className="font-paragraph text-sm text-secondary leading-relaxed max-w-3xl mb-8">
-            A portrait isn't a record of a face — it's a feeling you can hold. Light, texture, stillness, and the split-second someone forgets the camera is there. This is where I feel most at home: studio or on location, personal or editorial, always made to hang on a wall.
-          </p>
-          <p className="font-paragraph text-sm text-secondary/60 italic">
-            Explore the portrait portfolio
-          </p>
-        </div>
-
-        {/* 8-Photo Gallery Grid */}
-        <div className={`transition-opacity duration-1000 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
-          {portraits.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {portraits.slice(0, 8).map((portrait, index) => (
-                <motion.div
-                  key={portrait._id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-50px" }}
-                  transition={{ duration: 0.6, delay: (index % 8) * 0.05 }}
-                  className="group relative overflow-hidden aspect-square bg-secondary/5"
-                >
-                  <Image
-                    src={portrait.image || 'https://static.wixstatic.com/media/897509_b774ec0038ec4f98b39b7de7ab4d2e56~mv2.png?originWidth=384&originHeight=384'}
-                    alt={portrait.altText || portrait.title || 'Portrait'}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    width={400}
-                  />
-                  {/* Overlay on hover */}
-                  <div className="absolute inset-0 bg-secondary/0 group-hover:bg-secondary/20 transition-colors duration-300" />
-                </motion.div>
-              ))}
-            </div>
-          ) : (
-            <div className="w-full h-[40vh] flex items-center justify-center border border-secondary/10">
-              <p className="text-secondary/40 font-paragraph uppercase tracking-widest text-sm">Loading portraits...</p>
-            </div>
-          )}
         </div>
       </section>
       {/* Rainbow Spectrum Divider */}

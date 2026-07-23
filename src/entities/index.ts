@@ -69,6 +69,29 @@ export interface GalleryPhotos {
 
 
 /**
+ * Collection ID: homepagegallery
+ * Interface for HomepageGallery
+ */
+export interface HomepageGallery {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType image - Contains image URL, render with <Image> component, NOT as text */
+  image?: string;
+  /** @wixFieldType text */
+  title?: string;
+  /** @wixFieldType text */
+  altText?: string;
+  /** @wixFieldType text */
+  description?: string;
+  /** @wixFieldType number */
+  order?: number;
+  /** @wixFieldType url */
+  link?: string;
+}
+
+
+/**
  * Collection ID: portraitgallery
  * Interface for PortraitGallery
  */

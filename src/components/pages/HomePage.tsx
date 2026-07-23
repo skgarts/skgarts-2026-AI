@@ -235,7 +235,6 @@ export default function HomePage() {
                 </svg>
               </motion.div>
             </motion.div>
-
         {/* Scroll Indicator */}
         <motion.div
           initial={{ opacity: 0 }}

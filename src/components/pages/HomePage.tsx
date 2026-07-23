@@ -652,9 +652,7 @@ export default function HomePage() {
                   <a href="mailto:hello@skgarts.com" className="font-heading text-2xl text-secondary hover:text-primary transition-colors block">
                     hello@skgarts.com
                   </a>
-                  <a href="tel:+919876543210" className="font-heading text-2xl text-secondary hover:text-primary transition-colors block mt-2">
-                    +91 98765 43210
-                  </a>
+                  <a href="tel:+919876543210" className="font-heading text-2xl text-secondary hover:text-primary transition-colors block mt-2">+91 9740076381</a>
                 </div>
               </div>
             </motion.div>

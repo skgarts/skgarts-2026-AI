@@ -155,28 +155,6 @@ export default function HomePage() {
       >
         <div className="noise-overlay" />
 
-        {/* Spectrum Aperture Motif - Six-Blade Camera Iris */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <svg className="w-[60px] h-[60px] opacity-20" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
-  <g transform="translate(200,200)">
-    <circle r="184" fill="none" stroke="url(#ringGradient)" strokeWidth="1.5" opacity="0.4" />
-    {['#ED1B23','#F4911C','#88C73F','#007090','#2C3081','#8A2889'].map((c,i)=>(
-      <path key={i} d="M-90,-155.88 L90,-155.88 L5.75,-54.7 L-44.5,-32.3 Z" fill={c} opacity="0.75" transform={`rotate(${i*60})`} />
-    ))}
-    <circle r="44" fill="#F6F5F2" />
-    <circle r="26" fill="#12355A" />
-  </g>
-  <defs>
-    <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stopColor="#ED1B23"/><stop offset="14%" stopColor="#F4911C"/>
-      <stop offset="28%" stopColor="#F9C400"/><stop offset="42%" stopColor="#88C73F"/>
-      <stop offset="57%" stopColor="#007090"/><stop offset="71%" stopColor="#0072B4"/>
-      <stop offset="85%" stopColor="#2C3081"/><stop offset="100%" stopColor="#8A2889"/>
-    </linearGradient>
-  </defs>
-</svg>
-        </div>
-
         <motion.div
           className="relative z-20 w-full max-w-[120rem] mx-auto px-6 lg:px-12 flex flex-col items-center text-center h-full justify-center"
         >
@@ -185,7 +163,7 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-            className="eyebrow block text-sm md:text-base text-secondary/60 tracking-widest uppercase font-paragraph font-semibold mb-4 w-fit"
+            className="eyebrow block text-sm md:text-base text-primary tracking-[0.2em] uppercase font-paragraph font-semibold mb-6"
           >
             Fine Art Portraiture · SKG Arts
           </motion.span>
@@ -194,54 +172,67 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-            className="font-heading text-6xl md:text-8xl text-secondary tracking-tight leading-[0.9] overflow-hidden mb-6 lg:text-6xl w-fit mx-auto"
+            className="font-heading text-6xl md:text-8xl text-secondary tracking-tight leading-[0.95] mb-8 max-w-4xl mx-auto"
           >
-            Portraits,<br />
-            <span className="italic font-light text-secondary">shot like fine art.</span>
+            Portraits, shot like <span className="italic text-primary">fine art</span>.
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.4 }}
-            className="font-paragraph text-sm md:text-base text-secondary/70 max-w-2xl font-light tracking-wide mb-12 w-fit"
+            className="font-paragraph text-lg md:text-xl text-secondary/70 max-w-2xl font-light leading-relaxed mb-12 mx-auto"
           >
-            Portraits that hold a stare. Weddings that play back like a film. Stills and motion, made to be unmistakably yours.
+            Soulful, gallery-grade portraits — plus weddings, editorial and films — captured across India and beyond by Srikanth Gumma.
           </motion.p>
 
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
-            className="flex justify-center"
+            className="flex flex-wrap items-center justify-center gap-6"
           >
-            <a href="#contact" className="group relative flex items-center justify-center px-10 py-5 overflow-visible rounded-full bg-transparent border border-secondary/20 text-secondary font-paragraph text-sm uppercase tracking-widest transition-all duration-500 hover:border-primary hover:text-primary">
-              <span
-                className="absolute inset-0 w-full h-full bg-primary/5 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"
-              />
-              <span className="relative flex items-center gap-3">
-                Get in touch
-                <ArrowRight size={16} className="transform group-hover:translate-x-1 transition-transform" />
-              </span>
+            <a
+              href="#contact"
+              className="group flex items-center justify-center px-10 py-5 bg-primary text-background font-paragraph text-sm uppercase tracking-widest transition-all duration-300 hover:bg-primary/90"
+            >
+              Get in touch
+            </a>
+            <a
+              href="#gallery"
+              className="group flex items-center gap-2 text-primary font-paragraph text-sm uppercase tracking-widest transition-colors hover:text-primary/70"
+            >
+              See the work
+              <ArrowRight size={16} className="transform group-hover:translate-x-1 transition-transform" />
             </a>
           </motion.div>
-        </motion.div>
 
-        {/* Scroll Indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.5, duration: 1 }}
-          className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4"
-        >
-          <span className="font-paragraph text-xs uppercase tracking-[0.2em] text-secondary/40">Scroll</span>
-          <div className="w-[1px] h-16 bg-secondary/20 relative overflow-hidden">
-            <motion.div
-              animate={{ y: ["-100%", "100%"] }}
-              transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
-              className="absolute top-0 left-0 w-full h-full bg-primary"
-            />
-          </div>
+          {/* Spectrum Aperture Motif - Six-Blade Camera Iris */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.8, ease: "easeOut" }}
+            className="mt-16"
+          >
+            <svg className="w-[64px] h-[64px]" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+              <g transform="translate(200,200)">
+                <circle r="184" fill="none" stroke="url(#ringGradient)" strokeWidth="1.5" opacity="0.4" />
+                {['#ED1B23','#F4911C','#88C73F','#007090','#2C3081','#8A2889'].map((c,i)=>(
+                  <path key={i} d="M-90,-155.88 L90,-155.88 L5.75,-54.7 L-44.5,-32.3 Z" fill={c} opacity="0.85" transform={`rotate(${i*60})`} />
+                ))}
+                <circle r="44" fill="#F6F5F2" />
+                <circle r="26" fill="#12355A" />
+              </g>
+              <defs>
+                <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#ED1B23"/><stop offset="14%" stopColor="#F4911C"/>
+                  <stop offset="28%" stopColor="#F9C400"/><stop offset="42%" stopColor="#88C73F"/>
+                  <stop offset="57%" stopColor="#007090"/><stop offset="71%" stopColor="#0072B4"/>
+                  <stop offset="85%" stopColor="#2C3081"/><stop offset="100%" stopColor="#8A2889"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </motion.div>
         </motion.div>
       </motion.section>
       {/* 2. PORTRAIT GALLERY - The Core Feature */}

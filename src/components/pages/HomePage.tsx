@@ -324,7 +324,7 @@ export default function HomePage() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className="w-full lg:px-12 lg:py-48 relative py-48 px-6 bg-secondary/5 border border-secondary/10 rounded-lg p-12 lg:p-16"
+        className="w-full relative bg-secondary/5 border border-secondary/10 rounded-lg p-12 lg:p-16"
       >
         <div className="w-full text-center">
           <h2 className="font-heading text-5xl lg:text-6xl text-secondary leading-tight mb-4">

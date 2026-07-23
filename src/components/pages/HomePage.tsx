@@ -214,30 +214,27 @@ export default function HomePage() {
             }}
             className="mt-16"
           >
-            <svg className="w-[64px] h-[64px]" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="200" cy="200" r="190" fill="#FFFFFF" />
-              <circle cx="200" cy="200" r="190" fill="none" stroke="#E2DED4" strokeWidth="3" />
-              <g transform="translate(200,200)">
-                {[
-                  { c: '#88C73F', r: 0 },
-                  { c: '#2C3081', r: 60 },
-                  { c: '#8A2889', r: 120 },
-                  { c: '#ED1B23', r: 180 },
-                  { c: '#F4911C', r: 240 },
-                  { c: '#007090', r: 300 },
-                ].map((b, i) => (
-                  <path
-                    key={i}
-                    d="M0,-150 L130,-75 L18,-30 A34,34 0 0 0 -14,-46 Z"
-                    fill={b.c}
-                    transform={`rotate(${b.r})`}
-                  />
-                ))}
-                <circle r="22" fill="#12355A" />
-              </g>
-            </svg>
-          </motion.div>
-        </motion.div>
+                <svg className="w-[64px] h-[64px]" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="200" cy="200" r="192" fill="#FFFFFF" />
+                  <circle cx="200" cy="200" r="192" fill="none" stroke="#E7E3DA" strokeWidth="3" />
+                  <g transform="translate(200,200)">
+                    {[
+                      { c: '#ED1B23', d: 'M-38.2,-165.6 L38.2,-165.6 L19.5,-48.2 Z' },
+                      { c: '#F4911C', d: 'M90.1,-144.2 L144.2,-90.1 L47.9,-20.3 Z' },
+                      { c: '#F9C400', d: 'M165.6,-38.2 L165.6,38.2 L48.2,19.5 Z' },
+                      { c: '#88C73F', d: 'M144.2,90.1 L90.1,144.2 L20.3,47.9 Z' },
+                      { c: '#009E4F', d: 'M38.2,165.6 L-38.2,165.6 L-19.5,48.2 Z' },
+                      { c: '#007090', d: 'M-90.1,144.2 L-144.2,90.1 L-47.9,20.3 Z' },
+                      { c: '#2C3081', d: 'M-165.6,38.2 L-165.6,-38.2 L-48.2,-19.5 Z' },
+                      { c: '#8A2889', d: 'M-144.2,-90.1 L-90.1,-144.2 L-20.3,-47.9 Z' },
+                    ].map((b, i) => (
+                      <path key={i} d={b.d} fill={b.c} />
+                    ))}
+                    <circle r="26" fill="#12355A" />
+                  </g>
+                </svg>
+              </motion.div>
+            </motion.div>
 
         {/* Scroll Indicator */}
         <motion.div

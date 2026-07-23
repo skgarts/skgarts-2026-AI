@@ -273,9 +273,7 @@ export default function HomePage() {
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.2 }}
             className="font-paragraph text-secondary/60 max-w-md text-right"
-          >
-            A curated selection of fine art portraits, where every frame is a study in light, emotion, and timeless elegance.
-          </motion.p>
+          >A curated selection of People Photography, where every frame is a study in light, emotion, and timeless elegance.</motion.p>
         </div>
 
         <div className={`min-h-[600px] transition-opacity duration-1000 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
@@ -348,6 +346,7 @@ export default function HomePage() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8, ease: "easeOut" }}
+          className="text-center"
         >
           <p className="font-paragraph text-sm text-secondary/70 uppercase tracking-widest mb-6">
             The heart of my work

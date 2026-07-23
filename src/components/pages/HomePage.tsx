@@ -215,22 +215,26 @@ export default function HomePage() {
             className="mt-16"
           >
             <svg className="w-[64px] h-[64px]" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="200" cy="200" r="190" fill="#FFFFFF" />
+              <circle cx="200" cy="200" r="190" fill="none" stroke="#E2DED4" strokeWidth="3" />
               <g transform="translate(200,200)">
-                <circle r="184" fill="none" stroke="url(#ringGradient)" strokeWidth="1.5" opacity="0.4" />
-                {['#ED1B23','#F4911C','#88C73F','#007090','#2C3081','#8A2889'].map((c,i)=>(
-                  <path key={i} d="M-90,-155.88 L90,-155.88 L5.75,-54.7 L-44.5,-32.3 Z" fill={c} opacity="0.85" transform={`rotate(${i*60})`} />
+                {[
+                  { c: '#88C73F', r: 0 },
+                  { c: '#2C3081', r: 60 },
+                  { c: '#8A2889', r: 120 },
+                  { c: '#ED1B23', r: 180 },
+                  { c: '#F4911C', r: 240 },
+                  { c: '#007090', r: 300 },
+                ].map((b, i) => (
+                  <path
+                    key={i}
+                    d="M0,-150 L130,-75 L18,-30 A34,34 0 0 0 -14,-46 Z"
+                    fill={b.c}
+                    transform={`rotate(${b.r})`}
+                  />
                 ))}
-                <circle r="44" fill="#F6F5F2" />
-                <circle r="26" fill="#12355A" />
+                <circle r="22" fill="#12355A" />
               </g>
-              <defs>
-                <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#ED1B23"/><stop offset="14%" stopColor="#F4911C"/>
-                  <stop offset="28%" stopColor="#F9C400"/><stop offset="42%" stopColor="#88C73F"/>
-                  <stop offset="57%" stopColor="#007090"/><stop offset="71%" stopColor="#0072B4"/>
-                  <stop offset="85%" stopColor="#2C3081"/><stop offset="100%" stopColor="#8A2889"/>
-                </linearGradient>
-              </defs>
             </svg>
           </motion.div>
         </motion.div>
@@ -652,7 +656,9 @@ export default function HomePage() {
                   <a href="mailto:hello@skgarts.com" className="font-heading text-2xl text-secondary hover:text-primary transition-colors block">
                     hello@skgarts.com
                   </a>
-                  <a href="tel:+919876543210" className="font-heading text-2xl text-secondary hover:text-primary transition-colors block mt-2">+91 9740076381</a>
+                  <a href="tel:+919876543210" className="font-heading text-2xl text-secondary hover:text-primary transition-colors block mt-2">
+                    +91 98765 43210
+                  </a>
                 </div>
               </div>
             </motion.div>

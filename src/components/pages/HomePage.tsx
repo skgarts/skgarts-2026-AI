@@ -318,7 +318,7 @@ export default function HomePage() {
         </div>
       </section>
       {/* 2.5 WRAP REVEAL SECTION - About SKG Arts */}
-      <section className="w-full max-w-[120rem] mx-auto px-6 lg:px-12 py-32 lg:py-48 relative">
+      <section className="w-full max-w-[120rem] mx-auto lg:px-12 lg:py-48 relative py-48 px-0">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}

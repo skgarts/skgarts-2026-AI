@@ -163,7 +163,8 @@ export default function HomePage() {
           drag
           dragElastic={0.2}
           dragMomentum={false}
-          className="relative z-20 w-full max-w-[120rem] mx-auto px-6 lg:px-12 flex flex-col items-center text-center h-full justify-center cursor-grab active:cursor-grabbing"
+          className="relative z-20 w-full max-w-[120rem] mx-auto px-6 lg:px-12 flex flex-col items-center text-center h-full justify-center cursor-grab active:cursor-grabbing resize overflow-auto"
+          style={{ resize: 'both' }}
         >
           {/* Eyebrow Span - Movable element */}
           <motion.span

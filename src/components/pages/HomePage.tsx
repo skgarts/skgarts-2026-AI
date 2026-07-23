@@ -27,7 +27,9 @@ export default function HomePage() {
   const [isShowreelOpen, setIsShowreelOpen] = useState(false);
   const [containerWidth, setContainerWidth] = useState(100);
   const [containerHeight, setContainerHeight] = useState(120);
-
+  const [containerWidth, setContainerWidth] = useState(100);
+  const [containerHeight, setContainerHeight] = useState(120);
+  const [headerHeight, setHeaderHeight] = useState(0);
   // --- Refs for Scroll Animations ---
   const heroRef = useRef<HTMLDivElement>(null);
   const statementRef = useRef<HTMLDivElement>(null);

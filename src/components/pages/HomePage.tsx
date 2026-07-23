@@ -203,36 +203,37 @@ export default function HomePage() {
             </a>
           </motion.div>
 
-          {/* Spectrum Aperture Motif - Six-Blade Camera Iris (rotates clockwise) */}
+          {/* Spectrum Aperture Motif - Separated Camera Iris Blades (rotates clockwise) */}
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1, rotate: 360 }}
             transition={{
               opacity: { duration: 0.8, delay: 0.8, ease: "easeOut" },
               scale: { duration: 0.8, delay: 0.8, ease: "easeOut" },
-              rotate: { repeat: Infinity, duration: 16, ease: "linear" }
+              rotate: { repeat: Infinity, duration: 32, ease: "linear" }
             }}
             className="mt-16"
           >
-                <svg className="w-[64px] h-[64px]" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="200" cy="200" r="192" fill="#FFFFFF" />
-                <circle cx="200" cy="200" r="192" fill="none" stroke="#E7E3DA" strokeWidth="3" />
-                <g transform="translate(200,200)">
-                  {[
-                    { c: '#ED1B23', d: 'M-49.7,-162.6 L49.7,-162.6 L21.2,-47.5 Z' },
-                    { c: '#F4911C', d: 'M115.9,-124.3 L165.6,-38.2 L51.7,-5.4 Z' },
-                    { c: '#88C73F', d: 'M165.6,38.2 L115.9,124.3 L30.6,42.1 Z' },
-                    { c: '#007090', d: 'M49.7,162.6 L-49.7,162.6 L-21.2,47.5 Z' },
-                    { c: '#2C3081', d: 'M-115.9,124.3 L-165.6,38.2 L-51.7,5.4 Z' },
-                    { c: '#8A2889', d: 'M-165.6,-38.2 L-115.9,-124.3 L-30.6,-42.1 Z' },
-                  ].map((b, i) => (
-                    <path key={i} d={b.d} fill={b.c} />
-                  ))}
-                  <circle r="26" fill="#12355A" />
-                </g>
-              </svg>
-              </motion.div>
-            </motion.div>
+            <svg className="w-[64px] h-[64px]" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="200" cy="200" r="192" fill="#FFFFFF" />
+              <circle cx="200" cy="200" r="192" fill="none" stroke="#E7E3DA" strokeWidth="3" />
+              <g transform="translate(200,200)">
+                {[
+                  { c: '#ED1B23', d: 'M-49.7,-162.6 L49.7,-162.6 L21.2,-47.5 Z' },
+                  { c: '#F4911C', d: 'M115.9,-124.3 L165.6,-38.2 L51.7,-5.4 Z' },
+                  { c: '#88C73F', d: 'M165.6,38.2 L115.9,124.3 L30.6,42.1 Z' },
+                  { c: '#007090', d: 'M49.7,162.6 L-49.7,162.6 L-21.2,47.5 Z' },
+                  { c: '#2C3081', d: 'M-115.9,124.3 L-165.6,38.2 L-51.7,5.4 Z' },
+                  { c: '#8A2889', d: 'M-165.6,-38.2 L-115.9,-124.3 L-30.6,-42.1 Z' },
+                ].map((b, i) => (
+                  <path key={i} d={b.d} fill={b.c} />
+                ))}
+                <circle r="26" fill="#12355A" />
+              </g>
+            </svg>
+          </motion.div>
+        </motion.div>
+
         {/* Scroll Indicator */}
         <motion.div
           initial={{ opacity: 0 }}

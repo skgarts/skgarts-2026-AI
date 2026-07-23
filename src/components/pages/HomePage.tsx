@@ -9,7 +9,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import { ClientGalleries, FrequentlyAskedQuestions, PortraitGallery, ServiceCategories } from '@/entities';
-import type { HomepageGallery } from '@/entities';
 import { BaseCrudService } from '@/integrations';
 import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, ExternalLink, Instagram, Lock, Play } from 'lucide-react';
@@ -22,7 +21,7 @@ export default function HomePage() {
   const [services, setServices] = useState<ServiceCategories[]>([]);
   const [faqs, setFaqs] = useState<FrequentlyAskedQuestions[]>([]);
   const [clientGalleries, setClientGalleries] = useState<ClientGalleries[]>([]);
-  const [homepageGallery, setHomepageGallery] = useState<HomepageGallery[]>([]);
+  const [fineArtGallery, setFineArtGallery] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [accessCode, setAccessCode] = useState('');
   const [accessError, setAccessError] = useState('');
@@ -71,12 +70,12 @@ export default function HomePage() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [portraitsRes, servicesRes, faqsRes, galleriesRes, homepageGalleryRes] = await Promise.all([
+      const [portraitsRes, servicesRes, faqsRes, galleriesRes, fineArtRes] = await Promise.all([
         BaseCrudService.getAll<PortraitGallery>('portraitgallery'),
         BaseCrudService.getAll<ServiceCategories>('servicecategories'),
         BaseCrudService.getAll<FrequentlyAskedQuestions>('faq'),
         BaseCrudService.getAll<ClientGalleries>('clientgalleries'),
-        BaseCrudService.getAll<HomepageGallery>('homepagegallery')
+        BaseCrudService.getAll<any>('fineartgallery')
       ]);
 
       setPortraits(portraitsRes.items);
@@ -104,7 +103,7 @@ export default function HomePage() {
       setServices(reorderedServices);
       setFaqs(faqsRes.items.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0)));
       setClientGalleries(galleriesRes.items);
-      setHomepageGallery(homepageGalleryRes.items.sort((a, b) => (a.order || 0) - (b.order || 0)));
+      setFineArtGallery(fineArtRes.items.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0)));
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -342,7 +341,7 @@ export default function HomePage() {
           </p>
         </div>
       </motion.div>
-      {/* NEW: HOMEPAGE GALLERY SECTION - Between genres and "Make it art" */}
+      {/* NEW: FINE ART GALLERY SECTION */}
       <section className="w-full max-w-[120rem] mx-auto px-6 lg:px-12 py-32 lg:py-48">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -352,17 +351,17 @@ export default function HomePage() {
           className="mb-20"
         >
           <h2 className="font-heading text-5xl lg:text-6xl text-secondary leading-tight mb-4">
-            Featured <span className="italic text-primary">Works</span>
+            Fine Art <span className="italic text-primary">Collection</span>
           </h2>
           <p className="font-paragraph text-secondary/60 max-w-2xl">
-            A selection of recent projects and moments that define our creative vision.
+            A curated selection of fine art pieces that showcase artistic vision and creative expression.
           </p>
         </motion.div>
 
         <div className={`transition-opacity duration-1000 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
-          {homepageGallery.length > 0 ? (
+          {fineArtGallery.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {homepageGallery.map((item, index) => (
+              {fineArtGallery.map((item, index) => (
                 <motion.div
                   key={item._id}
                   initial={{ opacity: 0, y: 30 }}
@@ -371,51 +370,35 @@ export default function HomePage() {
                   transition={{ duration: 0.6, delay: (index % 3) * 0.1 }}
                   className="group relative overflow-hidden"
                 >
-                  {item.link ? (
-                    <a href={item.link} target="_blank" rel="noopener noreferrer" className="block w-full">
-                      <div className="relative overflow-hidden aspect-square bg-secondary/5">
-                        <Image
-                          src={item.image || 'https://static.wixstatic.com/media/897509_555ffd7d31fc41f28c7c854b3b34debb~mv2.png?originWidth=768&originHeight=576'}
-                          alt={item.altText || item.title || 'Featured work'}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                          width={600}
-                        />
-                        <div className="absolute inset-0 bg-secondary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                        {item.title && (
-                          <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-secondary/80 to-transparent translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
-                            <h3 className="font-heading text-xl text-background">{item.title}</h3>
-                            {item.description && (
-                              <p className="font-paragraph text-xs text-background/80 mt-2 line-clamp-2">{item.description}</p>
-                            )}
-                          </div>
+                  <div className="relative overflow-hidden aspect-square bg-secondary/5">
+                    <Image
+                      src={item.image || 'https://static.wixstatic.com/media/897509_555ffd7d31fc41f28c7c854b3b34debb~mv2.png?originWidth=768&originHeight=576'}
+                      alt={item.title || 'Fine art piece'}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      width={600}
+                    />
+                    <div className="absolute inset-0 bg-secondary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    {item.title && (
+                      <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-secondary/80 to-transparent translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+                        <h3 className="font-heading text-xl text-background">{item.title}</h3>
+                        {item.medium && (
+                          <p className="font-paragraph text-xs text-background/80 mt-2">{item.medium}</p>
+                        )}
+                        {item.yearCreated && (
+                          <p className="font-paragraph text-xs text-background/80">{item.yearCreated}</p>
+                        )}
+                        {item.description && (
+                          <p className="font-paragraph text-xs text-background/80 mt-2 line-clamp-2">{item.description}</p>
                         )}
                       </div>
-                    </a>
-                  ) : (
-                    <div className="relative overflow-hidden aspect-square bg-secondary/5">
-                      <Image
-                        src={item.image || 'https://static.wixstatic.com/media/897509_555ffd7d31fc41f28c7c854b3b34debb~mv2.png?originWidth=768&originHeight=576'}
-                        alt={item.altText || item.title || 'Featured work'}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                        width={600}
-                      />
-                      <div className="absolute inset-0 bg-secondary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                      {item.title && (
-                        <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-secondary/80 to-transparent translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
-                          <h3 className="font-heading text-xl text-background">{item.title}</h3>
-                          {item.description && (
-                            <p className="font-paragraph text-xs text-background/80 mt-2 line-clamp-2">{item.description}</p>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </motion.div>
               ))}
             </div>
           ) : (
             <div className="w-full h-[40vh] flex items-center justify-center border border-secondary/10">
-              <p className="text-secondary/40 font-paragraph uppercase tracking-widest text-sm">Loading featured works...</p>
+              <p className="text-secondary/40 font-paragraph uppercase tracking-widest text-sm">Loading fine art collection...</p>
             </div>
           )}
         </div>

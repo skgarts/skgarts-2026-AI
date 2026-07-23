@@ -48,6 +48,29 @@ export interface FrequentlyAskedQuestions {
 
 
 /**
+ * Collection ID: fineartgallery
+ * Interface for FineArtGallery
+ */
+export interface FineArtGallery {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  title?: string;
+  /** @wixFieldType image - Contains image URL, render with <Image> component, NOT as text */
+  image?: string;
+  /** @wixFieldType text */
+  description?: string;
+  /** @wixFieldType number */
+  displayOrder?: number;
+  /** @wixFieldType text */
+  medium?: string;
+  /** @wixFieldType number */
+  yearCreated?: number;
+}
+
+
+/**
  * Collection ID: galleryphotos
  * Interface for GalleryPhotos
  */

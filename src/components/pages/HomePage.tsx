@@ -130,9 +130,9 @@ export default function HomePage() {
       <Header />
       <WhatsAppButton />
       {/* 1. HERO SECTION - Cinematic Parallax */}
-      <motion.section 
-        ref={heroRef} 
-        className="relative w-full h-[120vh] min-h-[900px] flex items-center justify-center overflow-hidden bg-background"
+      <motion.section
+        ref={heroRef}
+        className="relative w-full h-[100dvh] flex items-center justify-center overflow-hidden bg-background"
         style={{ y: heroY, opacity: heroOpacity }}
       >
         <div className="noise-overlay" />
@@ -159,7 +159,7 @@ export default function HomePage() {
 </svg>
         </div>
 
-        <motion.div 
+        <motion.div
           drag
           dragElastic={0.2}
           dragMomentum={false}
@@ -214,11 +214,11 @@ export default function HomePage() {
             className="flex justify-center"
           >
             <a href="#contact" className="group relative flex items-center justify-center px-10 py-5 overflow-visible rounded-full bg-transparent border border-secondary/20 text-secondary font-paragraph text-sm uppercase tracking-widest transition-all duration-500 hover:border-primary hover:text-primary">
-              <motion.span 
+              <motion.span
                 drag
                 dragElastic={0.2}
                 dragMomentum={false}
-                className="absolute inset-0 w-full h-full bg-primary/5 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" 
+                className="absolute inset-0 w-full h-full bg-primary/5 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"
               />
               <span className="relative flex items-center gap-3">
                 Get in touch

@@ -3,7 +3,6 @@ import Footer from '@/components/Footer';
 import Header from '@/components/Header';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Image } from '@/components/ui/image';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,7 +10,7 @@ import WhatsAppButton from '@/components/WhatsAppButton';
 import { ClientGalleries, FrequentlyAskedQuestions, PortraitGallery, ServiceCategories } from '@/entities';
 import { BaseCrudService } from '@/integrations';
 import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion';
-import { ArrowRight, ExternalLink, Instagram, Lock, Play } from 'lucide-react';
+import { ArrowRight, ExternalLink, Instagram, Lock } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -25,7 +24,6 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [accessCode, setAccessCode] = useState('');
   const [accessError, setAccessError] = useState('');
-  const [isShowreelOpen, setIsShowreelOpen] = useState(false);
   const [containerWidth, setContainerWidth] = useState(100);
   const [containerHeight, setContainerHeight] = useState(120);
   const [headerHeight, setHeaderHeight] = useState(0);
@@ -531,23 +529,17 @@ export default function HomePage() {
               transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
               className="lg:col-span-7 relative"
             >
-              <button
-                type="button"
-                onClick={() => setIsShowreelOpen(true)}
-                aria-label="Play showreel"
-                className="aspect-video w-full bg-secondary relative group cursor-pointer overflow-hidden block"
-              >
-                <Image
-                  src="https://static.wixstatic.com/media/897509_4462e04f22494fd68d9ea0a10369bff8~mv2.png?originWidth=576&originHeight=320"
-                  alt="Showreel Cover"
-                  className="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity duration-700"
-                />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-24 h-24 rounded-full border border-background/30 flex items-center justify-center backdrop-blur-sm group-hover:scale-110 group-hover:border-background/60 transition-all duration-500">
-                    <Play className="text-background ml-2" size={32} fill="currentColor" />
-                  </div>
-                </div>
-              </button>
+              <div className="aspect-video w-full bg-secondary relative group overflow-hidden block">
+                <video
+                  className="w-full h-full object-cover"
+                  controls
+                  poster="https://static.wixstatic.com/media/897509_4462e04f22494fd68d9ea0a10369bff8~mv2.png?originWidth=576&originHeight=320"
+                  title="SKG Arts Showreel"
+                >
+                  <source src="https://video.wixstatic.com/video/897509_7880f4a3912c4810806318604bbfd39b/1080p/mp4/file.mp4" type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+              </div>
               {/* Decorative offset border */}
               <div className="absolute -inset-4 border border-secondary/10 -z-10 hidden lg:block" />
             </motion.div>
@@ -555,23 +547,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <Dialog open={isShowreelOpen} onOpenChange={setIsShowreelOpen}>
-          <DialogContent className="max-w-4xl w-full p-0 bg-black border-none overflow-hidden">
-            <div className="aspect-video w-full">
-              {isShowreelOpen && (
-                <video
-                  className="w-full h-full"
-                  controls
-                  autoPlay
-                  title="SKG Arts Showreel"
-                >
-                  <source src="https://video.wixstatic.com/video/897509_7880f4a3912c4810806318604bbfd39b/1080p/mp4/file.mp4" type="video/mp4" />
-                  Your browser does not support the video tag.
-                </video>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
+{/* ... keep existing code (Dialog removed - video now plays inline) ... */}
       </section>
       {/* 6. INSTAGRAM FEED - Infinite Marquee Style */}
       <section id="instagram" className="w-full py-32 overflow-hidden bg-background border-t border-[#ED1B23]/20" style={{ borderImage: 'linear-gradient(90deg, #ED1B23, #F4911C, #F9C400, #88C73F, #007090, #0072B4, #2C3081, #8A2889) 1' }}>

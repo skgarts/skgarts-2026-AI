@@ -138,6 +138,29 @@ export interface PortraitGallery {
 
 
 /**
+ * Collection ID: published-photos-self
+ * Interface for Publishedphotosself
+ */
+export interface Publishedphotosself {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType image - Contains image URL, render with <Image> component, NOT as text */
+  image?: string;
+  /** @wixFieldType text */
+  title?: string;
+  /** @wixFieldType text */
+  altText?: string;
+  /** @wixFieldType text */
+  description?: string;
+  /** @wixFieldType date */
+  dateTaken?: Date | string;
+  /** @wixFieldType text */
+  location?: string;
+}
+
+
+/**
  * Collection ID: servicecategories
  * Interface for ServiceCategories
  */

@@ -1,508 +1,416 @@
+// SKG Arts — Profile / About page
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
 import { Image } from '@/components/ui/image';
-import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import { FineArtGallery } from '@/entities';
+import WhatsAppButton from '@/components/WhatsAppButton';
 import { BaseCrudService } from '@/integrations';
+import { motion } from 'framer-motion';
+import { ArrowRight, Camera, ExternalLink, Film, Lightbulb, Mic, Video } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
+// Srikanth's profile portrait (Wix media)
+const PROFILE_PHOTO = 'https://static.wixstatic.com/media/897509_81fd36b4521b4beeb9e6260db65d94fe~mv2.jpg';
+
+// --- Static credit data ---
+const FILMS = [
+  { title: 'Sahasi, Dateline Singapore', type: 'Short film', role: 'DOP, Audiographer' },
+  { title: 'PsychoLogical', type: 'Short film', role: 'DOP' },
+  { title: 'Sirf Main — Singapore Vignettes', type: 'Short film series', role: 'DOP, Editor' },
+  { title: 'Lifaafe', type: 'Short film', role: 'DOP' },
+  { title: 'Zindagi Interrupted', type: 'Short film', role: 'DOP, Editor' },
+  { title: 'Achar', type: 'Short film', role: 'DOP' },
+  { title: 'MG Road', type: 'Short film', role: 'DOP' },
+  { title: 'Soul Of Love', type: 'Short film', role: 'DOP' },
+  { title: 'Hridyam', type: 'Short film', role: 'Associate DOP' },
+  { title: 'Druvangal Randu', type: 'Psychological thriller short film', role: 'Lighting' },
+];
+
+const VIDEOS = [
+  { title: 'Hindustan Badhega Meri Jaan × Aao Huzoor', artist: 'Kavya Kannan' },
+  { title: 'Aadha Ishq', artist: 'Harshu Kamble' },
+  { title: 'Kanha Re', artist: 'Harshu Kamble' },
+  { title: 'Kuch Toh Hua Hai (Kal Ho Na Ho)', artist: 'Harshu Kamble' },
+  { title: 'Gulabi Aankhen', artist: 'Harshu Kamble' },
+  { title: 'Mere Khwabon Mein — cover', artist: 'Harshu Kamble' },
+  { title: 'Main Tenu Samjhawan — song cover', artist: 'Harshu Kamble' },
+];
+
+const OTHER_PROJECTS = [
+  { title: 'Rhythm International Dance Festival', note: 'Event filming' },
+  { title: 'Dream Catchers Runway — Talent Hunt', note: 'Event & portrait photoshoots' },
+  { title: 'Dream Catchers Runway Mom — NRI Buzzar Event', note: 'Photoshoot' },
+  { title: 'Dream Catchers — Iventure Event', note: 'Photoshoot' },
+  { title: 'ArcLight Productions & Dream Catchers — Timeless Tales Theatre Festival', note: 'Filming' },
+  { title: 'Grahanam (Malayalam)', note: 'Associate camera crew', link: 'https://bit.ly/3cZRewq' },
+];
+
+const EQUIPMENT = [
+  {
+    icon: Camera,
+    group: 'Camera',
+    items: ['Canon R5C', 'Canon R6', 'BMPCC 6K'],
+  },
+  {
+    icon: Lightbulb,
+    group: 'Lights',
+    items: [
+      'Godox FL150 Flexible LED (FL Series)',
+      'Aputure Amaran 100X',
+      'Nanlite Forza 60C RGBLAC',
+      'Godox LC500R',
+      'Assorted incident lights',
+    ],
+  },
+  {
+    icon: Video,
+    group: 'Lens',
+    items: [
+      'Canon RF 24-70mm f/2.8L',
+      'Canon RF 100-500mm f/4.5-7.1L IS USM',
+      'Canon EF 24-70mm f/2.8L II USM',
+      'Canon EF 16-35mm f/2.8L II USM',
+      'Canon EF 70-200mm f/2.8L IS II USM',
+      'Canon EF 85mm f/1.2L II USM',
+      'Canon RF 50mm f/1.8',
+      'Samyang 35mm T1.5 AS UMC II (cine)',
+      'Samyang 50mm T1.5 (cine)',
+      'Samyang 80mm T1.5 (cine)',
+    ],
+  },
+  {
+    icon: Mic,
+    group: 'Sound',
+    items: [
+      'Zoom F6',
+      'RODE Wireless GO II',
+      'Hollyland Lark MAX',
+      'Rode NTG4+ (boom mic)',
+    ],
+  },
+];
+
+const RAINBOW = 'linear-gradient(90deg, #ED1B23, #F4911C, #F9C400, #88C73F, #007090, #0072B4, #2C3081, #8A2889) 1';
+
+const fadeUp = {
+  initial: { opacity: 0, y: 30 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: '-80px' },
+  transition: { duration: 0.7, ease: 'easeOut' },
+};
 
 export default function ProfilePage() {
-  const [fineArtGallery, setFineArtGallery] = useState<FineArtGallery[]>([]);
+  const [published, setPublished] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [headerHeight, setHeaderHeight] = useState(0);
 
-  const heroRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        const res = await BaseCrudService.getAll<any>('published-photos-self');
+        setPublished(res.items.sort((a: any, b: any) => (a.displayOrder || 0) - (b.displayOrder || 0)));
+      } catch (error) {
+        console.error('Error loading published photos:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
+  }, []);
 
+  // Offset content below the fixed header
   useEffect(() => {
     const header = document.querySelector('header');
     if (!header) return;
-
     const update = () => setHeaderHeight(header.getBoundingClientRect().height);
     update();
-
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
   }, []);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
-    setIsLoading(true);
-    try {
-      const fineArtRes = await BaseCrudService.getAll<FineArtGallery>('fineartgallery');
-      setFineArtGallery(fineArtRes.items.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0)));
-    } catch (error) {
-      console.error('Error loading data:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const films = [
-    { title: 'Sahasi, Dateline Singapore', type: 'Shortfilm', role: 'DOP, Audiographer' },
-    { title: 'PsychoLogical', type: 'Shortfilm', role: 'DOP' },
-    { title: 'Sirf Main Singapore Vignettes', type: 'Shortfilm series', role: 'DOP, Editor' },
-    { title: 'Lifaafe', type: 'Shortfilm', role: 'DOP' },
-    { title: 'Zindagi Interrupted', type: 'Shortfilm', role: 'DOP, Editor' },
-    { title: 'Achar', type: 'Shortfilm', role: 'DOP' },
-    { title: 'MG Road', type: 'Shortfilm', role: 'DOP' },
-    { title: 'Soul Of Love', type: 'Shortfilm', role: 'DOP' },
-    { title: 'Hridyam', type: 'Shortfilm', role: 'Associate DOP' },
-    { title: 'Druvangal Randu', type: 'Psychological Thriller shortfilm', role: 'Lighting' },
-  ];
-
-  const videoProjects = [
-    { title: 'Hindustan Badhega', artist: '' },
-    { title: 'Meri Jaan X Aao Huzoor', artist: 'Kavya Kannan' },
-    { title: 'Aadha Ishq', artist: 'Harshu Kamble' },
-    { title: 'Kanha Re', artist: 'Harshu Kamble' },
-    { title: 'Kuch Toh Hua Hai (Kal Ho No Ho)', artist: 'Harshu Kamble' },
-    { title: 'Gulabi Aankhen', artist: 'Harshu Kamble' },
-    { title: 'Mere Khwabon Mein - cover', artist: 'Harshu Kamble' },
-    { title: 'Main Tenu Samjhawan ki song cover', artist: 'Harshu Kamble' },
-  ];
-
-  const otherProjects = [
-    { title: 'Filming of the event', description: 'Rhythm International Dance Festival' },
-    { title: 'Dream Catchers Runway Talent hunt', description: 'Photoshoots for events and portraits' },
-    { title: 'Dream Catchers Runway mom', description: '' },
-    { title: 'NRI buzzar event photoshoot', description: '' },
-    { title: 'Dream Catchers Iventure Event', description: '' },
-    { title: 'ArcLight Productions & Dream Catchers', description: 'Timeless Tales Theatre Festival' },
-    { title: 'Associate Camera crew for the Film Grahanam', description: 'Malayalam film', link: 'https://bit.ly/3cZRewq' },
-  ];
-
-  const equipment = {
-    camera: [
-      'Canon R5C',
-      'Canon R6',
-      'BMPCC 6K',
-    ],
-    lights: [
-      'Godox FL Series Flexible LED Light 150 FL',
-      'Apurtue Amaran 100X',
-      'Nanlite Forza 60C RGBLAC',
-      'Godox LC 500R',
-      'Few other incident lights',
-    ],
-    lens: [
-      'Canon RF24-70 f/2.8L',
-      'Canon RF100-500mm F4.5-7.1L IS USM',
-      'Canon EF24-70mm f/2.8L II USM',
-      'Canon EF16-35mm f/2.8L II USM',
-      'Canon EF70-200mm f/2.8L IS II USM',
-      'Canon 85mm f/1.2L II USM',
-      'Canon RF 50mm f/1.8L',
-      'Samyang 35mm T1.5 AS UMCII cine lens',
-      'Samyang 50mm T1.5 cine lens',
-      'Samyang 80mm T1.5 Cine lens',
-    ],
-    sound: [
-      'Zoom F6',
-      'RODE WirelessGO II',
-      'Hollyland Lark MAX Wireless Microphone',
-      'Rode NTG4+ (Boom Mic)',
-    ],
-  };
-
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-primary/20 selection:text-secondary overflow-clip">
+    <div className="min-h-screen bg-background text-foreground overflow-clip">
       <Header />
+      <WhatsAppButton />
 
-      {/* HERO SECTION - Split Layout with Photo */}
-      <motion.section
-        ref={heroRef}
-        className="relative w-full flex items-center justify-center overflow-hidden bg-background"
-        style={{
-          height: `calc(100dvh - ${headerHeight}px)`,
-          marginTop: `${headerHeight}px`
-        }}
+      {/* 1. HERO — photo + intro */}
+      <section
+        className="w-full max-w-[120rem] mx-auto px-6 lg:px-12 pb-24 lg:pb-32"
+        style={{ paddingTop: `calc(${headerHeight}px + 4rem)` }}
       >
-        <div className="relative z-20 w-full max-w-[120rem] mx-auto px-6 lg:px-12 flex flex-col lg:flex-row items-center gap-12 lg:gap-20 h-full justify-center">
-          {/* Left: Text Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center">
+          {/* Photo */}
           <motion.div
-            initial={{ opacity: 0, x: -40 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-            className="flex-1 space-y-6"
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+            className="lg:col-span-5 relative"
           >
-            <motion.span
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.1 }}
-              className="block text-sm md:text-base text-primary tracking-[0.2em] uppercase font-paragraph font-semibold"
-            >
-              Director of Photography & Photographer
-            </motion.span>
-
-            <motion.h1
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-              className="font-heading text-5xl md:text-7xl text-secondary tracking-tight leading-[0.95]"
-            >
-              Srikanth Gumma
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 1, delay: 0.4 }}
-              className="font-heading text-2xl md:text-3xl text-primary italic"
-            >
-              Visuals Driven by Art. Backed by Precision.
-            </motion.p>
-
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 1, delay: 0.5 }}
-              className="font-paragraph text-lg text-secondary/70 leading-relaxed max-w-lg"
-            >
-              I create under the banner SKG Arts, guided by a simple belief: every piece of visual media—from raw documentaries to high-concept films—is fundamentally an art form meant to tell a story.
-            </motion.p>
-
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 1, delay: 0.6 }}
-              className="font-paragraph text-base text-secondary/60 leading-relaxed max-w-lg"
-            >
-              Great visuals require technical perfection. As a versatile, one-stop technical lead, I seamlessly manage cinematography, dynamic lighting setups, and location sync sound. By controlling the entire technical ecosystem, I ensure your narrative retains its soul without losing an ounce of production value.
-            </motion.p>
-
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 1, delay: 0.7 }}
-              className="font-paragraph text-base text-secondary/60 leading-relaxed max-w-lg"
-            >
-              Whether you're crafting an intimate documentary or an ambitious commercial film, let's turn your vision into an unforgettable visual experience.
-            </motion.p>
+            <div className="relative aspect-square w-full overflow-hidden bg-secondary/5">
+              <Image
+                src={PROFILE_PHOTO}
+                alt="Srikanth Gumma — Director of Photography & Photographer"
+                className="w-full h-full object-cover"
+                width={900}
+              />
+            </div>
+            {/* Decorative offset border */}
+            <div className="absolute -inset-4 border border-secondary/10 -z-10 hidden lg:block" />
           </motion.div>
 
-          {/* Right: Photo */}
+          {/* Intro */}
           <motion.div
-            initial={{ opacity: 0, x: 40, scale: 0.95 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
-            className="flex-1 relative"
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.9, delay: 0.15, ease: 'easeOut' }}
+            className="lg:col-span-7"
           >
-            <div className="relative aspect-[3/4] overflow-hidden bg-secondary/5 rounded-lg">
-              <Image
-                src="https://static.wixstatic.com/media/897509_555ffd7d31fc41f28c7c854b3b34debb~mv2.png?originWidth=600&originHeight=800"
-                alt="Srikanth Gumma - Director of Photography"
-                className="w-full h-full object-cover"
-                width={600}
-              />
-              {/* Decorative corner accent */}
-              <div className="absolute top-0 left-0 w-12 h-12 border-t-2 border-l-2 border-primary/30" />
-              <div className="absolute bottom-0 right-0 w-12 h-12 border-b-2 border-r-2 border-primary/30" />
+            <span className="font-paragraph text-xs md:text-sm text-primary uppercase tracking-[0.2em] font-semibold block mb-6">
+              Director of Photography &amp; Photographer · Hyderabad · SKG Arts
+            </span>
+            <h1 className="font-heading text-4xl md:text-6xl text-secondary leading-[1.05] mb-8">
+              Visuals driven by <span className="italic text-primary">art</span>.<br />
+              Backed by <span className="italic text-primary">precision</span>.
+            </h1>
+            <div className="space-y-5 font-paragraph text-base md:text-lg text-secondary/70 leading-relaxed max-w-2xl">
+              <p>
+                Hey, I'm Srikanth Gumma — a Hyderabad-based Director of Photography (DOP) and Photographer. I create under the banner SKG Arts, guided by a simple belief: every piece of visual media, from raw documentaries to high-concept films, is fundamentally an art form meant to tell a story.
+              </p>
+              <p>
+                Great visuals require technical perfection. As a versatile, one-stop technical lead, I seamlessly manage cinematography, dynamic lighting setups, and location sync sound. By controlling the entire technical ecosystem, I make sure your narrative keeps its soul without losing an ounce of production value.
+              </p>
+              <p className="text-secondary">
+                Whether you're crafting an intimate documentary or an ambitious commercial film, let's turn your vision into an unforgettable visual experience.
+              </p>
+            </div>
+            <div className="mt-10">
+              <a
+                href="/#contact"
+                className="group inline-flex items-center gap-3 px-10 py-5 bg-primary text-background font-paragraph text-sm uppercase tracking-widest transition-all duration-300 hover:bg-primary/90"
+              >
+                Let's work together
+                <ArrowRight size={16} className="transform group-hover:translate-x-1 transition-transform" />
+              </a>
             </div>
           </motion.div>
         </div>
-      </motion.section>
+      </section>
 
-      {/* FILMS SECTION */}
-      <section className="w-full max-w-[120rem] mx-auto px-6 lg:px-12 py-32 lg:py-48">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.8 }}
-          className="mb-20"
-        >
-          <h2 className="font-heading text-5xl lg:text-6xl text-secondary mb-4">
-            Films
-          </h2>
-          <div className="w-12 h-[1px] bg-primary" />
+      <div className="w-full h-[2px]" style={{ background: RAINBOW.replace(') 1', ')') }} />
+
+      {/* 2. FILMS */}
+      <section className="w-full max-w-[100rem] mx-auto px-6 lg:px-12 py-24 lg:py-32">
+        <motion.div {...fadeUp} className="flex items-center gap-4 mb-16">
+          <Film className="text-primary" size={28} />
+          <h2 className="font-heading text-4xl lg:text-5xl text-secondary">Films</h2>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {films.map((film, index) => (
+        <div className="divide-y divide-secondary/10 border-t border-secondary/10">
+          {FILMS.map((film, i) => (
             <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
+              key={film.title}
+              initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.6, delay: (index % 2) * 0.1 }}
-              className="group p-6 lg:p-8 border border-secondary/10 hover:border-primary/30 transition-all duration-300 bg-secondary/[0.02] hover:bg-secondary/5"
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{ duration: 0.5, delay: (i % 4) * 0.05 }}
+              className="group flex flex-col md:flex-row md:items-baseline justify-between gap-2 md:gap-8 py-6"
             >
-              <div className="flex items-start justify-between gap-4 mb-3">
+              <div className="flex-1">
                 <h3 className="font-heading text-xl lg:text-2xl text-secondary group-hover:text-primary transition-colors">
                   {film.title}
                 </h3>
-                <ArrowRight size={20} className="text-primary/40 group-hover:text-primary transition-colors flex-shrink-0 mt-1" />
+                <p className="font-paragraph text-xs uppercase tracking-widest text-secondary/40 mt-1">
+                  {film.type}
+                </p>
               </div>
-              <p className="font-paragraph text-sm text-secondary/60 mb-2">
-                <span className="font-semibold text-secondary/80">{film.type}</span>
-              </p>
-              <p className="font-paragraph text-sm text-secondary/70">
-                <span className="text-primary">Role:</span> {film.role}
+              <p className="font-paragraph text-sm text-secondary/70 md:text-right md:min-w-[220px]">
+                {film.role}
               </p>
             </motion.div>
           ))}
         </div>
       </section>
 
-      {/* VIDEO PROJECTS SECTION */}
-      <section className="w-full bg-secondary/5 py-32 lg:py-48 border-t border-[#ED1B23]/20" style={{ borderImage: 'linear-gradient(90deg, #ED1B23, #F4911C, #F9C400, #88C73F, #007090, #0072B4, #2C3081, #8A2889) 1' }}>
-        <div className="max-w-[120rem] mx-auto px-6 lg:px-12">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.8 }}
-            className="mb-20"
-          >
-            <h2 className="font-heading text-5xl lg:text-6xl text-secondary mb-4">
-              Video Projects
-            </h2>
-            <div className="w-12 h-[1px] bg-primary" />
+      {/* 3. VIDEO PROJECTS */}
+      <section className="w-full bg-secondary/5 py-24 lg:py-32">
+        <div className="max-w-[100rem] mx-auto px-6 lg:px-12">
+          <motion.div {...fadeUp} className="flex items-center gap-4 mb-16">
+            <Video className="text-primary" size={28} />
+            <h2 className="font-heading text-4xl lg:text-5xl text-secondary">Video Projects</h2>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {videoProjects.map((project, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-8">
+            {VIDEOS.map((v, i) => (
               <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
+                key={v.title}
+                initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.6, delay: (index % 3) * 0.1 }}
-                className="group p-6 border border-secondary/10 hover:border-primary/30 transition-all duration-300 bg-background hover:bg-background/50"
+                viewport={{ once: true, margin: '-40px' }}
+                transition={{ duration: 0.5, delay: (i % 3) * 0.06 }}
+                className="border-l-2 border-primary/30 pl-5 py-1"
               >
-                <h3 className="font-heading text-lg text-secondary group-hover:text-primary transition-colors mb-2">
-                  {project.title}
-                </h3>
-                {project.artist && (
-                  <p className="font-paragraph text-sm text-secondary/70">
-                    <span className="text-primary font-semibold">Artist:</span> {project.artist}
-                  </p>
-                )}
+                <h3 className="font-heading text-lg lg:text-xl text-secondary leading-snug">{v.title}</h3>
+                <p className="font-paragraph text-xs uppercase tracking-widest text-secondary/50 mt-2">
+                  {v.artist}
+                </p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* OTHER PROJECTS SECTION */}
-      <section className="w-full max-w-[120rem] mx-auto px-6 lg:px-12 py-32 lg:py-48">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.8 }}
-          className="mb-20"
-        >
-          <h2 className="font-heading text-5xl lg:text-6xl text-secondary mb-4">
-            Other Projects
-          </h2>
-          <div className="w-12 h-[1px] bg-primary" />
+      {/* 4. OTHER PROJECTS */}
+      <section className="w-full max-w-[100rem] mx-auto px-6 lg:px-12 py-24 lg:py-32">
+        <motion.div {...fadeUp} className="flex items-center gap-4 mb-16">
+          <Camera className="text-primary" size={28} />
+          <h2 className="font-heading text-4xl lg:text-5xl text-secondary">Other Projects</h2>
         </motion.div>
 
-        <div className="space-y-4">
-          {otherProjects.map((project, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+          {OTHER_PROJECTS.map((p, i) => (
             <motion.div
-              key={index}
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.6, delay: (index % 5) * 0.05 }}
-              className="group p-6 border-b border-secondary/10 hover:border-primary/30 transition-all duration-300 flex items-start justify-between gap-4"
+              key={p.title}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{ duration: 0.5, delay: (i % 2) * 0.06 }}
+              className="flex items-start gap-4 border-b border-secondary/10 pb-6"
             >
-              <div className="flex-1">
-                <h3 className="font-heading text-lg text-secondary group-hover:text-primary transition-colors mb-1">
-                  {project.title}
+              <span className="mt-2 w-2 h-2 rounded-full bg-primary shrink-0" />
+              <div>
+                <h3 className="font-heading text-lg lg:text-xl text-secondary">
+                  {p.link ? (
+                    <a
+                      href={p.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 hover:text-primary transition-colors"
+                    >
+                      {p.title}
+                      <ExternalLink size={15} />
+                    </a>
+                  ) : (
+                    p.title
+                  )}
                 </h3>
-                {project.description && (
-                  <p className="font-paragraph text-sm text-secondary/70">
-                    {project.description}
-                  </p>
-                )}
+                <p className="font-paragraph text-sm text-secondary/60 mt-1">{p.note}</p>
               </div>
-              {project.link && (
-                <a
-                  href={project.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:text-primary/80 transition-colors flex-shrink-0 mt-1"
-                >
-                  <ArrowRight size={20} />
-                </a>
-              )}
             </motion.div>
           ))}
         </div>
       </section>
 
-      {/* EQUIPMENT SECTION */}
-      <section className="w-full bg-secondary/5 py-32 lg:py-48 border-t border-[#ED1B23]/20" style={{ borderImage: 'linear-gradient(90deg, #ED1B23, #F4911C, #F9C400, #88C73F, #007090, #0072B4, #2C3081, #8A2889) 1' }}>
+      <div className="w-full h-[2px]" style={{ background: RAINBOW.replace(') 1', ')') }} />
+
+      {/* 5. EQUIPMENT */}
+      <section className="w-full bg-secondary/5 py-24 lg:py-32">
         <div className="max-w-[120rem] mx-auto px-6 lg:px-12">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.8 }}
-            className="mb-20"
-          >
-            <h2 className="font-heading text-5xl lg:text-6xl text-secondary mb-4">
-              Equipment
-            </h2>
-            <p className="font-paragraph text-lg text-secondary/70 max-w-2xl">
-              Professional gear meticulously curated for precision cinematography and photography.
-            </p>
-            <div className="w-12 h-[1px] bg-primary mt-6" />
+          <motion.div {...fadeUp} className="text-center mb-16">
+            <span className="font-paragraph text-xs uppercase tracking-[0.3em] text-primary mb-4 block">
+              The Kit
+            </span>
+            <h2 className="font-heading text-4xl lg:text-5xl text-secondary">Equipment</h2>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {/* Camera */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.6, delay: 0 }}
-              className="space-y-6"
-            >
-              <h3 className="font-heading text-2xl text-secondary">Camera</h3>
-              <ul className="space-y-3">
-                {equipment.camera.map((item, idx) => (
-                  <li key={idx} className="font-paragraph text-sm text-secondary/70 flex items-start gap-3">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-
-            {/* Lights */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="space-y-6"
-            >
-              <h3 className="font-heading text-2xl text-secondary">Lights</h3>
-              <ul className="space-y-3">
-                {equipment.lights.map((item, idx) => (
-                  <li key={idx} className="font-paragraph text-sm text-secondary/70 flex items-start gap-3">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-
-            {/* Lens */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="space-y-6"
-            >
-              <h3 className="font-heading text-2xl text-secondary">Lens</h3>
-              <ul className="space-y-3">
-                {equipment.lens.map((item, idx) => (
-                  <li key={idx} className="font-paragraph text-sm text-secondary/70 flex items-start gap-3">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-
-            {/* Sound */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="space-y-6"
-            >
-              <h3 className="font-heading text-2xl text-secondary">Sound</h3>
-              <ul className="space-y-3">
-                {equipment.sound.map((item, idx) => (
-                  <li key={idx} className="font-paragraph text-sm text-secondary/70 flex items-start gap-3">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
+            {EQUIPMENT.map((cat, i) => {
+              const Icon = cat.icon;
+              return (
+                <motion.div
+                  key={cat.group}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-40px' }}
+                  transition={{ duration: 0.6, delay: i * 0.08 }}
+                  className="bg-background border border-secondary/10 p-8"
+                >
+                  <div className="flex items-center gap-3 mb-6">
+                    <Icon className="text-primary" size={22} />
+                    <h3 className="font-heading text-2xl text-secondary">{cat.group}</h3>
+                  </div>
+                  <ul className="space-y-3">
+                    {cat.items.map((item) => (
+                      <li key={item} className="font-paragraph text-sm text-secondary/70 leading-relaxed">
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* GALLERY SECTION - Published Photos */}
-      <section className="w-full max-w-[120rem] mx-auto px-6 lg:px-12 py-32 lg:py-48">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.8 }}
-          className="mb-20"
-        >
-          <h2 className="font-heading text-5xl lg:text-6xl text-secondary mb-4">
-            Published Work
-          </h2>
-          <p className="font-paragraph text-lg text-secondary/70 max-w-2xl">
-            A curated selection of fine art photography showcasing technical excellence and artistic vision.
-          </p>
-          <div className="w-12 h-[1px] bg-primary mt-6" />
+      {/* 6. PUBLISHED WORK — pulls from `published-photos-self` collection */}
+      <section className="w-full max-w-[120rem] mx-auto px-6 lg:px-12 py-24 lg:py-32">
+        <motion.div {...fadeUp} className="mb-16 flex flex-col items-center text-center">
+          <span className="font-paragraph text-xs uppercase tracking-[0.3em] text-primary mb-4 block">
+            Selected &amp; Published
+          </span>
+          <h2 className="font-heading text-4xl lg:text-5xl text-secondary">Published Work</h2>
+          <div className="w-12 h-[1px] bg-secondary/20 mt-8" />
         </motion.div>
 
-        <div className={`transition-opacity duration-1000 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
-          {fineArtGallery.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {fineArtGallery.map((item, index) => (
+        <div className={`min-h-[300px] transition-opacity duration-1000 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
+          {published.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {published.map((item, index) => (
                 <motion.div
-                  key={item._id}
+                  key={item._id || index}
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-50px" }}
+                  viewport={{ once: true, margin: '-50px' }}
                   transition={{ duration: 0.6, delay: (index % 3) * 0.1 }}
-                  className="group relative overflow-hidden"
+                  className="group relative overflow-hidden aspect-[4/5] bg-secondary/5"
                 >
-                  <div className="relative overflow-hidden aspect-square bg-secondary/5">
-                    <Image
-                      src={item.image || 'https://static.wixstatic.com/media/897509_555ffd7d31fc41f28c7c854b3b34debb~mv2.png?originWidth=768&originHeight=576'}
-                      alt={item.title || 'Fine art piece'}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                      width={600}
-                    />
-                    <div className="absolute inset-0 bg-secondary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    {item.title && (
-                      <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-secondary/80 to-transparent translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
-                        <h3 className="font-heading text-xl text-background">{item.title}</h3>
-                        {item.medium && (
-                          <p className="font-paragraph text-xs text-background/80 mt-2">{item.medium}</p>
-                        )}
-                        {item.yearCreated && (
-                          <p className="font-paragraph text-xs text-background/80">{item.yearCreated}</p>
-                        )}
-                        {item.description && (
-                          <p className="font-paragraph text-xs text-background/80 mt-2 line-clamp-2">{item.description}</p>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                  <Image
+                    src={item.image || 'https://static.wixstatic.com/media/897509_555ffd7d31fc41f28c7c854b3b34debb~mv2.png?originWidth=768&originHeight=576'}
+                    alt={item.altText || item.title || 'Published photograph'}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    width={800}
+                  />
+                  <div className="absolute inset-0 bg-secondary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  {(item.title || item.location) && (
+                    <div className="absolute bottom-0 left-0 w-full p-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+                      {item.title && <h3 className="font-heading text-xl text-background">{item.title}</h3>}
+                      {item.location && (
+                        <p className="font-paragraph text-xs uppercase tracking-widest text-background/80 mt-1">
+                          {item.location}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </motion.div>
               ))}
             </div>
           ) : (
-            <div className="w-full h-[40vh] flex items-center justify-center border border-secondary/10 rounded-lg">
-              <p className="text-secondary/40 font-paragraph uppercase tracking-widest text-sm">Loading published work...</p>
+            <div className="w-full h-[40vh] flex items-center justify-center border border-secondary/10">
+              <p className="text-secondary/40 font-paragraph uppercase tracking-widest text-sm">
+                Loading published work…
+              </p>
             </div>
           )}
         </div>
       </section>
 
-      {/* Rainbow Spectrum Divider */}
-      <div className="w-full h-[2px] bg-gradient-to-r from-[#ED1B23] via-[#F4911C] via-[#F9C400] via-[#88C73F] via-[#007090] via-[#0072B4] via-[#2C3081] to-[#8A2889]" />
+      {/* CTA */}
+      <section className="w-full bg-secondary/5 py-24 lg:py-32 border-t border-[#ED1B23]/20" style={{ borderImage: RAINBOW }}>
+        <div className="max-w-[80rem] mx-auto px-6 lg:px-12 text-center">
+          <motion.h2 {...fadeUp} className="font-heading text-4xl lg:text-6xl text-secondary leading-tight mb-8">
+            Let's create something <span className="italic text-primary">unforgettable</span>.
+          </motion.h2>
+          <motion.div {...fadeUp}>
+            <a
+              href="/#contact"
+              className="group inline-flex items-center gap-3 px-10 py-5 bg-primary text-background font-paragraph text-sm uppercase tracking-widest transition-all duration-300 hover:bg-primary/90"
+            >
+              Get in touch
+              <ArrowRight size={16} className="transform group-hover:translate-x-1 transition-transform" />
+            </a>
+          </motion.div>
+        </div>
+      </section>
 
       <Footer />
     </div>

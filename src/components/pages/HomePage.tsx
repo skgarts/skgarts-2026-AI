@@ -241,10 +241,10 @@ export default function HomePage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.5, duration: 1 }}
-        className="flex flex-col items-center justify-center gap-4 py-8 relative z-20"
+        className="flex flex-col items-center justify-center gap-2 sm:gap-3 md:gap-4 py-4 sm:py-6 md:py-8 relative z-20"
       >
         <span className="font-paragraph text-xs uppercase tracking-[0.2em] text-secondary/40">Scroll</span>
-        <div className="w-[1px] h-16 bg-secondary/20 relative overflow-hidden">
+        <div className="w-[1px] h-10 sm:h-12 md:h-16 bg-secondary/20 relative overflow-hidden">
           <motion.div
             animate={{ y: ["-100%", "100%"] }}
             transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}

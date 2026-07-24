@@ -132,7 +132,6 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-background text-foreground overflow-clip">
       <Header />
       <WhatsAppButton />
-
       {/* 1. HERO — photo + intro */}
       <section
         className="w-full max-w-[120rem] mx-auto px-6 lg:px-12 pb-24 lg:pb-32"
@@ -146,13 +145,14 @@ export default function ProfilePage() {
             transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
             className="lg:col-span-5 relative"
           >
-            <div className="relative aspect-square w-full overflow-hidden bg-secondary/5">
+            <div className="relative aspect-square w-full overflow-hidden bg-secondary/5 rounded-[50%]">
               <Image
                 src={PROFILE_PHOTO}
                 alt="Srikanth Gumma — Director of Photography & Photographer"
                 className="w-full h-full object-cover"
                 width={900}
-              />
+                focalPointX={51.204819277108435}
+                focalPointY={39.75903614457831} />
             </div>
             {/* Decorative offset border */}
             <div className="absolute -inset-4 border border-secondary/10 -z-10 hidden lg:block" />
@@ -195,9 +195,7 @@ export default function ProfilePage() {
           </motion.div>
         </div>
       </section>
-
       <div className="w-full h-[2px]" style={{ background: RAINBOW.replace(') 1', ')') }} />
-
       {/* 2. FILMS */}
       <section className="w-full max-w-[100rem] mx-auto px-6 lg:px-12 py-24 lg:py-32">
         <motion.div {...fadeUp} className="flex items-center gap-4 mb-16">
@@ -230,7 +228,6 @@ export default function ProfilePage() {
           ))}
         </div>
       </section>
-
       {/* 3. VIDEO PROJECTS */}
       <section className="w-full bg-secondary/5 py-24 lg:py-32">
         <div className="max-w-[100rem] mx-auto px-6 lg:px-12">
@@ -258,7 +255,6 @@ export default function ProfilePage() {
           </div>
         </div>
       </section>
-
       {/* 4. OTHER PROJECTS */}
       <section className="w-full max-w-[100rem] mx-auto px-6 lg:px-12 py-24 lg:py-32">
         <motion.div {...fadeUp} className="flex items-center gap-4 mb-16">
@@ -299,9 +295,7 @@ export default function ProfilePage() {
           ))}
         </div>
       </section>
-
       <div className="w-full h-[2px]" style={{ background: RAINBOW.replace(') 1', ')') }} />
-
       {/* 5. EQUIPMENT */}
       <section className="w-full bg-secondary/5 py-24 lg:py-32">
         <div className="max-w-[120rem] mx-auto px-6 lg:px-12">
@@ -341,7 +335,6 @@ export default function ProfilePage() {
           </div>
         </div>
       </section>
-
       {/* 6. PUBLISHED WORK — pulls from `published-photos-self` collection */}
       <section className="w-full max-w-[120rem] mx-auto px-6 lg:px-12 py-24 lg:py-32">
         <motion.div {...fadeUp} className="mb-16 flex flex-col items-center text-center">
@@ -393,7 +386,6 @@ export default function ProfilePage() {
           )}
         </div>
       </section>
-
       {/* CTA */}
       <section className="w-full bg-secondary/5 py-24 lg:py-32 border-t border-[#ED1B23]/20" style={{ borderImage: RAINBOW }}>
         <div className="max-w-[80rem] mx-auto px-6 lg:px-12 text-center">
@@ -411,7 +403,6 @@ export default function ProfilePage() {
           </motion.div>
         </div>
       </section>
-
       <Footer />
     </div>
   );

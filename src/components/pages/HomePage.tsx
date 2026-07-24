@@ -213,7 +213,7 @@ export default function HomePage() {
               scale: { duration: 0.8, delay: 0.8, ease: "easeOut" },
               rotate: { repeat: Infinity, duration: 32, ease: "linear" }
             }}
-            className="mt-16"
+            className="mt-8 md:mt-16 relative z-10"
           >
             <svg className="w-[64px] h-[64px]" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
               <circle cx="200" cy="200" r="192" fill="#FFFFFF" />
@@ -240,7 +240,7 @@ export default function HomePage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.5, duration: 1 }}
-          className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4"
+          className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 z-20"
         >
           <span className="font-paragraph text-xs uppercase tracking-[0.2em] text-secondary/40">Scroll</span>
           <div className="w-[1px] h-16 bg-secondary/20 relative overflow-hidden">

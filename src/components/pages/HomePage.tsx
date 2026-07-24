@@ -146,7 +146,7 @@ export default function HomePage() {
       {/* 1. HERO SECTION - Cinematic Parallax */}
       <motion.section
         ref={heroRef}
-        className="relative w-full flex items-center justify-center overflow-hidden bg-background"
+        className="relative w-full flex items-center justify-center overflow-visible bg-background"
         style={{
           y: heroY,
           opacity: heroOpacity,
@@ -236,22 +236,7 @@ export default function HomePage() {
         </motion.div>
       </motion.section>
 
-      {/* Scroll Indicator - Below Hero Section */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.5, duration: 1 }}
-        className="flex flex-col items-center justify-center gap-2 sm:gap-3 md:gap-4 py-4 sm:py-6 md:py-8 relative z-20"
-      >
-        <span className="font-paragraph text-xs uppercase tracking-[0.2em] text-secondary/40">Scroll</span>
-        <div className="w-[1px] h-10 sm:h-12 md:h-16 bg-secondary/20 relative overflow-hidden">
-          <motion.div
-            animate={{ y: ["-100%", "100%"] }}
-            transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
-            className="absolute top-0 left-0 w-full h-full bg-primary"
-          />
-        </div>
-      </motion.div>
+
       {/* 2. PORTRAIT GALLERY - The Core Feature */}
       <section id="gallery" ref={galleryRef} className="w-full max-w-[120rem] mx-auto px-6 lg:px-12 py-32 lg:py-48 relative">
         <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">

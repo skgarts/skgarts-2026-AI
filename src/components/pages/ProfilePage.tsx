@@ -145,7 +145,7 @@ export default function ProfilePage() {
             transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
             className="lg:col-span-5 relative"
           >
-            <div className="relative aspect-square w-full overflow-hidden bg-secondary/5 rounded-[50%]">
+            <div className="relative aspect-[3/4] w-full overflow-hidden bg-secondary/5 rounded-[50%]">
               <Image
                 src={PROFILE_PHOTO}
                 alt="Srikanth Gumma — Director of Photography & Photographer"

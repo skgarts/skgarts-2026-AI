@@ -248,7 +248,7 @@ export default function HomePage() {
           <div className="w-[3px] h-20 bg-secondary/20 relative overflow-hidden rounded-full">
             <motion.div
               animate={{ y: ["-100%", "100%"] }}
-              transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+              transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
               className="absolute top-0 left-0 w-full h-full bg-primary"
             />
           </div>

@@ -509,7 +509,7 @@ export default function HomePage() {
                 Director of <br/><span className="italic">Photography</span>
               </h2>
               <p className="font-paragraph text-lg text-secondary/70 leading-relaxed">
-                With 12 years of experience as a cinematographer, Srikanth brings a fine art sensibility to motion pictures. From intimate documentaries to grand wedding films, every frame is composed with intention, light, and artistry.
+                With 12 years of experience as a Photographer & cinematographer, Srikanth brings a fine art sensibility to motion pictures. From intimate documentaries to grand wedding films, every frame is composed with intention, light, and artistry.
               </p>
 
               <div className="pt-8">

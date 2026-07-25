@@ -146,7 +146,7 @@ export default function HomePage() {
       {/* 1. HERO SECTION - Cinematic Parallax */}
       <motion.section
         ref={heroRef}
-        className="relative w-full flex items-center justify-center overflow-visible bg-background"
+        className="relative w-full flex items-center justify-center overflow-hidden bg-background"
         style={{
           y: heroY,
           opacity: heroOpacity,
@@ -213,7 +213,7 @@ export default function HomePage() {
               scale: { duration: 0.8, delay: 0.8, ease: "easeOut" },
               rotate: { repeat: Infinity, duration: 32, ease: "linear" }
             }}
-            className="mt-8 md:mt-16 relative z-10"
+            className="mt-16"
           >
             <svg className="w-[64px] h-[64px]" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
               <circle cx="200" cy="200" r="192" fill="#FFFFFF" />
@@ -234,9 +234,24 @@ export default function HomePage() {
             </svg>
           </motion.div>
         </motion.div>
+
+        {/* Scroll Indicator */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5, duration: 1 }}
+          className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4"
+        >
+          <span className="font-paragraph text-xs uppercase tracking-[0.2em] text-secondary/40">Scroll</span>
+          <div className="w-[1px] h-16 bg-secondary/20 relative overflow-hidden">
+            <motion.div
+              animate={{ y: ["-100%", "100%"] }}
+              transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+              className="absolute top-0 left-0 w-full h-full bg-primary"
+            />
+          </div>
+        </motion.div>
       </motion.section>
-
-
       {/* 2. PORTRAIT GALLERY - The Core Feature */}
       <section id="gallery" ref={galleryRef} className="w-full max-w-[120rem] mx-auto px-6 lg:px-12 py-32 lg:py-48 relative">
         <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">

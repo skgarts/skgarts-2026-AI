@@ -613,28 +613,23 @@ export default function HomePage() {
             >
               <p className="font-paragraph text-xs uppercase tracking-[0.3em] text-secondary/60">More from our portfolio</p>
               <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-                {[
-                  { id: 'Em9FnP9kDoM', title: 'SKG Arts Showreel', thumb: 'https://static.wixstatic.com/media/897509_4462e04f22494fd68d9ea0a10369bff8~mv2.png?originWidth=576&originHeight=320' },
-                  { id: 'dQw4w9WgXcQ', title: 'Wedding Film', thumb: 'https://static.wixstatic.com/media/897509_555ffd7d31fc41f28c7c854b3b34debb~mv2.png?originWidth=768&originHeight=576' },
-                  { id: 'jNQXAC9IVRw', title: 'Portrait Session', thumb: 'https://static.wixstatic.com/media/897509_a28e362fd6824691a42465b7ce8ca437~mv2.png?originWidth=576&originHeight=704' },
-                  { id: 'Em9FnP9kDoM', title: 'Behind the Scenes', thumb: 'https://static.wixstatic.com/media/897509_3ab872aa780b4722a729c2300340a8c2~mv2.png?originWidth=384&originHeight=384' },
-                ].map((video) => (
+                {films.filter(film => film.videoId && film.coverImage).map((video) => (
                   <motion.button
-                    key={`${video.id}-${video.title}`}
+                    key={video._id}
                     onClick={() => {
-                      setSelectedVideoId(video.id);
-                      setSelectedVideoTitle(video.title);
+                      setSelectedVideoId(video.videoId!);
+                      setSelectedVideoTitle(video.heading || 'Video');
                       setIsShowreelOpen(true);
                     }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     className={`relative shrink-0 w-32 h-20 rounded-lg overflow-hidden group transition-all duration-300 ${
-                      selectedVideoId === video.id ? 'ring-2 ring-primary' : 'ring-1 ring-secondary/20'
+                      selectedVideoId === video.videoId ? 'ring-2 ring-primary' : 'ring-1 ring-secondary/20'
                     }`}
                   >
                     <Image
-                      src={video.thumb}
-                      alt={video.title}
+                      src={video.coverImage}
+                      alt={video.heading || 'Video'}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                       width={128}
                     />

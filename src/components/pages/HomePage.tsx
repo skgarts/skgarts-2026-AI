@@ -3,6 +3,7 @@ import Footer from '@/components/Footer';
 import Header from '@/components/Header';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Image } from '@/components/ui/image';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,7 +11,7 @@ import WhatsAppButton from '@/components/WhatsAppButton';
 import { ClientGalleries, FrequentlyAskedQuestions, PortraitGallery, ServiceCategories } from '@/entities';
 import { BaseCrudService } from '@/integrations';
 import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion';
-import { ArrowRight, ExternalLink, Instagram, Lock } from 'lucide-react';
+import { ArrowRight, ExternalLink, Instagram, Lock, Play } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -24,6 +25,7 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [accessCode, setAccessCode] = useState('');
   const [accessError, setAccessError] = useState('');
+  const [isShowreelOpen, setIsShowreelOpen] = useState(false);
   const [containerWidth, setContainerWidth] = useState(100);
   const [containerHeight, setContainerHeight] = useState(120);
   const [headerHeight, setHeaderHeight] = useState(0);
@@ -146,25 +148,25 @@ export default function HomePage() {
       {/* 1. HERO SECTION - Cinematic Parallax */}
       <motion.section
         ref={heroRef}
-        className="relative w-full flex items-center justify-center overflow-hidden bg-background"
+        className="relative w-full flex flex-col overflow-hidden bg-background"
         style={{
           y: heroY,
           opacity: heroOpacity,
-          height: `calc(100dvh - ${headerHeight}px)`,
+          minHeight: `calc(100dvh - ${headerHeight}px)`,
           marginTop: `${headerHeight}px`
         }}
       >
         <div className="noise-overlay" />
 
         <motion.div
-          className="relative z-20 w-full max-w-[120rem] mx-auto px-6 lg:px-12 flex flex-col items-center text-center h-full justify-center"
+          className="relative z-20 flex-1 w-full max-w-[120rem] mx-auto px-6 lg:px-12 flex flex-col items-center text-center justify-center py-14 sm:py-16 md:py-20"
         >
           {/* Eyebrow Span */}
           <motion.span
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-            className="eyebrow block text-sm md:text-base text-primary tracking-[0.2em] uppercase font-paragraph font-semibold mb-6"
+            className="eyebrow block text-xs sm:text-sm md:text-base text-primary tracking-[0.2em] uppercase font-paragraph font-semibold mb-4 md:mb-6"
           >
             Fine Art Portraiture · SKG Arts
           </motion.span>
@@ -173,7 +175,7 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-            className="font-heading text-6xl md:text-8xl text-secondary tracking-tight leading-[0.95] mb-8 max-w-4xl mx-auto"
+            className="font-heading text-5xl sm:text-6xl md:text-8xl text-secondary tracking-tight leading-[0.95] mb-6 md:mb-8 max-w-4xl mx-auto"
           >
             Portraits, shot<br />like <span className="italic text-primary">fine art</span>.
           </motion.h1>
@@ -182,7 +184,7 @@ export default function HomePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.4 }}
-            className="font-paragraph text-lg md:text-xl text-secondary/70 max-w-2xl font-light leading-relaxed mb-12 mx-auto"
+            className="font-paragraph text-base sm:text-lg md:text-xl text-secondary/70 max-w-2xl font-light leading-relaxed mb-8 md:mb-12 mx-auto"
           >
             Soulful, gallery-grade portraits — plus weddings, editorial and films — captured across India and beyond by Srikanth Gumma.
           </motion.p>
@@ -213,7 +215,7 @@ export default function HomePage() {
               scale: { duration: 0.8, delay: 0.8, ease: "easeOut" },
               rotate: { repeat: Infinity, duration: 32, ease: "linear" }
             }}
-            className="mt-16"
+            className="mt-10 md:mt-16"
           >
             <svg className="w-[64px] h-[64px]" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
               <circle cx="200" cy="200" r="192" fill="#FFFFFF" />
@@ -235,15 +237,15 @@ export default function HomePage() {
           </motion.div>
         </motion.div>
 
-        {/* Scroll Indicator */}
+        {/* Scroll Indicator (in normal flow so it never overlaps the aperture) */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.5, duration: 1 }}
-          className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4"
+          className="relative z-20 shrink-0 flex flex-col items-center gap-3 pb-10"
         >
           <span className="font-paragraph text-xs uppercase tracking-[0.2em] text-secondary/40">Scroll</span>
-          <div className="w-[1px] h-16 bg-secondary/20 relative overflow-hidden">
+          <div className="w-[3px] h-20 bg-secondary/20 relative overflow-hidden rounded-full">
             <motion.div
               animate={{ y: ["-100%", "100%"] }}
               transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
@@ -271,7 +273,9 @@ export default function HomePage() {
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.2 }}
             className="font-paragraph text-secondary/60 max-w-md text-right"
-          >A curated selection of People Photography, where every frame is a study in light, emotion, and timeless elegance.</motion.p>
+          >
+            A curated selection of fine art portraits, where every frame is a study in light, emotion, and timeless elegance.
+          </motion.p>
         </div>
 
         <div className={`min-h-[600px] transition-opacity duration-1000 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
@@ -326,8 +330,12 @@ export default function HomePage() {
         className="w-full relative bg-secondary/5 border border-secondary/10 rounded-lg p-12 lg:p-16"
       >
         <div className="w-full text-center">
-          <h2 className="font-heading text-5xl lg:text-6xl text-secondary leading-tight mb-4">11 years. 14+ genres.</h2>
-          <h3 className="font-heading text-3xl lg:text-4xl text-primary mb-8">across India & Singapore.</h3>
+          <h2 className="font-heading text-5xl lg:text-6xl text-secondary leading-tight mb-4">
+            8 years. 14+ genres.
+          </h2>
+          <h3 className="font-heading text-3xl lg:text-4xl text-primary mb-8">
+            across Singapore & India.
+          </h3>
           <p className="font-paragraph text-xs lg:text-sm text-secondary/80 leading-relaxed">
             SKG Arts is the work of Srikanth Gumma — a fine art photographer and DOP based in Hyderabad, making photographs and films for people who wanted something that feels like them.
           </p>
@@ -340,7 +348,6 @@ export default function HomePage() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="text-center"
         >
           <p className="font-paragraph text-sm text-secondary/70 uppercase tracking-widest mb-6">
             The heart of my work
@@ -525,17 +532,23 @@ export default function HomePage() {
               transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
               className="lg:col-span-7 relative"
             >
-              <div className="aspect-video w-full bg-secondary relative group overflow-hidden block">
-                <video
-                  className="w-full h-full object-cover"
-                  controls
-                  poster="https://static.wixstatic.com/media/897509_4462e04f22494fd68d9ea0a10369bff8~mv2.png?originWidth=576&originHeight=320"
-                  title="SKG Arts Showreel"
-                >
-                  <source src="https://video.wixstatic.com/video/897509_7880f4a3912c4810806318604bbfd39b/1080p/mp4/file.mp4" type="video/mp4" />
-                  Your browser does not support the video tag.
-                </video>
-              </div>
+              <button
+                type="button"
+                onClick={() => setIsShowreelOpen(true)}
+                aria-label="Play showreel"
+                className="aspect-video w-full bg-secondary relative group cursor-pointer overflow-hidden block"
+              >
+                <Image
+                  src="https://static.wixstatic.com/media/897509_4462e04f22494fd68d9ea0a10369bff8~mv2.png?originWidth=576&originHeight=320"
+                  alt="Showreel Cover"
+                  className="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity duration-700"
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-24 h-24 rounded-full border border-background/30 flex items-center justify-center backdrop-blur-sm group-hover:scale-110 group-hover:border-background/60 transition-all duration-500">
+                    <Play className="text-background ml-2" size={32} fill="currentColor" />
+                  </div>
+                </div>
+              </button>
               {/* Decorative offset border */}
               <div className="absolute -inset-4 border border-secondary/10 -z-10 hidden lg:block" />
             </motion.div>
@@ -543,7 +556,21 @@ export default function HomePage() {
           </div>
         </div>
 
-{/* ... keep existing code (Dialog removed - video now plays inline) ... */}
+        <Dialog open={isShowreelOpen} onOpenChange={setIsShowreelOpen}>
+          <DialogContent className="max-w-4xl w-full p-0 bg-black border-none overflow-hidden">
+            <div className="aspect-video w-full">
+              {isShowreelOpen && (
+                <iframe
+                  className="w-full h-full"
+                  src="https://www.youtube.com/embed/Em9FnP9kDoM?autoplay=1"
+                  title="SKG Arts Showreel"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </section>
       {/* 6. INSTAGRAM FEED - Infinite Marquee Style */}
       <section id="instagram" className="w-full py-32 overflow-hidden bg-background border-t border-[#ED1B23]/20" style={{ borderImage: 'linear-gradient(90deg, #ED1B23, #F4911C, #F9C400, #88C73F, #007090, #0072B4, #2C3081, #8A2889) 1' }}>
@@ -711,8 +738,12 @@ export default function HomePage() {
                 </div>
                 <div className="group">
                   <span className="font-paragraph text-xs uppercase tracking-[0.2em] text-secondary/40 block mb-2">Direct</span>
-                  <a href="mailto:hello@skgarts.com" className="font-heading text-2xl text-secondary hover:text-primary transition-colors block">srikanth@skgarts.com</a>
-                  <a href="tel:+919876543210" className="font-heading text-2xl text-secondary hover:text-primary transition-colors block mt-2">+91 97400 76381</a>
+                  <a href="mailto:hello@skgarts.com" className="font-heading text-2xl text-secondary hover:text-primary transition-colors block">
+                    hello@skgarts.com
+                  </a>
+                  <a href="tel:+919876543210" className="font-heading text-2xl text-secondary hover:text-primary transition-colors block mt-2">
+                    +91 98765 43210
+                  </a>
                 </div>
               </div>
             </motion.div>

@@ -217,7 +217,14 @@ export default function ProfilePage() {
             >
               <div className="flex-1">
                 <h3 className="font-heading text-xl lg:text-2xl text-secondary group-hover:text-primary transition-colors">
-                  {film.title}
+                  <a
+                    href="https://www.youtube.com/watch?v=fhokIpVHyGw"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:underline"
+                  >
+                    {film.title}
+                  </a>
                 </h3>
                 <p className="font-paragraph text-xs uppercase tracking-widest text-secondary/40 mt-1">
                   {film.type}

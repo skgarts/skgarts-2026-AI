@@ -18,7 +18,7 @@ const FILMS = [
   { title: 'Sirf Main — Singapore Vignettes', type: 'Short film series', role: 'DOP, Editor', link: 'https://youtu.be/4XgKu_-HsxY' },
   { title: 'Lifaafe', type: 'Short film', role: 'DOP', link: 'https://www.youtube.com/watch?v=LnQdp2By1hM' },
   { title: 'Zindagi Interrupted', type: 'Short film', role: 'DOP, Editor', link: 'https://www.youtube.com/watch?v=qSPX_ZRM-xU' },
-  { title: 'Achar', type: 'Short film', role: 'DOP', link: 'https://www.youtube.com/watch?v=oPeZLmbhYL4&t=242s' },
+  { title: 'Achar', type: 'Short film', role: 'DOP', link: 'https://www.youtube.com/watch?v=oPeZLmbhYL4' },
   { title: 'MG Road', type: 'Short film', role: 'DOP' },
   { title: 'Soul Of Love', type: 'Short film', role: 'DOP', link: 'https://youtu.be/qDyyBvbfsxM?si=7kRWs8RcwUQE8Lh6' },
   { title: 'Hridyam', type: 'Short film', role: 'Associate DOP', link: 'https://youtu.be/CiwIgqreItE' },

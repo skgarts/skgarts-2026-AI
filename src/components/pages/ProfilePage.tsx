@@ -13,26 +13,28 @@ const PROFILE_PHOTO = 'https://static.wixstatic.com/media/897509_81fd36b4521b4be
 
 // --- Static credit data ---
 const FILMS = [
-  { title: 'Sahasi, Dateline Singapore', type: 'Short film', role: 'DOP, Audiographer' },
-  { title: 'PsychoLogical', type: 'Short film', role: 'DOP' },
-  { title: 'Sirf Main — Singapore Vignettes', type: 'Short film series', role: 'DOP, Editor' },
-  { title: 'Lifaafe', type: 'Short film', role: 'DOP' },
-  { title: 'Zindagi Interrupted', type: 'Short film', role: 'DOP, Editor' },
-  { title: 'Achar', type: 'Short film', role: 'DOP' },
+  { title: 'Sahasi, Dateline Singapore', type: 'Short film', role: 'DOP, Audiographer', link: 'https://www.youtube.com/watch?v=fhokIpVHyGw' },
+  { title: 'PsychoLogical', type: 'Short film', role: 'DOP', link: 'https://www.youtube.com/watch?v=-Ijigv9DkVY&t=1s' },
+  { title: 'Sirf Main — Singapore Vignettes', type: 'Short film series', role: 'DOP, Editor', link: 'https://youtu.be/4XgKu_-HsxY' },
+  { title: 'Lifaafe', type: 'Short film', role: 'DOP', link: 'https://www.youtube.com/watch?v=LnQdp2By1hM' },
+  { title: 'Zindagi Interrupted', type: 'Short film', role: 'DOP, Editor', link: 'https://www.youtube.com/watch?v=qSPX_ZRM-xU' },
+  { title: 'Achar', type: 'Short film', role: 'DOP', link: 'https://www.youtube.com/watch?v=oPeZLmbhYL4&t=242s' },
   { title: 'MG Road', type: 'Short film', role: 'DOP' },
-  { title: 'Soul Of Love', type: 'Short film', role: 'DOP' },
-  { title: 'Hridyam', type: 'Short film', role: 'Associate DOP' },
-  { title: 'Druvangal Randu', type: 'Psychological thriller short film', role: 'Lighting' },
+  { title: 'Soul Of Love', type: 'Short film', role: 'DOP', link: 'https://youtu.be/qDyyBvbfsxM?si=7kRWs8RcwUQE8Lh6' },
+  { title: 'Hridyam', type: 'Short film', role: 'Associate DOP', link: 'https://youtu.be/CiwIgqreItE' },
+  { title: 'Druvangal Randu', type: 'Psychological thriller short film', role: 'Lighting', link: 'https://www.youtube.com/watch?v=7RmY7zMIMd4' },
+  { title: 'Veera Arjuna', type: 'Short film', role: 'DOP', link: 'https://www.youtube.com/watch?v=IxHCRx4j_ew' },
 ];
 
 const VIDEOS = [
-  { title: 'Hindustan Badhega Meri Jaan × Aao Huzoor', artist: 'Kavya Kannan' },
-  { title: 'Aadha Ishq', artist: 'Harshu Kamble' },
-  { title: 'Kanha Re', artist: 'Harshu Kamble' },
-  { title: 'Kuch Toh Hua Hai (Kal Ho Na Ho)', artist: 'Harshu Kamble' },
-  { title: 'Gulabi Aankhen', artist: 'Harshu Kamble' },
-  { title: 'Mere Khwabon Mein — cover', artist: 'Harshu Kamble' },
-  { title: 'Main Tenu Samjhawan — song cover', artist: 'Harshu Kamble' },
+  { title: 'Hindustan Badhega', artist: 'Kavya Kannan', link: 'https://youtu.be/Ne7rgE_E1OQ?si=r8QYOwrpR-vAGGjI' },
+  { title: 'Meri Jaan × Aao Huzoor', artist: 'Kavya Kannan', link: 'https://www.youtube.com/watch?v=SEu4HGA-JEg' },
+  { title: 'Aadha Ishq', artist: 'Harshu Kamble', link: 'https://www.youtube.com/watch?v=1gKEIDLOwxQ' },
+  { title: 'Kanha Re', artist: 'Harshu Kamble', link: 'https://www.youtube.com/watch?v=1gKEIDLOwxQ' },
+  { title: 'Kuch Toh Hua Hai (Kal Ho Na Ho)', artist: 'Harshu Kamble', link: 'https://www.youtube.com/watch?v=GEa3SZp6wLM' },
+  { title: 'Gulabi Aankhen', artist: 'Harshu Kamble', link: 'https://www.youtube.com/watch?v=c5SOw-uhKHE' },
+  { title: 'Mere Khwabon Mein — cover', artist: 'Harshu Kamble', link: 'https://www.youtube.com/watch?v=c5SOw-uhKHE' },
+  { title: 'Main Tenu Samjhawan — song cover', artist: 'Harshu Kamble', link: 'https://www.youtube.com/watch?v=SyhDoz3qm7I' },
 ];
 
 const OTHER_PROJECTS = [
@@ -146,7 +148,7 @@ export default function ProfilePage() {
             transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
             className="lg:col-span-5 relative"
           >
-            <div className="relative aspect-square w-full overflow-hidden bg-secondary/5">
+            <div className="relative aspect-[4/5] w-full overflow-hidden bg-secondary/5 rounded-[50%] border-4 border-primary">
               <Image
                 src={PROFILE_PHOTO}
                 alt="Srikanth Gumma — Director of Photography & Photographer"
@@ -154,8 +156,8 @@ export default function ProfilePage() {
                 width={900}
               />
             </div>
-            {/* Decorative offset border */}
-            <div className="absolute -inset-4 border border-secondary/10 -z-10 hidden lg:block" />
+            {/* Decorative offset ring */}
+            <div className="absolute -inset-4 border border-secondary/10 rounded-[50%] -z-10 hidden lg:block" />
           </motion.div>
 
           {/* Intro */}
@@ -217,14 +219,19 @@ export default function ProfilePage() {
             >
               <div className="flex-1">
                 <h3 className="font-heading text-xl lg:text-2xl text-secondary group-hover:text-primary transition-colors">
-                  <a
-                    href="https://www.youtube.com/watch?v=fhokIpVHyGw"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:underline"
-                  >
-                    {film.title}
-                  </a>
+                  {film.link ? (
+                    <a
+                      href={film.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 hover:text-primary transition-colors"
+                    >
+                      {film.title}
+                      <ExternalLink size={15} className="opacity-40 group-hover:opacity-100 transition-opacity" />
+                    </a>
+                  ) : (
+                    film.title
+                  )}
                 </h3>
                 <p className="font-paragraph text-xs uppercase tracking-widest text-secondary/40 mt-1">
                   {film.type}
@@ -256,7 +263,21 @@ export default function ProfilePage() {
                 transition={{ duration: 0.5, delay: (i % 3) * 0.06 }}
                 className="border-l-2 border-primary/30 pl-5 py-1"
               >
-                <h3 className="font-heading text-lg lg:text-xl text-secondary leading-snug">{v.title}</h3>
+                <h3 className="font-heading text-lg lg:text-xl text-secondary leading-snug">
+                  {v.link ? (
+                    <a
+                      href={v.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-start gap-2 hover:text-primary transition-colors"
+                    >
+                      {v.title}
+                      <ExternalLink size={14} className="mt-1 shrink-0 opacity-50" />
+                    </a>
+                  ) : (
+                    v.title
+                  )}
+                </h3>
                 <p className="font-paragraph text-xs uppercase tracking-widest text-secondary/50 mt-2">
                   {v.artist}
                 </p>
@@ -369,12 +390,12 @@ export default function ProfilePage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: '-50px' }}
                   transition={{ duration: 0.6, delay: (index % 3) * 0.1 }}
-                  className="group relative overflow-hidden aspect-[4/5] bg-secondary/5"
+                  className="group relative overflow-hidden bg-secondary/5"
                 >
                   <Image
                     src={item.image || 'https://static.wixstatic.com/media/897509_555ffd7d31fc41f28c7c854b3b34debb~mv2.png?originWidth=768&originHeight=576'}
                     alt={item.altText || item.title || 'Published photograph'}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    className="w-full h-auto object-contain transition-transform duration-700 group-hover:scale-[1.02]"
                     width={800}
                   />
                   <div className="absolute inset-0 bg-secondary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />

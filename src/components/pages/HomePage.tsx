@@ -3,7 +3,6 @@ import Footer from '@/components/Footer';
 import Header from '@/components/Header';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Image } from '@/components/ui/image';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -25,10 +24,12 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [accessCode, setAccessCode] = useState('');
   const [accessError, setAccessError] = useState('');
-  const [isShowreelOpen, setIsShowreelOpen] = useState(false);
   const [containerWidth, setContainerWidth] = useState(100);
   const [containerHeight, setContainerHeight] = useState(120);
   const [headerHeight, setHeaderHeight] = useState(0);
+  const [films, setFilms] = useState<any[]>([]);
+  const [selectedFilmIndex, setSelectedFilmIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   // --- Refs for Scroll Animations ---
   const heroRef = useRef<HTMLDivElement>(null);
@@ -109,6 +110,19 @@ export default function HomePage() {
     } finally {
       setIsLoading(false);
     }
+
+    // Films are fetched separately so a missing/renamed collection can never
+    // break the rest of the page. If this fails, the strip simply shows nothing extra.
+    try {
+      const filmsRes = await BaseCrudService.getAll<any>('films');
+      setFilms(
+        [...filmsRes.items].sort(
+          (a, b) => (a.displayOrder ?? a.order ?? 0) - (b.displayOrder ?? b.order ?? 0)
+        )
+      );
+    } catch (error) {
+      console.error('Error loading films (collection "films"):', error);
+    }
   };
 
   const handleAccessGallery = () => {
@@ -121,6 +135,32 @@ export default function HomePage() {
       setAccessError('Invalid access code. Please try again.');
     }
   };
+
+  // Fallback so the player still shows something before the CMS loads / if empty
+  const FALLBACK_FILM = {
+    videoId: 'Em9FnP9kDoM',
+    heading: 'SKG Arts Showreel',
+    subtitle: '',
+    coverImage: 'https://static.wixstatic.com/media/897509_4462e04f22494fd68d9ea0a10369bff8~mv2.png?originWidth=576&originHeight=320',
+  };
+  const filmList = films.length > 0 ? films : [FALLBACK_FILM];
+  const selectedFilm = filmList[selectedFilmIndex] || filmList[0];
+
+  // Resolve a directly-playable URL from the CMS "Film" field.
+  // Wix video fields can arrive as a plain URL string, a wix:video:// reference,
+  // or an object. We only return a URL a native <video> can play; otherwise ''
+  // (empty) so playback falls back to the YouTube "Video ID".
+  const resolveFilmUrl = (film: any): string => {
+    const v = film?.film ?? film?.video ?? film?.videoFile;
+    if (!v) return '';
+    if (typeof v === 'string') return v.startsWith('http') ? v : '';
+    if (typeof v === 'object') {
+      const url = v.url || v.src || v.videoUrl || v.file || v.downloadUrl || '';
+      return typeof url === 'string' && url.startsWith('http') ? url : '';
+    }
+    return '';
+  };
+  const selectedFilmUrl = resolveFilmUrl(selectedFilm);
 
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary/20 selection:text-secondary overflow-clip">
@@ -532,23 +572,54 @@ export default function HomePage() {
               transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
               className="lg:col-span-7 relative"
             >
-              <button
-                type="button"
-                onClick={() => setIsShowreelOpen(true)}
-                aria-label="Play showreel"
-                className="aspect-video w-full bg-secondary relative group cursor-pointer overflow-hidden block"
-              >
-                <Image
-                  src="https://static.wixstatic.com/media/897509_4462e04f22494fd68d9ea0a10369bff8~mv2.png?originWidth=576&originHeight=320"
-                  alt="Showreel Cover"
-                  className="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity duration-700"
-                />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-24 h-24 rounded-full border border-background/30 flex items-center justify-center backdrop-blur-sm group-hover:scale-110 group-hover:border-background/60 transition-all duration-500">
-                    <Play className="text-background ml-2" size={32} fill="currentColor" />
-                  </div>
-                </div>
-              </button>
+              <div className="aspect-video w-full bg-secondary relative overflow-hidden">
+                {isPlaying && selectedFilmUrl ? (
+                  <video
+                    key={selectedFilmUrl}
+                    className="absolute inset-0 w-full h-full bg-black"
+                    src={selectedFilmUrl}
+                    poster={selectedFilm?.coverImage || undefined}
+                    controls
+                    autoPlay
+                    playsInline
+                  />
+                ) : isPlaying && selectedFilm?.videoId ? (
+                  <iframe
+                    key={selectedFilm.videoId}
+                    className="absolute inset-0 w-full h-full"
+                    src={`https://www.youtube.com/embed/${selectedFilm.videoId}?autoplay=1&rel=0`}
+                    title={selectedFilm.heading || 'SKG Arts film'}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                    allowFullScreen
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setIsPlaying(true)}
+                    aria-label={`Play ${selectedFilm?.heading || 'film'}`}
+                    className="absolute inset-0 w-full h-full group cursor-pointer text-left"
+                  >
+                    <Image
+                      src={selectedFilm?.coverImage || FALLBACK_FILM.coverImage}
+                      alt={selectedFilm?.heading || 'Showreel cover'}
+                      className="w-full h-full object-cover opacity-70 group-hover:opacity-50 transition-opacity duration-700"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-20 h-20 md:w-24 md:h-24 rounded-full border border-background/40 bg-secondary/20 flex items-center justify-center backdrop-blur-sm group-hover:scale-110 group-hover:border-background/70 transition-all duration-500">
+                        <Play className="text-background ml-1" size={30} fill="currentColor" />
+                      </div>
+                    </div>
+                    {selectedFilm?.heading && (
+                      <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-secondary/80 to-transparent">
+                        <h3 className="font-heading text-xl text-background">{selectedFilm.heading}</h3>
+                        {selectedFilm.subtitle && (
+                          <p className="font-paragraph text-xs uppercase tracking-widest text-background/80 mt-1">{selectedFilm.subtitle}</p>
+                        )}
+                      </div>
+                    )}
+                  </button>
+                )}
+              </div>
               {/* Decorative offset border */}
               <div className="absolute -inset-4 border border-secondary/10 -z-10 hidden lg:block" />
             </motion.div>
@@ -556,21 +627,45 @@ export default function HomePage() {
           </div>
         </div>
 
-        <Dialog open={isShowreelOpen} onOpenChange={setIsShowreelOpen}>
-          <DialogContent className="max-w-4xl w-full p-0 bg-black border-none overflow-hidden">
-            <div className="aspect-video w-full">
-              {isShowreelOpen && (
-                <iframe
-                  className="w-full h-full"
-                  src="https://www.youtube.com/embed/Em9FnP9kDoM?autoplay=1"
-                  title="SKG Arts Showreel"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              )}
+        {/* Film Strip Gallery */}
+        <div className="max-w-[120rem] mx-auto px-6 lg:px-12 mt-16 pb-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="space-y-4"
+          >
+            <p className="font-paragraph text-xs uppercase tracking-[0.3em] text-secondary/60">More from our portfolio</p>
+            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+              {filmList.map((film, i) => (
+                <motion.button
+                  key={film._id || `${film.videoId}-${i}`}
+                  onClick={() => {
+                    setSelectedFilmIndex(i);
+                    setIsPlaying(true);
+                  }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  title={film.heading || 'Film'}
+                  className={`relative shrink-0 w-32 h-20 rounded-lg overflow-hidden group transition-all duration-300 ${
+                    selectedFilmIndex === i ? 'ring-2 ring-primary' : 'ring-1 ring-secondary/20'
+                  }`}
+                >
+                  <Image
+                    src={film.coverImage || FALLBACK_FILM.coverImage}
+                    alt={film.heading || 'Film thumbnail'}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    width={128}
+                  />
+                  <div className="absolute inset-0 bg-secondary/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <Play className="text-background" size={20} fill="currentColor" />
+                  </div>
+                </motion.button>
+              ))}
             </div>
-          </DialogContent>
-        </Dialog>
+          </motion.div>
+        </div>
       </section>
       {/* 6. INSTAGRAM FEED - Infinite Marquee Style */}
       <section id="instagram" className="w-full py-32 overflow-hidden bg-background border-t border-[#ED1B23]/20" style={{ borderImage: 'linear-gradient(90deg, #ED1B23, #F4911C, #F9C400, #88C73F, #007090, #0072B4, #2C3081, #8A2889) 1' }}>

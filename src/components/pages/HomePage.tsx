@@ -115,6 +115,9 @@ export default function HomePage() {
     // break the rest of the page. If this fails, the strip simply shows nothing extra.
     try {
       const filmsRes = await BaseCrudService.getAll<any>('films');
+      // TEMP DEBUG — remove after inspecting: shows the raw shape of the Wix video field
+      console.log('FILMS DEBUG — full items:', filmsRes.items);
+      console.log('FILMS DEBUG — film field values:', filmsRes.items.map((i: any) => i.film));
       setFilms(
         [...filmsRes.items].sort(
           (a, b) => (a.displayOrder ?? a.order ?? 0) - (b.displayOrder ?? b.order ?? 0)

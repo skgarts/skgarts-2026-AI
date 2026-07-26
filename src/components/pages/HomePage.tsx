@@ -9,18 +9,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import { ClientGalleries, FrequentlyAskedQuestions, PortraitGallery, ServiceCategories } from '@/entities';
-
-export interface Films {
-  _id: string;
-  _createdDate?: Date;
-  _updatedDate?: Date;
-  heading?: string;
-  subtitle?: string;
-  description?: string;
-  coverImage?: string;
-  imdbLink?: string;
-  videoId?: string;
-}
 import { BaseCrudService } from '@/integrations';
 import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, ExternalLink, Instagram, Lock, Play } from 'lucide-react';
@@ -34,7 +22,6 @@ export default function HomePage() {
   const [faqs, setFaqs] = useState<FrequentlyAskedQuestions[]>([]);
   const [clientGalleries, setClientGalleries] = useState<ClientGalleries[]>([]);
   const [fineArtGallery, setFineArtGallery] = useState<any[]>([]);
-  const [films, setFilms] = useState<Films[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [accessCode, setAccessCode] = useState('');
   const [accessError, setAccessError] = useState('');
@@ -85,13 +72,12 @@ export default function HomePage() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [portraitsRes, servicesRes, faqsRes, galleriesRes, fineArtRes, filmsRes] = await Promise.all([
+      const [portraitsRes, servicesRes, faqsRes, galleriesRes, fineArtRes] = await Promise.all([
         BaseCrudService.getAll<PortraitGallery>('portraitgallery'),
         BaseCrudService.getAll<ServiceCategories>('servicecategories'),
         BaseCrudService.getAll<FrequentlyAskedQuestions>('faq'),
         BaseCrudService.getAll<ClientGalleries>('clientgalleries'),
-        BaseCrudService.getAll<any>('fineartgallery'),
-        BaseCrudService.getAll<Films>('films')
+        BaseCrudService.getAll<any>('fineartgallery')
       ]);
 
       setPortraits(portraitsRes.items);
@@ -119,7 +105,6 @@ export default function HomePage() {
       setServices(reorderedServices);
       setFaqs(faqsRes.items.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0)));
       setClientGalleries(galleriesRes.items);
-      setFilms(filmsRes.items);
       setFineArtGallery(fineArtRes.items.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0)));
     } catch (error) {
       console.error('Error loading data:', error);
@@ -505,85 +490,73 @@ export default function HomePage() {
         </div>
       </section>
       {/* 5. FILMS SECTION - Split Narrative */}
-      {films.length > 0 && films[0] && (
-        <section id="films" className="w-full bg-secondary/5 py-32 lg:py-48 relative overflow-hidden border-t border-[#ED1B23]/20" style={{ borderImage: 'linear-gradient(90deg, #ED1B23, #F4911C, #F9C400, #88C73F, #007090, #0072B4, #2C3081, #8A2889) 1' }}>
-          {/* Decorative background text */}
-          <div className="absolute top-1/2 left-0 -translate-y-1/2 -translate-x-1/4 opacity-[0.03] pointer-events-none whitespace-nowrap">
-            <span className="font-heading text-[20vw] leading-none">CINEMA</span>
-          </div>
+      <section id="films" className="w-full bg-secondary/5 py-32 lg:py-48 relative overflow-hidden border-t border-[#ED1B23]/20" style={{ borderImage: 'linear-gradient(90deg, #ED1B23, #F4911C, #F9C400, #88C73F, #007090, #0072B4, #2C3081, #8A2889) 1' }}>
+        {/* Decorative background text */}
+        <div className="absolute top-1/2 left-0 -translate-y-1/2 -translate-x-1/4 opacity-[0.03] pointer-events-none whitespace-nowrap">
+          <span className="font-heading text-[20vw] leading-none">CINEMA</span>
+        </div>
 
-          <div className="max-w-[120rem] mx-auto px-6 lg:px-12 relative z-10">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+        <div className="max-w-[120rem] mx-auto px-6 lg:px-12 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
 
-              <motion.div
-                initial={{ opacity: 0, x: -50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 1, ease: "easeOut" }}
-                className="lg:col-span-5 space-y-8"
-              >
-                <span className="font-paragraph text-xs uppercase tracking-[0.3em] text-primary">{films[0].subtitle || 'Motion'}</span>
-                <h2 className="font-heading text-5xl lg:text-6xl text-secondary leading-tight">
-                  {films[0].heading || 'Director of Photography'}
-                </h2>
-                <p className="font-paragraph text-lg text-secondary/70 leading-relaxed">
-                  {films[0].description || 'With 12 years of experience as a Photographer & cinematographer, Srikanth brings a fine art sensibility to motion pictures. From intimate documentaries to grand wedding films, every frame is composed with intention, light, and artistry.'}
-                </p>
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 1, ease: "easeOut" }}
+              className="lg:col-span-5 space-y-8"
+            >
+              <span className="font-paragraph text-xs uppercase tracking-[0.3em] text-primary">Motion</span>
+              <h2 className="font-heading text-5xl lg:text-6xl text-secondary leading-tight">
+                Director of <br/><span className="italic">Photography</span>
+              </h2>
+              <p className="font-paragraph text-lg text-secondary/70 leading-relaxed">
+                With 12 years of experience as a Photographer & cinematographer, Srikanth brings a fine art sensibility to motion pictures. From intimate documentaries to grand wedding films, every frame is composed with intention, light, and artistry.
+              </p>
 
-                {films[0].imdbLink && (
-                  <div className="pt-8">
-                    <a
-                      href={films[0].imdbLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-3 font-paragraph text-sm uppercase tracking-widest text-secondary pb-2 hover:text-primary transition-colors"
-                    >
-                      View IMDb Profile
-                      <ExternalLink size={16} />
-                    </a>
-                  </div>
-                )}
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
-                className="lg:col-span-7 relative"
-              >
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsShowreelOpen(true);
-                    if (films[0].videoId) {
-                      setSelectedVideoId(films[0].videoId);
-                    }
-                  }}
-                  aria-label="Play showreel"
-                  className="aspect-video w-full bg-secondary relative group cursor-pointer overflow-hidden block"
+              <div className="pt-8">
+                <a
+                  href="https://www.imdb.com/name/nm12481877/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-3 font-paragraph text-sm uppercase tracking-widest text-secondary pb-2 hover:text-primary transition-colors"
                 >
-                  {films[0].coverImage && (
-                    <Image
-                      src={films[0].coverImage}
-                      alt={films[0].heading || 'Showreel Cover'}
-                      className="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity duration-700"
-                    />
-                  )}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-24 h-24 rounded-full border border-background/30 flex items-center justify-center backdrop-blur-sm group-hover:scale-110 group-hover:border-background/60 transition-all duration-500">
-                      <Play className="text-background ml-2" size={32} fill="currentColor" />
-                    </div>
-                  </div>
-                </button>
-                {/* Decorative offset border */}
-                <div className="absolute -inset-4 border border-secondary/10 -z-10 hidden lg:block" />
-              </motion.div>
+                  View IMDb Profile
+                  <ExternalLink size={16} />
+                </a>
+              </div>
+            </motion.div>
 
-            </div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
+              className="lg:col-span-7 relative"
+            >
+              <button
+                type="button"
+                onClick={() => setIsShowreelOpen(true)}
+                aria-label="Play showreel"
+                className="aspect-video w-full bg-secondary relative group cursor-pointer overflow-hidden block"
+              >
+                <Image
+                  src="https://static.wixstatic.com/media/897509_4462e04f22494fd68d9ea0a10369bff8~mv2.png?originWidth=576&originHeight=320"
+                  alt="Showreel Cover"
+                  className="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity duration-700"
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-24 h-24 rounded-full border border-background/30 flex items-center justify-center backdrop-blur-sm group-hover:scale-110 group-hover:border-background/60 transition-all duration-500">
+                    <Play className="text-background ml-2" size={32} fill="currentColor" />
+                  </div>
+                </div>
+              </button>
+              {/* Decorative offset border */}
+              <div className="absolute -inset-4 border border-secondary/10 -z-10 hidden lg:block" />
+            </motion.div>
+
           </div>
-        </section>
-      )}
+        </div>
 
         <Dialog open={isShowreelOpen} onOpenChange={setIsShowreelOpen}>
           <DialogContent className="max-w-4xl w-full p-0 bg-black border-none overflow-hidden">
@@ -602,46 +575,50 @@ export default function HomePage() {
         </Dialog>
 
         {/* Film Strip Gallery */}
-        <section className="w-full">
-          <div className="max-w-[120rem] mx-auto px-6 lg:px-12 mt-16 pb-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-              className="space-y-4"
-            >
-              <p className="font-paragraph text-xs uppercase tracking-[0.3em] text-secondary/60">More from our portfolio</p>
-              <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-                {films.filter(film => film.videoId && film.coverImage).map((video) => (
-                  <motion.button
-                    key={video._id}
-                    onClick={() => {
-                      setSelectedVideoId(video.videoId!);
-                      setSelectedVideoTitle(video.heading || 'Video');
-                      setIsShowreelOpen(true);
-                    }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={`relative shrink-0 w-32 h-20 rounded-lg overflow-hidden group transition-all duration-300 ${
-                      selectedVideoId === video.videoId ? 'ring-2 ring-primary' : 'ring-1 ring-secondary/20'
-                    }`}
-                  >
-                    <Image
-                      src={video.coverImage}
-                      alt={video.heading || 'Video'}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      width={128}
-                    />
-                    <div className="absolute inset-0 bg-secondary/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                      <Play className="text-background" size={20} fill="currentColor" />
-                    </div>
-                  </motion.button>
-                ))}
-              </div>
-            </motion.div>
-          </div>
-        </section>
+        <div className="max-w-[120rem] mx-auto px-6 lg:px-12 mt-16 pb-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="space-y-4"
+          >
+            <p className="font-paragraph text-xs uppercase tracking-[0.3em] text-secondary/60">More from our portfolio</p>
+            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+              {[
+                { id: 'Em9FnP9kDoM', title: 'SKG Arts Showreel', thumb: 'https://static.wixstatic.com/media/897509_4462e04f22494fd68d9ea0a10369bff8~mv2.png?originWidth=576&originHeight=320' },
+                { id: 'dQw4w9WgXcQ', title: 'Wedding Film', thumb: 'https://static.wixstatic.com/media/897509_555ffd7d31fc41f28c7c854b3b34debb~mv2.png?originWidth=768&originHeight=576' },
+                { id: 'jNQXAC9IVRw', title: 'Portrait Session', thumb: 'https://static.wixstatic.com/media/897509_a28e362fd6824691a42465b7ce8ca437~mv2.png?originWidth=576&originHeight=704' },
+                { id: 'Em9FnP9kDoM', title: 'Behind the Scenes', thumb: 'https://static.wixstatic.com/media/897509_3ab872aa780b4722a729c2300340a8c2~mv2.png?originWidth=384&originHeight=384' },
+              ].map((video) => (
+                <motion.button
+                  key={`${video.id}-${video.title}`}
+                  onClick={() => {
+                    setSelectedVideoId(video.id);
+                    setSelectedVideoTitle(video.title);
+                    setIsShowreelOpen(true);
+                  }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`relative shrink-0 w-32 h-20 rounded-lg overflow-hidden group transition-all duration-300 ${
+                    selectedVideoId === video.id ? 'ring-2 ring-primary' : 'ring-1 ring-secondary/20'
+                  }`}
+                >
+                  <Image
+                    src={video.thumb}
+                    alt={video.title}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    width={128}
+                  />
+                  <div className="absolute inset-0 bg-secondary/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <Play className="text-background" size={20} fill="currentColor" />
+                  </div>
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
       {/* 6. INSTAGRAM FEED - Infinite Marquee Style */}
       <section id="instagram" className="w-full py-32 overflow-hidden bg-background border-t border-[#ED1B23]/20" style={{ borderImage: 'linear-gradient(90deg, #ED1B23, #F4911C, #F9C400, #88C73F, #007090, #0072B4, #2C3081, #8A2889) 1' }}>
         <div className="max-w-[120rem] mx-auto px-6 lg:px-12 mb-16 flex flex-col md:flex-row justify-between items-end gap-8">

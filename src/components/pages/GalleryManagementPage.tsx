@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import React from 'react';
 import { useMember } from '@/integrations';
 import { MemberProtectedRoute } from '@/components/ui/member-protected-route';
 import Header from '@/components/Header';
@@ -11,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { BaseCrudService } from '@/integrations';
 import { ClientGalleries, GalleryPhotos } from '@/entities';
 import { motion } from 'framer-motion';
-import { Plus, Trash2, Edit2, Upload, Link as LinkIcon, Copy, Check, AlertCircle, ExternalLink } from 'lucide-react';
+import { Plus, Trash2, Edit2, Upload, Link as LinkIcon, Copy, Check, AlertCircle } from 'lucide-react';
 
 function GalleryManagementContent() {
   const { member } = useMember();
@@ -25,6 +26,7 @@ function GalleryManagementContent() {
   const [selectedGalleryForPhotos, setSelectedGalleryForPhotos] = useState<ClientGalleries | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     clientName: '',
     description: '',
@@ -143,54 +145,55 @@ function GalleryManagementContent() {
     setUploadError('');
   };
 
-  const handleOpenWixMediaManager = () => {
-    if (!selectedGalleryForPhotos) return;
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0 || !selectedGalleryForPhotos) return;
 
-    // Use Wix Media Manager widget
-    const mediaManager = window.Wix?.mediaManager;
-    if (!mediaManager) {
-      setUploadError('Wix Media Manager is not available. Please try again.');
-      return;
-    }
+    setIsUploading(true);
+    try {
+      setUploadError('');
 
-    mediaManager.openMediaManager({
-      onSelect: async (selectedItems: any[]) => {
-        if (!selectedItems || selectedItems.length === 0) return;
-
-        setIsUploading(true);
-        try {
-          setUploadError('');
-
-          for (const item of selectedItems) {
-            const imageUrl = item.url || item.fileUrl;
-            if (!imageUrl) continue;
-
-            // Create gallery photo entry with the selected image URL
+      for (const file of Array.from(files)) {
+        // Create a FileReader to convert file to data URL
+        const reader = new FileReader();
+        
+        reader.onload = async (e) => {
+          try {
+            const dataUrl = e.target?.result as string;
+            
+            // Create gallery photo entry with the data URL
             await BaseCrudService.create<GalleryPhotos>('galleryphotos', {
               _id: crypto.randomUUID(),
-              title: item.name || 'Untitled',
+              title: file.name || 'Untitled',
               description: '',
-              imageFile: imageUrl,
+              imageFile: dataUrl,
               galleryId: selectedGalleryForPhotos._id,
               uploadDate: new Date(),
             });
+          } catch (error) {
+            console.error('Error saving photo:', error);
+            setUploadError(`Failed to save photo: ${error instanceof Error ? error.message : 'Unknown error'}`);
           }
+        };
 
-          // Reload galleries and close dialog
-          await loadGalleries();
-          setIsBulkUploadOpen(false);
-        } catch (error) {
-          console.error('Error saving photos:', error);
-          setUploadError(`Failed to save photos: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        } finally {
-          setIsUploading(false);
-        }
-      },
-      onError: (error: any) => {
-        console.error('Media Manager error:', error);
-        setUploadError('Failed to select images from Wix Media Manager');
-      },
-    });
+        reader.onerror = () => {
+          setUploadError('Failed to read file');
+        };
+
+        reader.readAsDataURL(file);
+      }
+
+      // Wait a bit for all files to be processed, then reload
+      setTimeout(async () => {
+        await loadGalleries();
+        setIsBulkUploadOpen(false);
+        setIsUploading(false);
+      }, 1000);
+    } catch (error) {
+      console.error('Error processing files:', error);
+      setUploadError(`Failed to process files: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -463,6 +466,16 @@ function GalleryManagementContent() {
               </div>
             )}
 
+            {/* Hidden File Input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+
             {/* Action Buttons */}
             <div className="flex gap-4 pt-6">
               <Button
@@ -473,7 +486,7 @@ function GalleryManagementContent() {
                 Cancel
               </Button>
               <Button
-                onClick={handleOpenWixMediaManager}
+                onClick={() => fileInputRef.current?.click()}
                 disabled={isUploading}
                 className="flex-1 bg-primary text-background hover:bg-primary/90 font-paragraph uppercase tracking-widest text-sm py-3 rounded-none disabled:opacity-50 flex items-center justify-center gap-2"
               >
@@ -484,8 +497,8 @@ function GalleryManagementContent() {
                   </>
                 ) : (
                   <>
-                    <ExternalLink size={16} />
-                    Open Wix Media Manager
+                    <Upload size={16} />
+                    Select Images
                   </>
                 )}
               </Button>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useMember } from '@/integrations';
 import { MemberProtectedRoute } from '@/components/ui/member-protected-route';
 import Header from '@/components/Header';
@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { BaseCrudService } from '@/integrations';
 import { ClientGalleries, GalleryPhotos } from '@/entities';
 import { motion } from 'framer-motion';
-import { Plus, Trash2, Edit2, Upload, Link as LinkIcon, Copy, Check } from 'lucide-react';
+import { Plus, Trash2, Edit2, Upload, Link as LinkIcon, Copy, Check, X, AlertCircle } from 'lucide-react';
 
 function GalleryManagementContent() {
   const { member } = useMember();
@@ -21,7 +21,12 @@ function GalleryManagementContent() {
   const [editingGallery, setEditingGallery] = useState<ClientGalleries | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [photos, setPhotos] = useState<GalleryPhotos[]>([]);
-  const [isPhotosDialogOpen, setIsPhotosDialogOpen] = useState(false);
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [uploadingFiles, setUploadingFiles] = useState<File[]>([]);
+  const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({});
+  const [uploadError, setUploadError] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedGalleryForPhotos, setSelectedGalleryForPhotos] = useState<ClientGalleries | null>(null);
   const [formData, setFormData] = useState({
     clientName: '',
@@ -132,13 +137,111 @@ function GalleryManagementContent() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const openPhotosDialog = (gallery: ClientGalleries) => {
-    setSelectedGalleryForPhotos(gallery);
-    setIsPhotosDialogOpen(true);
-  };
-
   const getGalleryPhotos = (galleryId: string) => {
     return photos.filter(p => p.galleryId === galleryId);
+  };
+
+  const handleBulkUploadOpen = (gallery: ClientGalleries) => {
+    setSelectedGalleryForPhotos(gallery);
+    setIsBulkUploadOpen(true);
+    setUploadingFiles([]);
+    setUploadError('');
+    setUploadProgress({});
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const imageFiles = files.filter(file => file.type.startsWith('image/'));
+    
+    if (imageFiles.length === 0) {
+      setUploadError('Please select valid image files');
+      return;
+    }
+
+    if (imageFiles.length > 50) {
+      setUploadError('Maximum 50 images per upload');
+      return;
+    }
+
+    setUploadingFiles(imageFiles);
+    setUploadError('');
+  };
+
+  const handleUploadImages = async () => {
+    if (!selectedGalleryForPhotos || uploadingFiles.length === 0) return;
+
+    setIsUploading(true);
+    try {
+      setUploadError('');
+      const newProgress: { [key: string]: number } = {};
+      let uploadedCount = 0;
+
+      for (let i = 0; i < uploadingFiles.length; i++) {
+        const file = uploadingFiles[i];
+        const fileId = `${file.name}-${i}`;
+        newProgress[fileId] = 0;
+
+        // Read file as data URL
+        const reader = new FileReader();
+        
+        reader.onprogress = (event) => {
+          if (event.lengthComputable) {
+            newProgress[fileId] = Math.round((event.loaded / event.total) * 100);
+            setUploadProgress({ ...newProgress });
+          }
+        };
+
+        reader.onload = async (event) => {
+          try {
+            const imageUrl = event.target?.result as string;
+            
+            // Create gallery photo entry
+            await BaseCrudService.create<GalleryPhotos>('galleryphotos', {
+              _id: crypto.randomUUID(),
+              title: file.name.replace(/\.[^/.]+$/, ''),
+              description: '',
+              imageFile: imageUrl,
+              galleryId: selectedGalleryForPhotos._id,
+              uploadDate: new Date(),
+            });
+
+            newProgress[fileId] = 100;
+            setUploadProgress({ ...newProgress });
+            uploadedCount++;
+
+            // If all files are uploaded, close dialog and reload
+            if (uploadedCount === uploadingFiles.length) {
+              setTimeout(() => {
+                loadGalleries();
+                setIsBulkUploadOpen(false);
+                setUploadingFiles([]);
+                setUploadProgress({});
+                setIsUploading(false);
+              }, 500);
+            }
+          } catch (error) {
+            console.error('Error uploading file:', error);
+            setUploadError(`Failed to upload ${file.name}`);
+            setIsUploading(false);
+          }
+        };
+
+        reader.onerror = () => {
+          setUploadError(`Failed to read ${file.name}`);
+          setIsUploading(false);
+        };
+
+        reader.readAsDataURL(file);
+      }
+    } catch (error) {
+      console.error('Error during bulk upload:', error);
+      setUploadError('Failed to upload images');
+      setIsUploading(false);
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setUploadingFiles(uploadingFiles.filter((_, i) => i !== index));
   };
 
   return (
@@ -152,7 +255,7 @@ function GalleryManagementContent() {
               Gallery Management
             </h1>
             <p className="font-paragraph text-secondary/70 max-w-2xl">
-              Create, edit, and manage your client galleries. Add access codes and gallery links for your clients.
+              Create, edit, and manage your client galleries. All galleries are hosted on skgarts.com.
             </p>
           </div>
           <Button
@@ -243,6 +346,10 @@ function GalleryManagementContent() {
                       </a>
                     )}
                   </div>
+
+                  <div className="mb-4 text-xs font-paragraph text-secondary/60 bg-accent-blue/5 p-2 rounded">
+                    <span className="font-semibold">Photos:</span> {getGalleryPhotos(gallery._id).length}
+                  </div>
                   
                   <div className="flex gap-2">
                     <Button
@@ -251,6 +358,13 @@ function GalleryManagementContent() {
                     >
                       <Edit2 size={14} />
                       Edit
+                    </Button>
+                    <Button
+                      onClick={() => handleBulkUploadOpen(gallery)}
+                      className="flex-1 bg-accent-blue/10 text-accent-blue hover:bg-accent-blue/20 font-paragraph text-xs uppercase tracking-widest py-2 rounded-none flex items-center justify-center gap-2"
+                    >
+                      <Upload size={14} />
+                      Upload
                     </Button>
                     <Button
                       onClick={() => handleDeleteGallery(gallery._id)}
@@ -370,6 +484,115 @@ function GalleryManagementContent() {
                 className="flex-1 bg-primary text-background hover:bg-primary/90 font-paragraph uppercase tracking-widest text-sm py-3 rounded-none"
               >
                 {editingGallery ? 'Update Gallery' : 'Create Gallery'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Upload Dialog */}
+      <Dialog open={isBulkUploadOpen} onOpenChange={setIsBulkUploadOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-2xl">
+              Bulk Upload Images - {selectedGalleryForPhotos?.clientName}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6 py-6">
+            {/* Upload Area */}
+            <div className="border-2 border-dashed border-secondary/20 rounded-lg p-8 text-center hover:border-primary/50 transition-colors cursor-pointer"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Upload size={48} className="text-secondary/30 mx-auto mb-4" />
+              <p className="font-paragraph text-secondary/70 mb-2">
+                Click to select images or drag and drop
+              </p>
+              <p className="font-paragraph text-xs text-secondary/50">
+                Supported formats: JPG, PNG, GIF, WebP (Max 50 images)
+              </p>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+            </div>
+
+            {/* Error Message */}
+            {uploadError && (
+              <div className="flex items-center gap-2 p-3 bg-[#ED1B23]/10 border border-[#ED1B23]/20 rounded text-[#ED1B23]">
+                <AlertCircle size={16} />
+                <p className="font-paragraph text-sm">{uploadError}</p>
+              </div>
+            )}
+
+            {/* Selected Files List */}
+            {uploadingFiles.length > 0 && (
+              <div className="space-y-3">
+                <p className="font-paragraph text-sm font-semibold text-secondary">
+                  Selected Files ({uploadingFiles.length})
+                </p>
+                <div className="max-h-64 overflow-y-auto space-y-2">
+                  {uploadingFiles.map((file, index) => (
+                    <div key={`${file.name}-${index}`} className="flex items-center justify-between p-3 bg-secondary/5 rounded">
+                      <div className="flex-1">
+                        <p className="font-paragraph text-sm text-secondary truncate">
+                          {file.name}
+                        </p>
+                        <p className="font-paragraph text-xs text-secondary/50">
+                          {(file.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                      </div>
+                      {uploadProgress[`${file.name}-${index}`] !== undefined ? (
+                        <div className="w-24 h-2 bg-secondary/10 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-primary transition-all duration-300"
+                            style={{ width: `${uploadProgress[`${file.name}-${index}`]}%` }}
+                          />
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => removeFile(index)}
+                          className="p-1 hover:bg-secondary/20 rounded transition-colors"
+                          disabled={isUploading}
+                        >
+                          <X size={16} className="text-secondary/60" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex gap-4 pt-6">
+              <Button
+                onClick={() => setIsBulkUploadOpen(false)}
+                disabled={isUploading}
+                className="flex-1 bg-secondary/10 text-secondary hover:bg-secondary/20 font-paragraph uppercase tracking-widest text-sm py-3 rounded-none disabled:opacity-50"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleUploadImages}
+                disabled={uploadingFiles.length === 0 || isUploading}
+                className="flex-1 bg-primary text-background hover:bg-primary/90 font-paragraph uppercase tracking-widest text-sm py-3 rounded-none disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isUploading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-background border-t-transparent rounded-full animate-spin" />
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Upload size={16} />
+                    Upload {uploadingFiles.length} Image{uploadingFiles.length !== 1 ? 's' : ''}
+                  </>
+                )}
               </Button>
             </div>
           </div>

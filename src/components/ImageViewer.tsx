@@ -9,9 +9,17 @@ interface ImageViewerProps {
   title?: string;
 }
 
+// Remove Wix URL parameters to get the original full-resolution image
+const getFullResolutionUrl = (url: string): string => {
+  if (!url) return url;
+  // Remove Wix transformation parameters
+  return url.split('?')[0];
+};
+
 export function ImageViewer({ src, alt = '', title = '' }: ImageViewerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const fullResUrl = getFullResolutionUrl(src);
 
   useEffect(() => {
     if (isOpen) {
@@ -90,7 +98,7 @@ export function ImageViewer({ src, alt = '', title = '' }: ImageViewerProps) {
               onClick={(e) => e.stopPropagation()}
               onContextMenu={(e) => e.preventDefault()}
             >
-              <Image src={src} alt={alt} className="max-w-full max-h-full w-auto h-auto object-contain select-none" draggable={false} onContextMenu={(e) => e.preventDefault()} onLoad={() => setImageLoaded(true)} style={{ maxWidth: '100vw', maxHeight: '100vh' }} />
+              <Image src={fullResUrl} alt={alt} className="max-w-full max-h-full w-auto h-auto object-contain select-none" draggable={false} onContextMenu={(e) => e.preventDefault()} onLoad={() => setImageLoaded(true)} style={{ maxWidth: '100vw', maxHeight: '100vh' }} />
             </motion.div>
 
             {/* Title (if provided) */}

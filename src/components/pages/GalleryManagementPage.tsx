@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useMember } from '@/integrations';
 import { MemberProtectedRoute } from '@/components/ui/member-protected-route';
 import Header from '@/components/Header';
@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { BaseCrudService } from '@/integrations';
 import { ClientGalleries, GalleryPhotos } from '@/entities';
 import { motion } from 'framer-motion';
-import { Plus, Trash2, Edit2, Upload, Link as LinkIcon, Copy, Check, X, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, Edit2, Upload, Link as LinkIcon, Copy, Check, AlertCircle, ExternalLink } from 'lucide-react';
 
 function GalleryManagementContent() {
   const { member } = useMember();
@@ -22,12 +22,9 @@ function GalleryManagementContent() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [photos, setPhotos] = useState<GalleryPhotos[]>([]);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
-  const [uploadingFiles, setUploadingFiles] = useState<File[]>([]);
-  const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({});
-  const [uploadError, setUploadError] = useState('');
-  const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedGalleryForPhotos, setSelectedGalleryForPhotos] = useState<ClientGalleries | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
   const [formData, setFormData] = useState({
     clientName: '',
     description: '',
@@ -143,106 +140,57 @@ function GalleryManagementContent() {
   const handleBulkUploadOpen = (gallery: ClientGalleries) => {
     setSelectedGalleryForPhotos(gallery);
     setIsBulkUploadOpen(true);
-    setUploadingFiles([]);
-    setUploadError('');
-    setUploadProgress({});
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    const imageFiles = files.filter(file => file.type.startsWith('image/'));
-    
-    if (imageFiles.length === 0) {
-      setUploadError('Please select valid image files');
-      return;
-    }
-
-    if (imageFiles.length > 50) {
-      setUploadError('Maximum 50 images per upload');
-      return;
-    }
-
-    setUploadingFiles(imageFiles);
     setUploadError('');
   };
 
-  const handleUploadImages = async () => {
-    if (!selectedGalleryForPhotos || uploadingFiles.length === 0) return;
+  const handleOpenWixMediaManager = () => {
+    if (!selectedGalleryForPhotos) return;
 
-    setIsUploading(true);
-    try {
-      setUploadError('');
-      const newProgress: { [key: string]: number } = {};
-      let uploadedCount = 0;
+    // Use Wix Media Manager widget
+    const mediaManager = window.Wix?.mediaManager;
+    if (!mediaManager) {
+      setUploadError('Wix Media Manager is not available. Please try again.');
+      return;
+    }
 
-      for (let i = 0; i < uploadingFiles.length; i++) {
-        const file = uploadingFiles[i];
-        const fileId = `${file.name}-${i}`;
-        newProgress[fileId] = 0;
-        setUploadProgress({ ...newProgress });
+    mediaManager.openMediaManager({
+      onSelect: async (selectedItems: any[]) => {
+        if (!selectedItems || selectedItems.length === 0) return;
 
+        setIsUploading(true);
         try {
-          // Create FormData for file upload
-          const formData = new FormData();
-          formData.append('file', file);
+          setUploadError('');
 
-          // Upload to Wix Media Manager
-          const uploadResponse = await fetch('/_api/media/upload', {
-            method: 'POST',
-            body: formData,
-          });
+          for (const item of selectedItems) {
+            const imageUrl = item.url || item.fileUrl;
+            if (!imageUrl) continue;
 
-          if (!uploadResponse.ok) {
-            throw new Error(`Upload failed: ${uploadResponse.statusText}`);
+            // Create gallery photo entry with the selected image URL
+            await BaseCrudService.create<GalleryPhotos>('galleryphotos', {
+              _id: crypto.randomUUID(),
+              title: item.name || 'Untitled',
+              description: '',
+              imageFile: imageUrl,
+              galleryId: selectedGalleryForPhotos._id,
+              uploadDate: new Date(),
+            });
           }
 
-          const uploadedData = await uploadResponse.json();
-          const imageUrl = uploadedData.url || uploadedData.fileUrl;
-
-          if (!imageUrl) {
-            throw new Error('No image URL returned from upload');
-          }
-
-          // Create gallery photo entry with the uploaded image URL
-          await BaseCrudService.create<GalleryPhotos>('galleryphotos', {
-            _id: crypto.randomUUID(),
-            title: file.name.replace(/\.[^/.]+$/, ''),
-            description: '',
-            imageFile: imageUrl,
-            galleryId: selectedGalleryForPhotos._id,
-            uploadDate: new Date(),
-          });
-
-          newProgress[fileId] = 100;
-          setUploadProgress({ ...newProgress });
-          uploadedCount++;
-
-          // If all files are uploaded, close dialog and reload
-          if (uploadedCount === uploadingFiles.length) {
-            setTimeout(() => {
-              loadGalleries();
-              setIsBulkUploadOpen(false);
-              setUploadingFiles([]);
-              setUploadProgress({});
-              setIsUploading(false);
-            }, 500);
-          }
+          // Reload galleries and close dialog
+          await loadGalleries();
+          setIsBulkUploadOpen(false);
         } catch (error) {
-          console.error('Error uploading file:', error);
-          setUploadError(`Failed to upload ${file.name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          console.error('Error saving photos:', error);
+          setUploadError(`Failed to save photos: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        } finally {
           setIsUploading(false);
-          return;
         }
-      }
-    } catch (error) {
-      console.error('Error during bulk upload:', error);
-      setUploadError('Failed to upload images');
-      setIsUploading(false);
-    }
-  };
-
-  const removeFile = (index: number) => {
-    setUploadingFiles(uploadingFiles.filter((_, i) => i !== index));
+      },
+      onError: (error: any) => {
+        console.error('Media Manager error:', error);
+        setUploadError('Failed to select images from Wix Media Manager');
+      },
+    });
   };
 
   return (
@@ -493,33 +441,18 @@ function GalleryManagementContent() {
 
       {/* Bulk Upload Dialog */}
       <Dialog open={isBulkUploadOpen} onOpenChange={setIsBulkUploadOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="font-heading text-2xl">
-              Bulk Upload Images - {selectedGalleryForPhotos?.clientName}
+              Add Images - {selectedGalleryForPhotos?.clientName}
             </DialogTitle>
           </DialogHeader>
           
           <div className="space-y-6 py-6">
-            {/* Upload Area */}
-            <div className="border-2 border-dashed border-secondary/20 rounded-lg p-8 text-center hover:border-primary/50 transition-colors cursor-pointer"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <Upload size={48} className="text-secondary/30 mx-auto mb-4" />
-              <p className="font-paragraph text-secondary/70 mb-2">
-                Click to select images or drag and drop
+            <div className="bg-accent-blue/5 border border-accent-blue/20 rounded-lg p-6">
+              <p className="font-paragraph text-sm text-secondary mb-4">
+                Select images from Wix Media Manager to add to this gallery. You can upload new images or choose from existing media.
               </p>
-              <p className="font-paragraph text-xs text-secondary/50">
-                Supported formats: JPG, PNG, GIF, WebP (Max 50 images)
-              </p>
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
             </div>
 
             {/* Error Message */}
@@ -527,45 +460,6 @@ function GalleryManagementContent() {
               <div className="flex items-center gap-2 p-3 bg-[#ED1B23]/10 border border-[#ED1B23]/20 rounded text-[#ED1B23]">
                 <AlertCircle size={16} />
                 <p className="font-paragraph text-sm">{uploadError}</p>
-              </div>
-            )}
-
-            {/* Selected Files List */}
-            {uploadingFiles.length > 0 && (
-              <div className="space-y-3">
-                <p className="font-paragraph text-sm font-semibold text-secondary">
-                  Selected Files ({uploadingFiles.length})
-                </p>
-                <div className="max-h-64 overflow-y-auto space-y-2">
-                  {uploadingFiles.map((file, index) => (
-                    <div key={`${file.name}-${index}`} className="flex items-center justify-between p-3 bg-secondary/5 rounded">
-                      <div className="flex-1">
-                        <p className="font-paragraph text-sm text-secondary truncate">
-                          {file.name}
-                        </p>
-                        <p className="font-paragraph text-xs text-secondary/50">
-                          {(file.size / 1024 / 1024).toFixed(2)} MB
-                        </p>
-                      </div>
-                      {uploadProgress[`${file.name}-${index}`] !== undefined ? (
-                        <div className="w-24 h-2 bg-secondary/10 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-primary transition-all duration-300"
-                            style={{ width: `${uploadProgress[`${file.name}-${index}`]}%` }}
-                          />
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => removeFile(index)}
-                          className="p-1 hover:bg-secondary/20 rounded transition-colors"
-                          disabled={isUploading}
-                        >
-                          <X size={16} className="text-secondary/60" />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
               </div>
             )}
 
@@ -579,19 +473,19 @@ function GalleryManagementContent() {
                 Cancel
               </Button>
               <Button
-                onClick={handleUploadImages}
-                disabled={uploadingFiles.length === 0 || isUploading}
+                onClick={handleOpenWixMediaManager}
+                disabled={isUploading}
                 className="flex-1 bg-primary text-background hover:bg-primary/90 font-paragraph uppercase tracking-widest text-sm py-3 rounded-none disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {isUploading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-background border-t-transparent rounded-full animate-spin" />
-                    Uploading...
+                    Processing...
                   </>
                 ) : (
                   <>
-                    <Upload size={16} />
-                    Upload {uploadingFiles.length} Image{uploadingFiles.length !== 1 ? 's' : ''}
+                    <ExternalLink size={16} />
+                    Open Wix Media Manager
                   </>
                 )}
               </Button>

@@ -85,11 +85,11 @@ export function ImageViewer({ src, alt = '', title = '' }: ImageViewerProps) {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.2 }}
-              className="relative w-full h-full flex items-center justify-center p-4"
+              className="relative w-full h-full flex items-center justify-center p-4 overflow-auto"
               onClick={(e) => e.stopPropagation()}
               onContextMenu={(e) => e.preventDefault()}
             >
-              <Image src={src} alt={alt} className="max-w-full max-h-full object-contain select-none" draggable={false} onContextMenu={(e) => e.preventDefault()} />
+              <Image src={src} alt={alt} className="w-auto h-auto max-w-none max-h-none object-contain select-none" draggable={false} onContextMenu={(e) => e.preventDefault()} />
             </motion.div>
 
             {/* Title (if provided) */}

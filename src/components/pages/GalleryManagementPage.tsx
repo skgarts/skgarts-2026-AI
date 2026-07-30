@@ -127,8 +127,7 @@ function GalleryManagementContent() {
   };
 
   const getGalleryLink = (galleryId: string) => {
-    const baseUrl = window.location.origin;
-    return `${baseUrl}/gallery/${galleryId}`;
+    return `https://skgarts.com/gallery/${galleryId}`;
   };
 
   const copyToClipboard = (text: string, id: string) => {
@@ -180,58 +179,60 @@ function GalleryManagementContent() {
         const file = uploadingFiles[i];
         const fileId = `${file.name}-${i}`;
         newProgress[fileId] = 0;
+        setUploadProgress({ ...newProgress });
 
-        // Read file as data URL
-        const reader = new FileReader();
-        
-        reader.onprogress = (event) => {
-          if (event.lengthComputable) {
-            newProgress[fileId] = Math.round((event.loaded / event.total) * 100);
-            setUploadProgress({ ...newProgress });
+        try {
+          // Create FormData for file upload
+          const formData = new FormData();
+          formData.append('file', file);
+
+          // Upload to Wix Media Manager
+          const uploadResponse = await fetch('/_api/media/upload', {
+            method: 'POST',
+            body: formData,
+          });
+
+          if (!uploadResponse.ok) {
+            throw new Error(`Upload failed: ${uploadResponse.statusText}`);
           }
-        };
 
-        reader.onload = async (event) => {
-          try {
-            const imageUrl = event.target?.result as string;
-            
-            // Create gallery photo entry
-            await BaseCrudService.create<GalleryPhotos>('galleryphotos', {
-              _id: crypto.randomUUID(),
-              title: file.name.replace(/\.[^/.]+$/, ''),
-              description: '',
-              imageFile: imageUrl,
-              galleryId: selectedGalleryForPhotos._id,
-              uploadDate: new Date(),
-            });
+          const uploadedData = await uploadResponse.json();
+          const imageUrl = uploadedData.url || uploadedData.fileUrl;
 
-            newProgress[fileId] = 100;
-            setUploadProgress({ ...newProgress });
-            uploadedCount++;
-
-            // If all files are uploaded, close dialog and reload
-            if (uploadedCount === uploadingFiles.length) {
-              setTimeout(() => {
-                loadGalleries();
-                setIsBulkUploadOpen(false);
-                setUploadingFiles([]);
-                setUploadProgress({});
-                setIsUploading(false);
-              }, 500);
-            }
-          } catch (error) {
-            console.error('Error uploading file:', error);
-            setUploadError(`Failed to upload ${file.name}`);
-            setIsUploading(false);
+          if (!imageUrl) {
+            throw new Error('No image URL returned from upload');
           }
-        };
 
-        reader.onerror = () => {
-          setUploadError(`Failed to read ${file.name}`);
+          // Create gallery photo entry with the uploaded image URL
+          await BaseCrudService.create<GalleryPhotos>('galleryphotos', {
+            _id: crypto.randomUUID(),
+            title: file.name.replace(/\.[^/.]+$/, ''),
+            description: '',
+            imageFile: imageUrl,
+            galleryId: selectedGalleryForPhotos._id,
+            uploadDate: new Date(),
+          });
+
+          newProgress[fileId] = 100;
+          setUploadProgress({ ...newProgress });
+          uploadedCount++;
+
+          // If all files are uploaded, close dialog and reload
+          if (uploadedCount === uploadingFiles.length) {
+            setTimeout(() => {
+              loadGalleries();
+              setIsBulkUploadOpen(false);
+              setUploadingFiles([]);
+              setUploadProgress({});
+              setIsUploading(false);
+            }, 500);
+          }
+        } catch (error) {
+          console.error('Error uploading file:', error);
+          setUploadError(`Failed to upload ${file.name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
           setIsUploading(false);
-        };
-
-        reader.readAsDataURL(file);
+          return;
+        }
       }
     } catch (error) {
       console.error('Error during bulk upload:', error);

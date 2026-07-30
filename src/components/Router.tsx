@@ -1,15 +1,21 @@
 import { MemberProvider } from '@/integrations';
 import { createBrowserRouter, RouterProvider, Navigate, Outlet } from 'react-router-dom';
 import { ScrollToTop } from '@/lib/scroll-to-top';
+import { initializeImageProtection } from '@/lib/image-protection';
 import ErrorPage from '@/integrations/errorHandlers/ErrorPage';
 import HomePage from '@/components/pages/HomePage';
 import ServiceDetailPage from '@/components/pages/ServiceDetailPage';
 import ProfilePage from '@/components/pages/ProfilePage';
 import GalleryManagementPage from '@/components/pages/GalleryManagementPage';
 import ClientGalleryViewPage from '@/components/pages/ClientGalleryViewPage';
+import { useEffect } from 'react';
 
 // Layout component that includes ScrollToTop
 function Layout() {
+  useEffect(() => {
+    initializeImageProtection();
+  }, []);
+
   return (
     <>
       <ScrollToTop />

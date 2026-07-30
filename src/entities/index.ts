@@ -48,6 +48,31 @@ export interface FrequentlyAskedQuestions {
 
 
 /**
+ * Collection ID: films
+ * Interface for Films
+ */
+export interface Films {
+  _id: string;
+  _createdDate?: Date;
+  _updatedDate?: Date;
+  /** @wixFieldType text */
+  heading?: string;
+  /** @wixFieldType text */
+  subtitle?: string;
+  /** @wixFieldType text */
+  description?: string;
+  /** @wixFieldType image - Contains image URL, render with <Image> component, NOT as text */
+  coverImage?: string;
+  /** @wixFieldType url */
+  imdbLink?: string;
+  /** @wixFieldType text */
+  videoId?: string;
+  /** @wixFieldType video */
+  film?: string;
+}
+
+
+/**
  * Collection ID: fineartgallery
  * Interface for FineArtGallery
  */

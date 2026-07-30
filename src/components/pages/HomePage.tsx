@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { ImageViewer } from '@/components/ImageViewer';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import { ClientGalleries, FrequentlyAskedQuestions, PortraitGallery, ServiceCategories } from '@/entities';
 import { BaseCrudService } from '@/integrations';
@@ -342,12 +343,13 @@ export default function HomePage() {
                   className="masonry-item group cursor-pointer"
                 >
                   <div className="relative overflow-hidden bg-secondary/5">
-                    <Image
-                      src={portrait.image || 'https://static.wixstatic.com/media/897509_555ffd7d31fc41f28c7c854b3b34debb~mv2.png?originWidth=768&originHeight=576'}
-                      alt={portrait.altText || portrait.title || 'Fine art portrait'}
-                      className="w-full h-auto object-cover transition-transform duration-1000 group-hover:scale-[1.03] filter grayscale-[20%] group-hover:grayscale-0"
-                      width={800}
-                    />
+                    <div className="w-full h-auto object-cover transition-transform duration-1000 group-hover:scale-[1.03] filter grayscale-[20%] group-hover:grayscale-0">
+                      <ImageViewer
+                        src={portrait.image || 'https://static.wixstatic.com/media/897509_555ffd7d31fc41f28c7c854b3b34debb~mv2.png?originWidth=768&originHeight=576'}
+                        alt={portrait.altText || portrait.title || 'Fine art portrait'}
+                        title={portrait.title}
+                      />
+                    </div>
                     <div className="absolute inset-0 bg-secondary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                     {/* Hover Content */}

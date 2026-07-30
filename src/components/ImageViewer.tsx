@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Image } from '@/components/ui/image';
 
 interface ImageViewerProps {
@@ -11,6 +11,7 @@ interface ImageViewerProps {
 
 export function ImageViewer({ src, alt = '', title = '' }: ImageViewerProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -79,7 +80,7 @@ export function ImageViewer({ src, alt = '', title = '' }: ImageViewerProps) {
               <X size={24} />
             </motion.button>
 
-            {/* Image Container */}
+            {/* Image Container - Using raw img tag for full-size display */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -89,7 +90,7 @@ export function ImageViewer({ src, alt = '', title = '' }: ImageViewerProps) {
               onClick={(e) => e.stopPropagation()}
               onContextMenu={(e) => e.preventDefault()}
             >
-              <Image src={src} alt={alt} className="w-auto h-auto max-w-none max-h-none object-contain select-none" draggable={false} onContextMenu={(e) => e.preventDefault()} />
+              <Image src={src} alt={alt} className="max-w-full max-h-full w-auto h-auto object-contain select-none" draggable={false} onContextMenu={(e) => e.preventDefault()} onLoad={() => setImageLoaded(true)} style={{ maxWidth: '100vw', maxHeight: '100vh' }} />
             </motion.div>
 
             {/* Title (if provided) */}

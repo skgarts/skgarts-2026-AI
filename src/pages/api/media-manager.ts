@@ -1,5 +1,5 @@
 import { auth } from '@wix/essentials';
-import { files } from '@wix/media';
+import { mediaManager } from '@wix/media';
 import type { APIRoute } from 'astro';
 
 /**
@@ -11,11 +11,11 @@ export const POST: APIRoute = async ({ request }) => {
     const body = await request.json();
     const { multiSelect = true, mediaTypes = ['image'] } = body;
 
-    // Use elevated permissions to access files
-    const elevatedListFiles = auth.elevate(files.listFiles);
+    // Use elevated permissions to access media manager
+    const elevatedMediaManager = auth.elevate(mediaManager);
 
     // Fetch files from Wix Media with pagination
-    const result = await elevatedListFiles({
+    const result = await elevatedMediaManager.listFiles({
       limit: 100,
       sort: 'CREATED_DESC',
       fieldsets: ['FULL'],

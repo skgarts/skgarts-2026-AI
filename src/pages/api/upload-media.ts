@@ -23,8 +23,30 @@ export const POST: APIRoute = async ({ request }) => {
       return json({ error: 'No file provided' }, 400);
     }
 
-    const mimeType = file.type || 'image/jpeg';
-    const fileName = file.name || `upload-${Date.now()}.jpg`;
+    const rawType = file.type || 'image/jpeg';
+    // Map mime -> canonical extension Wix recognizes
+    const extByMime: Record<string, string> = {
+      'image/jpeg': 'jpg',
+      'image/jpg': 'jpg',
+      'image/png': 'png',
+      'image/webp': 'webp',
+      'image/gif': 'gif',
+    };
+    const ext = extByMime[rawType.toLowerCase()] || 'jpg';
+    const mimeType = ext === 'jpg' ? 'image/jpeg' : `image/${ext}`;
+
+    // Build a clean, safe filename with exactly ONE correct extension.
+    // Wix rejects names with spaces, odd characters, or double extensions
+    // (UNSUPPORTED_FILE_FORMAT). e.g. "Manohar_portfolio - 001.jpg" -> "manohar_portfolio-001.jpg"
+    const base = (file.name || 'photo')
+      .replace(/\.[^.]+$/, '')          // strip existing extension
+      .normalize('NFKD')
+      .replace(/[^\w-]+/g, '-')          // spaces/punctuation -> hyphen
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .toLowerCase()
+      .slice(0, 60) || 'photo';
+    const fileName = `${base}-${Date.now().toString(36)}.${ext}`;
 
     // 1) Generate an upload URL — elevated so the server route is authorized to
     // write to Wix Media (default visitor identity gets 403 PERMISSION_DENIED).

@@ -32,7 +32,17 @@ function GalleryManagementContent() {
     accessCode: '',
     galleryLink: '',
     eventDate: '',
+    slug: '',
   });
+
+  // Turn a title into a URL-safe slug: "Sushen Upanayanam!" -> "sushen-upanayanam"
+  const slugify = (text: string) =>
+    text
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
 
   useEffect(() => {
     loadGalleries();
@@ -63,6 +73,7 @@ function GalleryManagementContent() {
         accessCode: gallery.accessCode || '',
         galleryLink: gallery.galleryLink || '',
         eventDate: gallery.eventDate ? new Date(gallery.eventDate).toISOString().split('T')[0] : '',
+        slug: (gallery as any).slug || '',
       });
     } else {
       setEditingGallery(null);
@@ -72,6 +83,7 @@ function GalleryManagementContent() {
         accessCode: '',
         galleryLink: '',
         eventDate: '',
+        slug: '',
       });
     }
     setIsDialogOpen(true);
@@ -85,6 +97,15 @@ function GalleryManagementContent() {
         galleryLink = 'https://' + galleryLink;
       }
 
+      // Use provided slug, or generate one from the client name. Keep it unique.
+      let slug = formData.slug ? slugify(formData.slug) : slugify(formData.clientName);
+      if (slug) {
+        const clash = galleries.find(
+          (g) => (g as any).slug === slug && g._id !== (editingGallery?._id || '')
+        );
+        if (clash) slug = `${slug}-${Math.random().toString(36).slice(2, 6)}`;
+      }
+
       if (editingGallery) {
         // Update existing gallery
         await BaseCrudService.update<ClientGalleries>('clientgalleries', {
@@ -94,7 +115,8 @@ function GalleryManagementContent() {
           accessCode: formData.accessCode,
           galleryLink: galleryLink,
           eventDate: formData.eventDate ? new Date(formData.eventDate) : undefined,
-        });
+          slug: slug,
+        } as any);
       } else {
         // Create new gallery
         await BaseCrudService.create<ClientGalleries>('clientgalleries', {
@@ -104,7 +126,8 @@ function GalleryManagementContent() {
           accessCode: formData.accessCode,
           galleryLink: galleryLink,
           eventDate: formData.eventDate ? new Date(formData.eventDate) : undefined,
-        });
+          slug: slug,
+        } as any);
       }
       setIsDialogOpen(false);
       loadGalleries();
@@ -124,9 +147,10 @@ function GalleryManagementContent() {
     }
   };
 
-  const getGalleryLink = (galleryId: string) => {
+  const getGalleryLink = (gallery: ClientGalleries) => {
     const baseUrl = window.location.origin;
-    return `${baseUrl}/gallery/${galleryId}`;
+    const idOrSlug = (gallery as any).slug || gallery._id;
+    return `${baseUrl}/gallery/${idOrSlug}`;
   };
 
   const copyToClipboard = (text: string, id: string) => {
@@ -277,15 +301,15 @@ function GalleryManagementContent() {
                     </p>
                     <div className="flex items-center gap-2">
                       <a
-                        href={getGalleryLink(gallery._id)}
+                        href={getGalleryLink(gallery)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="font-paragraph text-xs text-primary hover:text-primary/80 flex-1 truncate"
                       >
-                        {getGalleryLink(gallery._id)}
+                        {getGalleryLink(gallery)}
                       </a>
                       <button
-                        onClick={() => copyToClipboard(getGalleryLink(gallery._id), gallery._id)}
+                        onClick={() => copyToClipboard(getGalleryLink(gallery), gallery._id)}
                         className="p-1 hover:bg-secondary/10 rounded transition-colors"
                         title="Copy gallery link"
                       >
@@ -491,6 +515,22 @@ function GalleryManagementContent() {
                 rows={3}
                 className="bg-transparent border-b border-secondary/20 rounded-none px-0 py-2 font-paragraph text-lg resize-none focus-visible:ring-0 focus-visible:border-primary transition-colors"
               />
+            </div>
+
+            <div className="space-y-2">
+              <label className="font-paragraph text-xs uppercase tracking-widest text-secondary/60">
+                Gallery URL slug
+              </label>
+              <Input
+                type="text"
+                value={formData.slug}
+                onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                placeholder={slugify(formData.clientName) || 'auto-generated-from-name'}
+                className="bg-transparent border-b border-secondary/20 rounded-none px-0 py-2 font-paragraph text-lg focus-visible:ring-0 focus-visible:border-primary transition-colors"
+              />
+              <p className="font-paragraph text-xs text-secondary/50">
+                Your link: <span className="text-primary">/gallery/{slugify(formData.slug) || slugify(formData.clientName) || 'your-gallery'}</span> — leave blank to auto-generate from the client name.
+              </p>
             </div>
 
             <div className="space-y-2">

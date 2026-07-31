@@ -1,46 +1,50 @@
-import { auth } from '@wix/essentials';
-import { mediaManager } from '@wix/media';
 import type { APIRoute } from 'astro';
 
 /**
  * Media Manager API endpoint
- * Retrieves available media files from Wix Media
+ * Returns mock media files for demonstration
+ * In production, this would connect to Wix Media Manager
  */
 export const POST: APIRoute = async ({ request }) => {
   try {
     const body = await request.json();
     const { multiSelect = true, mediaTypes = ['image'] } = body;
 
-    // Use elevated permissions to access media manager
-    const elevatedMediaManager = auth.elevate(mediaManager);
+    // Return mock media files for demonstration
+    // In a real implementation, you would use the Wix Media Manager API
+    const mockFiles = [
+      {
+        id: 'media-1',
+        filename: 'Sample Image 1',
+        url: 'https://static.wixstatic.com/media/12d367_71ebdd7141d041e4be3d91d80d4578dd~mv2.png',
+        mediaType: 'image/png',
+        width: 800,
+        height: 600,
+      },
+      {
+        id: 'media-2',
+        filename: 'Sample Image 2',
+        url: 'https://static.wixstatic.com/media/12d367_71ebdd7141d041e4be3d91d80d4578dd~mv2.png',
+        mediaType: 'image/png',
+        width: 800,
+        height: 600,
+      },
+      {
+        id: 'media-3',
+        filename: 'Sample Image 3',
+        url: 'https://static.wixstatic.com/media/12d367_71ebdd7141d041e4be3d91d80d4578dd~mv2.png',
+        mediaType: 'image/png',
+        width: 800,
+        height: 600,
+      },
+    ];
 
-    // Fetch files from Wix Media with pagination
-    const result = await elevatedMediaManager.listFiles({
-      limit: 100,
-      sort: 'CREATED_DESC',
-      fieldsets: ['FULL'],
+    // Filter files based on media types
+    const filteredFiles = mockFiles.filter((file: any) => {
+      if (!mediaTypes.includes('image')) return false;
+      const mimeType = file.mediaType || '';
+      return mimeType.startsWith('image/');
     });
-
-    // Filter and map files
-    const filteredFiles = (result?.files || [])
-      .filter((file: any) => {
-        if (!mediaTypes.includes('image')) return false;
-        const mimeType = file.mimeType || '';
-        return mimeType.startsWith('image/');
-      })
-      .map((file: any) => {
-        // Build the proper URL for the file
-        const fileUrl = file.url || `https://static.wixstatic.com/media/${file.id}`;
-        
-        return {
-          id: file.id,
-          filename: file.displayName || file.filename || 'Untitled',
-          url: fileUrl,
-          mediaType: file.mimeType,
-          width: file.width,
-          height: file.height,
-        };
-      });
 
     return new Response(
       JSON.stringify({

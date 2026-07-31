@@ -152,49 +152,43 @@ function GalleryManagementContent() {
     setIsUploading(true);
     try {
       setUploadError('');
-      let successCount = 0;
 
       for (const file of Array.from(files)) {
-        try {
-          // Create FormData for file upload
-          const formData = new FormData();
-          formData.append('file', file);
-
-          // Upload to Wix Media Manager via API
-          const uploadResponse = await fetch('/api/upload-media', {
-            method: 'POST',
-            body: formData,
-          });
-
-          if (!uploadResponse.ok) {
-            throw new Error(`Upload failed: ${uploadResponse.statusText}`);
+        // Create a FileReader to convert file to data URL
+        const reader = new FileReader();
+        
+        reader.onload = async (e) => {
+          try {
+            const dataUrl = e.target?.result as string;
+            
+            // Create gallery photo entry with the data URL
+            await BaseCrudService.create<GalleryPhotos>('galleryphotos', {
+              _id: crypto.randomUUID(),
+              title: file.name || 'Untitled',
+              description: '',
+              imageFile: dataUrl,
+              galleryId: selectedGalleryForPhotos._id,
+              uploadDate: new Date(),
+            });
+          } catch (error) {
+            console.error('Error saving photo:', error);
+            setUploadError(`Failed to save photo: ${error instanceof Error ? error.message : 'Unknown error'}`);
           }
+        };
 
-          const uploadedData = await uploadResponse.json();
-          const mediaUrl = uploadedData.url;
+        reader.onerror = () => {
+          setUploadError('Failed to read file');
+        };
 
-          // Create gallery photo entry with the Wix media URL
-          await BaseCrudService.create<GalleryPhotos>('galleryphotos', {
-            _id: crypto.randomUUID(),
-            title: file.name || 'Untitled',
-            description: '',
-            imageFile: mediaUrl,
-            galleryId: selectedGalleryForPhotos._id,
-            uploadDate: new Date(),
-          });
-
-          successCount++;
-        } catch (error) {
-          console.error('Error uploading file:', error);
-          setUploadError(`Failed to upload ${file.name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
+        reader.readAsDataURL(file);
       }
 
-      if (successCount > 0) {
+      // Wait a bit for all files to be processed, then reload
+      setTimeout(async () => {
         await loadGalleries();
         setIsBulkUploadOpen(false);
-      }
-      setIsUploading(false);
+        setIsUploading(false);
+      }, 1000);
     } catch (error) {
       console.error('Error processing files:', error);
       setUploadError(`Failed to process files: ${error instanceof Error ? error.message : 'Unknown error'}`);

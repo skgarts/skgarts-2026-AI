@@ -23,6 +23,12 @@ export const POST: APIRoute = async ({ request }) => {
       return json({ error: 'No file provided' }, 400);
     }
 
+    // DEBUG — inspect what actually arrived at the server
+    const head = new Uint8Array(await file.slice(0, 4).arrayBuffer());
+    const magic = Array.from(head).map((b) => b.toString(16).padStart(2, '0')).join(' ');
+    console.log('UPLOAD DEBUG:', { name: file.name, type: file.type, size: file.size, firstBytes: magic });
+    // A real JPEG starts with "ff d8 ff"; PNG with "89 50 4e 47".
+
     const rawType = file.type || 'image/jpeg';
     // Map mime -> canonical extension Wix recognizes
     const extByMime: Record<string, string> = {

@@ -36,12 +36,13 @@ export default function WixMediaPicker() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to open media manager');
+        const errorData = await response.json();
+        throw new Error(errorData.details || 'Failed to fetch media files');
       }
 
       const result = await response.json();
 
-      if (result && result.files) {
+      if (result.success && result.files && result.files.length > 0) {
         const newMedia: SelectedMedia[] = result.files.map((file: any) => ({
           id: file.id || crypto.randomUUID(),
           filename: file.filename || file.name || 'Untitled',
@@ -53,10 +54,15 @@ export default function WixMediaPicker() {
         }));
 
         setSelectedMedia((prev) => [...prev, ...newMedia]);
+      } else if (result.files && result.files.length === 0) {
+        alert('No images found in your media library. Please upload some images first.');
+      } else {
+        throw new Error(result.error || 'No files returned from media manager');
       }
     } catch (error) {
       console.error('Error opening media manager:', error);
-      alert('Failed to open media manager. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Failed to open media manager: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Image } from '@/components/ui/image';
 
 interface ImageViewerProps {
@@ -9,17 +9,8 @@ interface ImageViewerProps {
   title?: string;
 }
 
-// Remove Wix URL parameters to get the original full-resolution image
-const getFullResolutionUrl = (url: string): string => {
-  if (!url) return url;
-  // Remove Wix transformation parameters
-  return url.split('?')[0];
-};
-
 export function ImageViewer({ src, alt = '', title = '' }: ImageViewerProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const fullResUrl = getFullResolutionUrl(src);
 
   useEffect(() => {
     if (isOpen) {
@@ -88,17 +79,17 @@ export function ImageViewer({ src, alt = '', title = '' }: ImageViewerProps) {
               <X size={24} />
             </motion.button>
 
-            {/* Image Container - Using raw img tag for full-size display */}
+            {/* Image Container */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.2 }}
-              className="relative w-full h-full flex items-center justify-center p-4 overflow-auto"
+              className="relative w-full h-full flex items-center justify-center p-4"
               onClick={(e) => e.stopPropagation()}
               onContextMenu={(e) => e.preventDefault()}
             >
-              <Image src={fullResUrl} alt={alt} className="max-w-full max-h-full w-auto h-auto object-contain select-none" draggable={false} onContextMenu={(e) => e.preventDefault()} onLoad={() => setImageLoaded(true)} style={{ maxWidth: '100vw', maxHeight: '100vh' }} />
+              <Image src={src} alt={alt} className="max-w-full max-h-full object-contain select-none" draggable={false} onContextMenu={(e) => e.preventDefault()} />
             </motion.div>
 
             {/* Title (if provided) */}

@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import React from 'react';
 import { useMember } from '@/integrations';
 import { MemberProtectedRoute } from '@/components/ui/member-protected-route';
 import Header from '@/components/Header';
@@ -12,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { BaseCrudService } from '@/integrations';
 import { ClientGalleries, GalleryPhotos } from '@/entities';
 import { motion } from 'framer-motion';
-import { Plus, Trash2, Edit2, Upload, Link as LinkIcon, Copy, Check, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, Edit2, Upload, Link as LinkIcon, Copy, Check } from 'lucide-react';
 
 function GalleryManagementContent() {
   const { member } = useMember();
@@ -22,11 +21,8 @@ function GalleryManagementContent() {
   const [editingGallery, setEditingGallery] = useState<ClientGalleries | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [photos, setPhotos] = useState<GalleryPhotos[]>([]);
-  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [isPhotosDialogOpen, setIsPhotosDialogOpen] = useState(false);
   const [selectedGalleryForPhotos, setSelectedGalleryForPhotos] = useState<ClientGalleries | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadError, setUploadError] = useState('');
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     clientName: '',
     description: '',
@@ -126,7 +122,8 @@ function GalleryManagementContent() {
   };
 
   const getGalleryLink = (galleryId: string) => {
-    return `https://skgarts.com/gallery/${galleryId}`;
+    const baseUrl = window.location.origin;
+    return `${baseUrl}/gallery/${galleryId}`;
   };
 
   const copyToClipboard = (text: string, id: string) => {
@@ -135,65 +132,13 @@ function GalleryManagementContent() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const openPhotosDialog = (gallery: ClientGalleries) => {
+    setSelectedGalleryForPhotos(gallery);
+    setIsPhotosDialogOpen(true);
+  };
+
   const getGalleryPhotos = (galleryId: string) => {
     return photos.filter(p => p.galleryId === galleryId);
-  };
-
-  const handleBulkUploadOpen = (gallery: ClientGalleries) => {
-    setSelectedGalleryForPhotos(gallery);
-    setIsBulkUploadOpen(true);
-    setUploadError('');
-  };
-
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files || files.length === 0 || !selectedGalleryForPhotos) return;
-
-    setIsUploading(true);
-    try {
-      setUploadError('');
-
-      for (const file of Array.from(files)) {
-        // Create a FileReader to convert file to data URL
-        const reader = new FileReader();
-        
-        reader.onload = async (e) => {
-          try {
-            const dataUrl = e.target?.result as string;
-            
-            // Create gallery photo entry with the data URL
-            await BaseCrudService.create<GalleryPhotos>('galleryphotos', {
-              _id: crypto.randomUUID(),
-              title: file.name || 'Untitled',
-              description: '',
-              imageFile: dataUrl,
-              galleryId: selectedGalleryForPhotos._id,
-              uploadDate: new Date(),
-            });
-          } catch (error) {
-            console.error('Error saving photo:', error);
-            setUploadError(`Failed to save photo: ${error instanceof Error ? error.message : 'Unknown error'}`);
-          }
-        };
-
-        reader.onerror = () => {
-          setUploadError('Failed to read file');
-        };
-
-        reader.readAsDataURL(file);
-      }
-
-      // Wait a bit for all files to be processed, then reload
-      setTimeout(async () => {
-        await loadGalleries();
-        setIsBulkUploadOpen(false);
-        setIsUploading(false);
-      }, 1000);
-    } catch (error) {
-      console.error('Error processing files:', error);
-      setUploadError(`Failed to process files: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      setIsUploading(false);
-    }
   };
 
   return (
@@ -207,7 +152,7 @@ function GalleryManagementContent() {
               Gallery Management
             </h1>
             <p className="font-paragraph text-secondary/70 max-w-2xl">
-              Create, edit, and manage your client galleries. All galleries are hosted on skgarts.com.
+              Create, edit, and manage your client galleries. Add access codes and gallery links for your clients.
             </p>
           </div>
           <Button
@@ -298,10 +243,6 @@ function GalleryManagementContent() {
                       </a>
                     )}
                   </div>
-
-                  <div className="mb-4 text-xs font-paragraph text-secondary/60 bg-accent-blue/5 p-2 rounded">
-                    <span className="font-semibold">Photos:</span> {getGalleryPhotos(gallery._id).length}
-                  </div>
                   
                   <div className="flex gap-2">
                     <Button
@@ -310,13 +251,6 @@ function GalleryManagementContent() {
                     >
                       <Edit2 size={14} />
                       Edit
-                    </Button>
-                    <Button
-                      onClick={() => handleBulkUploadOpen(gallery)}
-                      className="flex-1 bg-accent-blue/10 text-accent-blue hover:bg-accent-blue/20 font-paragraph text-xs uppercase tracking-widest py-2 rounded-none flex items-center justify-center gap-2"
-                    >
-                      <Upload size={14} />
-                      Upload
                     </Button>
                     <Button
                       onClick={() => handleDeleteGallery(gallery._id)}
@@ -436,71 +370,6 @@ function GalleryManagementContent() {
                 className="flex-1 bg-primary text-background hover:bg-primary/90 font-paragraph uppercase tracking-widest text-sm py-3 rounded-none"
               >
                 {editingGallery ? 'Update Gallery' : 'Create Gallery'}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Bulk Upload Dialog */}
-      <Dialog open={isBulkUploadOpen} onOpenChange={setIsBulkUploadOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="font-heading text-2xl">
-              Add Images - {selectedGalleryForPhotos?.clientName}
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-6 py-6">
-            <div className="bg-accent-blue/5 border border-accent-blue/20 rounded-lg p-6">
-              <p className="font-paragraph text-sm text-secondary mb-4">
-                Select images from Wix Media Manager to add to this gallery. You can upload new images or choose from existing media.
-              </p>
-            </div>
-
-            {/* Error Message */}
-            {uploadError && (
-              <div className="flex items-center gap-2 p-3 bg-[#ED1B23]/10 border border-[#ED1B23]/20 rounded text-[#ED1B23]">
-                <AlertCircle size={16} />
-                <p className="font-paragraph text-sm">{uploadError}</p>
-              </div>
-            )}
-
-            {/* Hidden File Input */}
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={handleFileSelect}
-              className="hidden"
-            />
-
-            {/* Action Buttons */}
-            <div className="flex gap-4 pt-6">
-              <Button
-                onClick={() => setIsBulkUploadOpen(false)}
-                disabled={isUploading}
-                className="flex-1 bg-secondary/10 text-secondary hover:bg-secondary/20 font-paragraph uppercase tracking-widest text-sm py-3 rounded-none disabled:opacity-50"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isUploading}
-                className="flex-1 bg-primary text-background hover:bg-primary/90 font-paragraph uppercase tracking-widest text-sm py-3 rounded-none disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {isUploading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-background border-t-transparent rounded-full animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <Upload size={16} />
-                    Select Images
-                  </>
-                )}
               </Button>
             </div>
           </div>

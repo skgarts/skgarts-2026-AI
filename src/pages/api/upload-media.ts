@@ -54,13 +54,34 @@ export const POST: APIRoute = async ({ request }) => {
       .slice(0, 60) || 'photo';
     const fileName = `${base}-${Date.now().toString(36)}.${ext}`;
 
-    // 1) Generate an upload URL — elevated so the server route is authorized to
-    // write to Wix Media (default visitor identity gets 403 PERMISSION_DENIED).
-    const elevatedGenerateUploadUrl = auth.elevate(files.generateFileUploadUrl);
-    const { uploadUrl } = await elevatedGenerateUploadUrl(mimeType, {
-      fileName,
-      private: false,
-    });
+    // Generate an upload URL, elevated so the server route is authorized.
+    // @wix/media versions differ on argument order for generateFileUploadUrl:
+    // some expect (mimeType, options), others (fileName, options). The -7751
+    // "unsupported file extension" error is what you get when the first arg is
+    // the wrong one — so try the documented order, then fall back to the other.
+    const genUploadUrl = auth.elevate(files.generateFileUploadUrl);
+
+    let uploadUrl: string | undefined;
+    let firstAttemptError: unknown = null;
+    try {
+      const r = await genUploadUrl(mimeType, { fileName, private: false } as any);
+      uploadUrl = r?.uploadUrl;
+    } catch (e1) {
+      firstAttemptError = e1;
+      try {
+        // Fallback: pass the fileName (which carries a real .jpg/.png extension) first
+        const r = await genUploadUrl(fileName as any, { mimeType, private: false } as any);
+        uploadUrl = r?.uploadUrl;
+      } catch (e2) {
+        return json(
+          {
+            error: 'Could not obtain an upload URL from Wix Media',
+            details: `attempt1(mime-first): ${errMsg(firstAttemptError)} | attempt2(name-first): ${errMsg(e2)}`,
+          },
+          500
+        );
+      }
+    }
 
     if (!uploadUrl) {
       return json({ error: 'Could not obtain an upload URL from Wix Media' }, 500);
@@ -97,6 +118,12 @@ export const POST: APIRoute = async ({ request }) => {
     );
   }
 };
+
+function errMsg(e: unknown): string {
+  if (!e) return 'unknown';
+  if (e instanceof Error) return e.message;
+  try { return JSON.stringify(e); } catch { return String(e); }
+}
 
 function json(body: unknown, status: number) {
   return new Response(JSON.stringify(body), {

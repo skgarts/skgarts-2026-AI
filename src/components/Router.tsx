@@ -8,6 +8,7 @@ import ServiceDetailPage from '@/components/pages/ServiceDetailPage';
 import ProfilePage from '@/components/pages/ProfilePage';
 import GalleryManagementPage from '@/components/pages/GalleryManagementPage';
 import ClientGalleryViewPage from '@/components/pages/ClientGalleryViewPage';
+import MediaPickerPage from '@/components/pages/MediaPickerPage';
 import { useEffect } from 'react';
 
 // Layout component that includes ScrollToTop
@@ -63,6 +64,13 @@ const router = createBrowserRouter([
         element: <ClientGalleryViewPage />,
         routeMetadata: {
           pageIdentifier: 'client-gallery-view',
+        },
+      },
+      {
+        path: "media-picker",
+        element: <MediaPickerPage />,
+        routeMetadata: {
+          pageIdentifier: 'media-picker',
         },
       },
       {

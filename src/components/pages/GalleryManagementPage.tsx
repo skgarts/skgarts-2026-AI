@@ -1,16 +1,17 @@
-import Footer from '@/components/Footer';
-import Header from '@/components/Header';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Image } from '@/components/ui/image';
-import { Input } from '@/components/ui/input';
+import { useState, useEffect } from 'react';
+import { useMember } from '@/integrations';
 import { MemberProtectedRoute } from '@/components/ui/member-protected-route';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Image } from '@/components/ui/image';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { BaseCrudService } from '@/integrations';
 import { ClientGalleries, GalleryPhotos } from '@/entities';
-import { BaseCrudService, useMember } from '@/integrations';
 import { motion } from 'framer-motion';
-import { Check, Copy, Edit2, Image as ImageIcon, Link as LinkIcon, Loader2, Plus, Trash2, Upload, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Plus, Trash2, Edit2, Upload, Link as LinkIcon, Copy, Check, Image as ImageIcon, X, Loader2 } from 'lucide-react';
 
 function GalleryManagementContent() {
   const { member } = useMember();
@@ -168,21 +169,19 @@ function GalleryManagementContent() {
     return photos.filter(p => p.galleryId === galleryId);
   };
 
-  // Downscale + re-encode an image in the browser so it stays under the platform's
-  // upload size limit (413). Client galleries don't need full-res originals — a
-  // high-quality ~2560px web version looks identical on screen and loads faster.
+  // Downscale + re-encode an image in the browser to a clean JPEG. Always returns
+  // a valid JPEG File, or throws (so we never silently upload un-encodable bytes).
   const compressImage = (file: File, maxDim = 2560, quality = 0.82): Promise<File> =>
     new Promise((resolve, reject) => {
-      // Leave non-JPEG/PNG (e.g. GIF) untouched
-      if (!/image\/(jpe?g|png|webp)/i.test(file.type)) {
-        resolve(file);
-        return;
-      }
       const img = new window.Image();
       const url = URL.createObjectURL(file);
       img.onload = () => {
-        URL.revokeObjectURL(url);
         let { width, height } = img;
+        if (!width || !height) {
+          URL.revokeObjectURL(url);
+          reject(new Error('image has no dimensions'));
+          return;
+        }
         if (width > maxDim || height > maxDim) {
           if (width >= height) {
             height = Math.round((height / width) * maxDim);
@@ -197,18 +196,23 @@ function GalleryManagementContent() {
         canvas.height = height;
         const ctx = canvas.getContext('2d');
         if (!ctx) {
-          resolve(file);
+          URL.revokeObjectURL(url);
+          reject(new Error('canvas not available'));
           return;
         }
+        // white background (JPEG has no alpha) then draw
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, width, height);
         ctx.drawImage(img, 0, 0, width, height);
+        URL.revokeObjectURL(url);
         canvas.toBlob(
           (blob) => {
-            if (!blob) {
-              resolve(file);
+            if (!blob || blob.size === 0) {
+              reject(new Error('could not encode image to JPEG'));
               return;
             }
-            const newName = file.name.replace(/\.(png|webp)$/i, '.jpg');
-            resolve(new File([blob], newName, { type: 'image/jpeg', lastModified: Date.now() }));
+            const base = file.name.replace(/\.[^.]+$/, '') || 'photo';
+            resolve(new File([blob], `${base}.jpg`, { type: 'image/jpeg', lastModified: Date.now() }));
           },
           'image/jpeg',
           quality
@@ -216,23 +220,23 @@ function GalleryManagementContent() {
       };
       img.onerror = () => {
         URL.revokeObjectURL(url);
-        reject(new Error('Could not read image'));
+        reject(new Error('could not decode image (unsupported or corrupt)'));
       };
       img.src = url;
     });
 
   // Upload one file to Wix Media via the /api/upload-media endpoint, return its URL
   const uploadOneFile = async (file: File): Promise<string> => {
-    const prepared = await compressImage(file).catch(() => file);
+    // Always re-encode to a clean JPEG. If this throws, we skip the file with a
+    // clear reason rather than uploading bytes Wix will reject.
+    const prepared = await compressImage(file);
     const body = new FormData();
-    body.append('file', prepared);
+    body.append('file', prepared, prepared.name);
     const res = await fetch('/api/upload-media', { method: 'POST', body });
     if (!res.ok) {
       const detail = await res.json().catch(() => ({}));
       const sizeMb = (prepared.size / (1024 * 1024)).toFixed(1);
-      if (res.status === 413) {
-        throw new Error(`still too large after compression (${sizeMb}MB)`);
-      }
+      if (res.status === 413) throw new Error(`still too large after compression (${sizeMb}MB)`);
       throw new Error(detail?.details || detail?.error || `Upload failed (${res.status})`);
     }
     const data = await res.json();

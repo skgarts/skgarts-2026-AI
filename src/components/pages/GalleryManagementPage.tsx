@@ -168,13 +168,71 @@ function GalleryManagementContent() {
     return photos.filter(p => p.galleryId === galleryId);
   };
 
+  // Downscale + re-encode an image in the browser so it stays under the platform's
+  // upload size limit (413). Client galleries don't need full-res originals — a
+  // high-quality ~2560px web version looks identical on screen and loads faster.
+  const compressImage = (file: File, maxDim = 2560, quality = 0.82): Promise<File> =>
+    new Promise((resolve, reject) => {
+      // Leave non-JPEG/PNG (e.g. GIF) untouched
+      if (!/image\/(jpe?g|png|webp)/i.test(file.type)) {
+        resolve(file);
+        return;
+      }
+      const img = new window.Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim) {
+          if (width >= height) {
+            height = Math.round((height / width) * maxDim);
+            width = maxDim;
+          } else {
+            width = Math.round((width / height) * maxDim);
+            height = maxDim;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(file);
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              resolve(file);
+              return;
+            }
+            const newName = file.name.replace(/\.(png|webp)$/i, '.jpg');
+            resolve(new File([blob], newName, { type: 'image/jpeg', lastModified: Date.now() }));
+          },
+          'image/jpeg',
+          quality
+        );
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error('Could not read image'));
+      };
+      img.src = url;
+    });
+
   // Upload one file to Wix Media via the /api/upload-media endpoint, return its URL
   const uploadOneFile = async (file: File): Promise<string> => {
+    const prepared = await compressImage(file).catch(() => file);
     const body = new FormData();
-    body.append('file', file);
+    body.append('file', prepared);
     const res = await fetch('/api/upload-media', { method: 'POST', body });
     if (!res.ok) {
       const detail = await res.json().catch(() => ({}));
+      const sizeMb = (prepared.size / (1024 * 1024)).toFixed(1);
+      if (res.status === 413) {
+        throw new Error(`still too large after compression (${sizeMb}MB)`);
+      }
       throw new Error(detail?.details || detail?.error || `Upload failed (${res.status})`);
     }
     const data = await res.json();

@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ImageViewer } from '@/components/ImageViewer';
 import WhatsAppButton from '@/components/WhatsAppButton';
+import MediaPickerExample from '@/components/MediaPickerExample';
 import { ClientGalleries, FrequentlyAskedQuestions, PortraitGallery, ServiceCategories } from '@/entities';
 import { BaseCrudService } from '@/integrations';
 import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion';
@@ -913,6 +914,28 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Media Picker Example Section */}
+      <section className="w-full bg-white py-24 lg:py-32 border-t border-secondary/10">
+        <div className="max-w-[120rem] mx-auto px-6 lg:px-12">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="mb-16"
+          >
+            <h2 className="font-heading text-5xl lg:text-6xl text-secondary mb-6">
+              Media Picker Demo
+            </h2>
+            <p className="font-paragraph text-lg text-secondary/70 max-w-2xl">
+              Try the Wix Media Manager integration below. Select multiple images, and they'll be uploaded to your Wix Media library. You'll get back the URLs and file IDs for use throughout your site.
+            </p>
+          </motion.div>
+          <MediaPickerExample />
+        </div>
+      </section>
+
       <Footer />
     </div>
   );

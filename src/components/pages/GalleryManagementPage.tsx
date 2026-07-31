@@ -23,10 +23,9 @@ function GalleryManagementContent() {
   const [photos, setPhotos] = useState<GalleryPhotos[]>([]);
   const [isPhotosDialogOpen, setIsPhotosDialogOpen] = useState(false);
   const [selectedGalleryForPhotos, setSelectedGalleryForPhotos] = useState<ClientGalleries | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<{ done: number; total: number }>({ done: 0, total: 0 });
+  const [photoUrlInput, setPhotoUrlInput] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
   const [uploadErrors, setUploadErrors] = useState<string[]>([]);
-  const [isDragging, setIsDragging] = useState(false);
   const [formData, setFormData] = useState({
     clientName: '',
     description: '',
@@ -169,112 +168,43 @@ function GalleryManagementContent() {
     return photos.filter(p => p.galleryId === galleryId);
   };
 
-  // Downscale + re-encode an image in the browser to a clean JPEG. Always returns
-  // a valid JPEG File, or throws (so we never silently upload un-encodable bytes).
-  const compressImage = (file: File, maxDim = 2560, quality = 0.82): Promise<File> =>
-    new Promise((resolve, reject) => {
-      const img = new window.Image();
-      const url = URL.createObjectURL(file);
-      img.onload = () => {
-        let { width, height } = img;
-        if (!width || !height) {
-          URL.revokeObjectURL(url);
-          reject(new Error('image has no dimensions'));
-          return;
-        }
-        if (width > maxDim || height > maxDim) {
-          if (width >= height) {
-            height = Math.round((height / width) * maxDim);
-            width = maxDim;
-          } else {
-            width = Math.round((width / height) * maxDim);
-            height = maxDim;
-          }
-        }
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          URL.revokeObjectURL(url);
-          reject(new Error('canvas not available'));
-          return;
-        }
-        // white background (JPEG has no alpha) then draw
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, width, height);
-        ctx.drawImage(img, 0, 0, width, height);
-        URL.revokeObjectURL(url);
-        canvas.toBlob(
-          (blob) => {
-            if (!blob || blob.size === 0) {
-              reject(new Error('could not encode image to JPEG'));
-              return;
-            }
-            const base = file.name.replace(/\.[^.]+$/, '') || 'photo';
-            resolve(new File([blob], `${base}.jpg`, { type: 'image/jpeg', lastModified: Date.now() }));
-          },
-          'image/jpeg',
-          quality
-        );
-      };
-      img.onerror = () => {
-        URL.revokeObjectURL(url);
-        reject(new Error('could not decode image (unsupported or corrupt)'));
-      };
-      img.src = url;
-    });
-
-  // Upload one file to Wix Media via the /api/upload-media endpoint, return its URL
-  const uploadOneFile = async (file: File): Promise<string> => {
-    // Always re-encode to a clean JPEG. If this throws, we skip the file with a
-    // clear reason rather than uploading bytes Wix will reject.
-    const prepared = await compressImage(file);
-    const body = new FormData();
-    body.append('file', prepared, prepared.name);
-    const res = await fetch('/api/upload-media', { method: 'POST', body });
-    if (!res.ok) {
-      const detail = await res.json().catch(() => ({}));
-      const sizeMb = (prepared.size / (1024 * 1024)).toFixed(1);
-      if (res.status === 413) throw new Error(`still too large after compression (${sizeMb}MB)`);
-      throw new Error(detail?.details || detail?.error || `Upload failed (${res.status})`);
-    }
-    const data = await res.json();
-    if (!data?.url) throw new Error('Upload returned no URL');
-    return data.url as string;
-  };
-
-  // Bulk upload: send many files, save each as a galleryphotos record
-  const handleBulkUpload = async (fileList: FileList | File[]) => {
+  // Add photos by URL — paste image links copied from the Wix Media Manager
+  // (one per line). No file upload happens here, so this can't hit Wix's
+  // upload-size / format errors. Each valid URL becomes a galleryphotos record.
+  const handleAddPhotosByUrl = async () => {
     if (!selectedGalleryForPhotos) return;
-    const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
-    if (files.length === 0) return;
+    const urls = photoUrlInput
+      .split(/[\n,]+/)
+      .map((u) => u.trim())
+      .filter((u) => /^https?:\/\/.+/i.test(u));
 
-    setIsUploading(true);
+    if (urls.length === 0) {
+      setUploadErrors(['Please paste at least one valid image URL (starting with http).']);
+      return;
+    }
+
+    setIsSaving(true);
     setUploadErrors([]);
-    setUploadProgress({ done: 0, total: files.length });
-
     const errors: string[] = [];
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
+
+    for (const url of urls) {
       try {
-        const url = await uploadOneFile(file);
         await BaseCrudService.create<GalleryPhotos>('galleryphotos', {
           _id: crypto.randomUUID(),
-          title: file.name.replace(/\.[^.]+$/, ''),
+          title: url.split('/').pop()?.split('?')[0] || 'Photo',
           imageFile: url,
           galleryId: selectedGalleryForPhotos._id,
           uploadDate: new Date(),
         });
       } catch (err) {
-        errors.push(`${file.name}: ${err instanceof Error ? err.message : 'failed'}`);
+        errors.push(`${url}: ${err instanceof Error ? err.message : 'failed to save'}`);
       }
-      setUploadProgress({ done: i + 1, total: files.length });
     }
 
     setUploadErrors(errors);
-    setIsUploading(false);
-    await loadGalleries(); // refresh photo list
+    setPhotoUrlInput('');
+    setIsSaving(false);
+    await loadGalleries(); // refresh photo grid
   };
 
   const handleDeletePhoto = async (photoId: string) => {
@@ -284,12 +214,6 @@ function GalleryManagementContent() {
     } catch (error) {
       console.error('Error deleting photo:', error);
     }
-  };
-
-  const onDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    if (e.dataTransfer.files?.length) handleBulkUpload(e.dataTransfer.files);
   };
 
   return (
@@ -438,7 +362,7 @@ function GalleryManagementContent() {
       </section>
 
       {/* Photos Management Dialog */}
-      <Dialog open={isPhotosDialogOpen} onOpenChange={(open) => { setIsPhotosDialogOpen(open); if (!open) { setUploadErrors([]); setSelectedGalleryForPhotos(null); } }}>
+      <Dialog open={isPhotosDialogOpen} onOpenChange={(open) => { setIsPhotosDialogOpen(open); if (!open) { setUploadErrors([]); setPhotoUrlInput(''); setSelectedGalleryForPhotos(null); } }}>
         <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-heading text-2xl">
@@ -447,53 +371,45 @@ function GalleryManagementContent() {
           </DialogHeader>
 
           <div className="py-6 space-y-8">
-            {/* Dropzone */}
-            <label
-              onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-              onDragLeave={() => setIsDragging(false)}
-              onDrop={onDrop}
-              className={`flex flex-col items-center justify-center gap-3 border-2 border-dashed rounded-lg py-12 px-6 cursor-pointer transition-colors ${
-                isDragging ? 'border-primary bg-primary/5' : 'border-secondary/20 hover:border-primary/40'
-              }`}
-            >
-              <Upload size={36} className="text-primary" />
-              <p className="font-paragraph text-sm text-secondary">
-                Drag &amp; drop photos here, or <span className="text-primary underline">browse</span>
-              </p>
-              <p className="font-paragraph text-xs text-secondary/50">
-                Select multiple files — they upload to your Wix media and attach to this gallery.
-              </p>
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                disabled={isUploading}
-                onChange={(e) => { if (e.target.files?.length) handleBulkUpload(e.target.files); e.currentTarget.value = ''; }}
-              />
-            </label>
-
-            {/* Upload progress */}
-            {isUploading && (
-              <div className="flex items-center gap-3 text-secondary">
-                <Loader2 size={18} className="animate-spin text-primary" />
-                <span className="font-paragraph text-sm">
-                  Uploading {uploadProgress.done} / {uploadProgress.total}…
-                </span>
-                <div className="flex-1 h-1.5 bg-secondary/10 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-primary transition-all"
-                    style={{ width: `${uploadProgress.total ? (uploadProgress.done / uploadProgress.total) * 100 : 0}%` }}
-                  />
+            {/* Add photos by URL (paste links from Wix Media Manager) */}
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <ImageIcon size={20} className="text-primary mt-1 shrink-0" />
+                <div>
+                  <p className="font-paragraph text-sm text-secondary font-semibold">Add photos by URL</p>
+                  <p className="font-paragraph text-xs text-secondary/60 mt-1">
+                    Upload your photos in the Wix <span className="font-semibold">Media Manager</span>, copy their
+                    image URLs, and paste them below — one per line. Each becomes a photo in this gallery.
+                  </p>
                 </div>
               </div>
-            )}
+              <textarea
+                value={photoUrlInput}
+                onChange={(e) => setPhotoUrlInput(e.target.value)}
+                rows={5}
+                placeholder={"https://static.wixstatic.com/media/....jpg\nhttps://static.wixstatic.com/media/....jpg"}
+                className="w-full bg-transparent border border-secondary/20 rounded p-3 font-paragraph text-sm text-secondary focus:outline-none focus:border-primary transition-colors resize-y"
+              />
+              <div className="flex items-center gap-3">
+                <Button
+                  onClick={handleAddPhotosByUrl}
+                  disabled={isSaving || !photoUrlInput.trim()}
+                  className="bg-primary text-background hover:bg-primary/90 font-paragraph text-xs uppercase tracking-widest px-6 py-2 rounded-none flex items-center gap-2 disabled:opacity-50"
+                >
+                  {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                  {isSaving ? 'Adding…' : 'Add Photos'}
+                </Button>
+                <span className="font-paragraph text-xs text-secondary/40">
+                  Tip: in Media Manager, right-click an image → “Copy URL”.
+                </span>
+              </div>
+            </div>
 
             {/* Errors */}
             {uploadErrors.length > 0 && (
               <div className="bg-[#ED1B23]/5 border border-[#ED1B23]/20 rounded p-4">
                 <p className="font-paragraph text-sm text-[#ED1B23] font-semibold mb-2">
-                  {uploadErrors.length} file(s) failed to upload:
+                  {uploadErrors.length} item(s) could not be added:
                 </p>
                 <ul className="font-paragraph text-xs text-[#ED1B23]/80 space-y-1 list-disc pl-5">
                   {uploadErrors.map((err, i) => <li key={i}>{err}</li>)}
@@ -532,7 +448,7 @@ function GalleryManagementContent() {
                   </div>
                 </div>
               ) : (
-                !isUploading && (
+                !isSaving && (
                   <p className="font-paragraph text-sm text-secondary/50 text-center py-6">
                     No photos yet — upload some above.
                   </p>

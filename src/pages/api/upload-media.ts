@@ -1,17 +1,20 @@
 import { files } from '@wix/media';
+import { auth } from '@wix/essentials';
 import type { APIRoute } from 'astro';
 
 /**
  * Uploads an image to Wix Media and returns its URL.
  *
- * Uses the `@wix/media` SDK directly — the same pattern as the working
- * `@wix/data` calls in BaseCrudService. Authentication is handled by the
- * Wix Astro integration (`wix({ auth: true })` in astro.config.mjs), so we
- * do NOT create a client manually (the old getWixClient() approach failed
- * with "getWixClient is not a function").
+ * AUTHORIZATION FIX:
+ * - Uses auth.elevate() to grant the API route elevated permissions for media uploads
+ * - This is required because server-side media operations need app-level authorization
+ * - The elevated identity has permission to write to Wix Media Manager
  *
- * Flow: generate a resumable/simple upload URL for the file, then PUT the
- * bytes to it. Wix returns the stored file descriptor (incl. its URL).
+ * Flow: 
+ * 1. Elevate permissions with auth.elevate()
+ * 2. Generate an upload URL from Wix Media
+ * 3. PUT the file bytes to that URL
+ * 4. Return the stored file's URL
  */
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -25,8 +28,11 @@ export const POST: APIRoute = async ({ request }) => {
     const mimeType = file.type || 'image/jpeg';
     const fileName = file.name || `upload-${Date.now()}.jpg`;
 
-    // 1) Ask Wix Media for an upload URL for this file.
-    const { uploadUrl } = await files.generateFileUploadUrl(mimeType, {
+    // 1) Elevate permissions for this operation
+    const elevatedAuth = auth.elevate();
+
+    // 2) Ask Wix Media for an upload URL for this file (using elevated auth)
+    const { uploadUrl } = await elevatedAuth.files.generateFileUploadUrl(mimeType, {
       fileName,
       // store uploads from this app under a predictable folder
       parentFolderId: 'visitor-uploads',

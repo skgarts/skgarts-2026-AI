@@ -1,14 +1,30 @@
-import Footer from '@/components/Footer';
-import Header from '@/components/Header';
-import { Button } from '@/components/ui/button';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useParams } from 'react-router-dom';
+import { BaseCrudService } from '@/integrations';
+import { ClientGalleries, GalleryPhotos } from '@/entities';
 import { Image } from '@/components/ui/image';
 import { Input } from '@/components/ui/input';
-import { ClientGalleries, GalleryPhotos } from '@/entities';
-import { BaseCrudService } from '@/integrations';
+import { Button } from '@/components/ui/button';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import { motion } from 'framer-motion';
-import { AlertCircle, Lock } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Lock, AlertCircle, X, ChevronLeft, ChevronRight } from 'lucide-react';
+
+// Tiled "SKG Arts" watermark overlay (deters casual saving; note: screenshots
+// cannot be fully blocked on the web — the watermark is the real deterrent).
+function Watermark() {
+  return (
+    <div
+      className="pointer-events-none absolute inset-0 z-10 select-none overflow-hidden"
+      aria-hidden="true"
+      style={{
+        backgroundImage:
+          "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='160'><text x='50%' y='50%' fill='white' fill-opacity='0.16' font-size='22' font-family='Georgia, serif' font-style='italic' text-anchor='middle' transform='rotate(-30 130 80)'>SKG Arts</text></svg>\")",
+        backgroundRepeat: 'repeat',
+      }}
+    />
+  );
+}
 
 export default function ClientGalleryViewPage() {
   const { clientId } = useParams<{ clientId: string }>();
@@ -18,6 +34,33 @@ export default function ClientGalleryViewPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [accessCode, setAccessCode] = useState('');
   const [error, setError] = useState('');
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const touchStartX = useRef<number | null>(null);
+
+  const closeLightbox = useCallback(() => setLightboxIndex(null), []);
+  const showPrev = useCallback(
+    () => setLightboxIndex((i) => (i === null ? i : (i - 1 + photos.length) % photos.length)),
+    [photos.length]
+  );
+  const showNext = useCallback(
+    () => setLightboxIndex((i) => (i === null ? i : (i + 1) % photos.length)),
+    [photos.length]
+  );
+
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeLightbox();
+      else if (e.key === 'ArrowLeft') showPrev();
+      else if (e.key === 'ArrowRight') showNext();
+    };
+    window.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = '';
+    };
+  }, [lightboxIndex, closeLightbox, showPrev, showNext]);
 
   useEffect(() => {
     loadGallery();
@@ -161,40 +204,33 @@ export default function ClientGalleryViewPage() {
         </div>
 
         {photos.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div
+            className="[column-fill:_balance] columns-1 sm:columns-2 lg:columns-3 gap-4"
+            style={{ columnGap: '1rem' }}
+          >
             {photos.map((photo, index) => (
-              <motion.div
+              <motion.button
                 key={photo._id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="overflow-hidden bg-white border border-secondary/10 hover:border-primary/30 transition-colors"
+                transition={{ duration: 0.4, delay: Math.min(index * 0.04, 0.4) }}
+                onClick={() => setLightboxIndex(index)}
+                className="group relative mb-4 block w-full break-inside-avoid overflow-hidden bg-secondary/5"
+                title="Click to view"
               >
                 {photo.imageFile && (
-                  <div className="relative h-64 overflow-hidden bg-secondary/5">
+                  <>
                     <Image
                       src={photo.imageFile}
                       alt={photo.title || 'Gallery photo'}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                      width={400}
+                      className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-[1.03] pointer-events-none"
+                      width={800}
                     />
-                  </div>
+                    <Watermark />
+                    <div className="absolute inset-0 z-20 bg-secondary/0 group-hover:bg-secondary/10 transition-colors duration-300" />
+                  </>
                 )}
-                {(photo.title || photo.description) && (
-                  <div className="p-4">
-                    {photo.title && (
-                      <h3 className="font-heading text-lg text-secondary mb-2">
-                        {photo.title}
-                      </h3>
-                    )}
-                    {photo.description && (
-                      <p className="font-paragraph text-sm text-secondary/70">
-                        {photo.description}
-                      </p>
-                    )}
-                  </div>
-                )}
-              </motion.div>
+              </motion.button>
             ))}
           </div>
         ) : (
@@ -203,6 +239,84 @@ export default function ClientGalleryViewPage() {
           </div>
         )}
       </section>
+
+      {/* Fullscreen Lightbox */}
+      {lightboxIndex !== null && photos[lightboxIndex] && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center"
+          onClick={closeLightbox}
+          onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
+          onTouchEnd={(e) => {
+            if (touchStartX.current === null) return;
+            const dx = e.changedTouches[0].clientX - touchStartX.current;
+            if (dx > 50) showPrev();
+            else if (dx < -50) showNext();
+            touchStartX.current = null;
+          }}
+        >
+          {/* Close */}
+          <button
+            onClick={(e) => { e.stopPropagation(); closeLightbox(); }}
+            className="absolute top-5 right-5 z-30 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+            aria-label="Close"
+          >
+            <X size={22} />
+          </button>
+
+          {/* Counter */}
+          <span className="absolute top-6 left-6 z-30 font-paragraph text-sm text-white/70">
+            {lightboxIndex + 1} / {photos.length}
+          </span>
+
+          {/* Prev */}
+          {photos.length > 1 && (
+            <button
+              onClick={(e) => { e.stopPropagation(); showPrev(); }}
+              className="absolute left-3 md:left-6 z-30 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+              aria-label="Previous"
+            >
+              <ChevronLeft size={26} />
+            </button>
+          )}
+
+          {/* Image */}
+          <div
+            className="relative max-w-[92vw] max-h-[88vh] flex flex-col items-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="relative">
+              <Image
+                src={photos[lightboxIndex].imageFile as string}
+                alt={photos[lightboxIndex].title || 'Gallery photo'}
+                className="max-w-[92vw] max-h-[82vh] w-auto h-auto object-contain pointer-events-none"
+                width={1600}
+              />
+              <Watermark />
+            </div>
+            {(photos[lightboxIndex].title || photos[lightboxIndex].description) && (
+              <div className="mt-3 text-center">
+                {photos[lightboxIndex].title && (
+                  <h3 className="font-heading text-lg text-white">{photos[lightboxIndex].title}</h3>
+                )}
+                {photos[lightboxIndex].description && (
+                  <p className="font-paragraph text-sm text-white/70">{photos[lightboxIndex].description}</p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Next */}
+          {photos.length > 1 && (
+            <button
+              onClick={(e) => { e.stopPropagation(); showNext(); }}
+              className="absolute right-3 md:right-6 z-30 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+              aria-label="Next"
+            >
+              <ChevronRight size={26} />
+            </button>
+          )}
+        </div>
+      )}
 
       <Footer />
     </div>

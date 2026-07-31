@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useMember } from '@/integrations';
 import { MemberProtectedRoute } from '@/components/ui/member-protected-route';
 import Header from '@/components/Header';
@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { BaseCrudService } from '@/integrations';
 import { ClientGalleries, GalleryPhotos } from '@/entities';
 import { motion } from 'framer-motion';
-import { Plus, Trash2, Edit2, Upload, Link as LinkIcon, Copy, Check, X } from 'lucide-react';
+import { Plus, Trash2, Edit2, Upload, Link as LinkIcon, Copy, Check } from 'lucide-react';
 
 function GalleryManagementContent() {
   const { member } = useMember();
@@ -23,9 +23,6 @@ function GalleryManagementContent() {
   const [photos, setPhotos] = useState<GalleryPhotos[]>([]);
   const [isPhotosDialogOpen, setIsPhotosDialogOpen] = useState(false);
   const [selectedGalleryForPhotos, setSelectedGalleryForPhotos] = useState<ClientGalleries | null>(null);
-  const [uploadingPhotos, setUploadingPhotos] = useState<File[]>([]);
-  const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     clientName: '',
     description: '',
@@ -137,80 +134,11 @@ function GalleryManagementContent() {
 
   const openPhotosDialog = (gallery: ClientGalleries) => {
     setSelectedGalleryForPhotos(gallery);
-    setUploadingPhotos([]);
     setIsPhotosDialogOpen(true);
   };
 
   const getGalleryPhotos = (galleryId: string) => {
     return photos.filter(p => p.galleryId === galleryId);
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    setUploadingPhotos([...uploadingPhotos, ...files]);
-  };
-
-  const removeUploadingPhoto = (index: number) => {
-    setUploadingPhotos(uploadingPhotos.filter((_, i) => i !== index));
-  };
-
-  const uploadPhotosToGallery = async () => {
-    if (!selectedGalleryForPhotos || uploadingPhotos.length === 0) return;
-
-    setIsUploadingPhotos(true);
-    try {
-      for (const file of uploadingPhotos) {
-        // Create FormData for file upload
-        const formDataForUpload = new FormData();
-        formDataForUpload.append('file', file);
-
-        // Upload file to Wix Media
-        const uploadResponse = await fetch('/api/upload-media', {
-          method: 'POST',
-          body: formDataForUpload,
-        });
-
-        if (!uploadResponse.ok) {
-          throw new Error(`Upload failed: ${uploadResponse.statusText}`);
-        }
-
-        const uploadedData = await uploadResponse.json();
-        const mediaUrl = uploadedData.url;
-
-        // Save photo to database with Wix media URL
-        await BaseCrudService.create<GalleryPhotos>('galleryphotos', {
-          _id: crypto.randomUUID(),
-          title: file.name.replace(/\.[^/.]+$/, ''),
-          description: '',
-          imageFile: mediaUrl,
-          galleryId: selectedGalleryForPhotos._id,
-          uploadDate: new Date(),
-        });
-      }
-
-      // Reload photos and close dialog
-      const photosResult = await BaseCrudService.getAll<GalleryPhotos>('galleryphotos');
-      setPhotos(photosResult.items);
-      setUploadingPhotos([]);
-      setIsPhotosDialogOpen(false);
-    } catch (error) {
-      console.error('Error uploading photos:', error);
-      alert('Failed to upload photos. Please try again.');
-    } finally {
-      setIsUploadingPhotos(false);
-    }
-  };
-
-  const deletePhoto = async (photoId: string) => {
-    if (confirm('Delete this photo?')) {
-      try {
-        await BaseCrudService.delete('galleryphotos', photoId);
-        const photosResult = await BaseCrudService.getAll<GalleryPhotos>('galleryphotos');
-        setPhotos(photosResult.items);
-      } catch (error) {
-        console.error('Error deleting photo:', error);
-      }
-    }
   };
 
   return (
@@ -323,13 +251,6 @@ function GalleryManagementContent() {
                     >
                       <Edit2 size={14} />
                       Edit
-                    </Button>
-                    <Button
-                      onClick={() => openPhotosDialog(gallery)}
-                      className="flex-1 bg-primary/10 text-primary hover:bg-primary/20 font-paragraph text-xs uppercase tracking-widest py-2 rounded-none flex items-center justify-center gap-2"
-                    >
-                      <Upload size={14} />
-                      Photos
                     </Button>
                     <Button
                       onClick={() => handleDeleteGallery(gallery._id)}
@@ -449,76 +370,6 @@ function GalleryManagementContent() {
                 className="flex-1 bg-primary text-background hover:bg-primary/90 font-paragraph uppercase tracking-widest text-sm py-3 rounded-none"
               >
                 {editingGallery ? 'Update Gallery' : 'Create Gallery'}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Photos Upload Dialog */}
-      <Dialog open={isPhotosDialogOpen} onOpenChange={setIsPhotosDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="font-heading text-2xl">
-              Upload Photos to {selectedGalleryForPhotos?.clientName}
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-6 py-6">
-            <div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
-              <Button
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full bg-secondary/10 text-secondary hover:bg-secondary/20 font-paragraph uppercase tracking-widest text-sm py-3 rounded-none flex items-center justify-center gap-2"
-              >
-                <Plus size={18} />
-                Select Photos
-              </Button>
-            </div>
-
-            {uploadingPhotos.length > 0 && (
-              <div className="space-y-3">
-                <p className="font-paragraph text-sm text-secondary/70">
-                  {uploadingPhotos.length} photo(s) selected
-                </p>
-                <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {uploadingPhotos.map((file, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-secondary/5 rounded">
-                      <p className="font-paragraph text-sm text-secondary/70 truncate">
-                        {file.name}
-                      </p>
-                      <button
-                        onClick={() => removeUploadingPhoto(index)}
-                        className="p-1 hover:bg-secondary/20 rounded transition-colors"
-                      >
-                        <X size={16} className="text-secondary/60" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="flex gap-4 pt-6">
-              <Button
-                onClick={() => setIsPhotosDialogOpen(false)}
-                className="flex-1 bg-secondary/10 text-secondary hover:bg-secondary/20 font-paragraph uppercase tracking-widest text-sm py-3 rounded-none"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={uploadPhotosToGallery}
-                disabled={uploadingPhotos.length === 0 || isUploadingPhotos}
-                className="flex-1 bg-primary text-background hover:bg-primary/90 disabled:opacity-50 font-paragraph uppercase tracking-widest text-sm py-3 rounded-none"
-              >
-                {isUploadingPhotos ? 'Uploading...' : 'Upload Photos'}
               </Button>
             </div>
           </div>

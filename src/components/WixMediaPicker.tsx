@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
 import { X, Loader2, FolderOpen } from 'lucide-react';
@@ -16,62 +16,43 @@ interface SelectedMedia extends WixMediaFile {
   selected: boolean;
 }
 
-declare global {
-  interface Window {
-    Wix?: {
-      Media?: {
-        openMediaManager: (options: any) => Promise<any>;
-      };
-    };
-  }
-}
-
 export default function WixMediaPicker() {
   const [selectedMedia, setSelectedMedia] = useState<SelectedMedia[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [mediaLibrary, setMediaLibrary] = useState<WixMediaFile[]>([]);
-  const [showLibrary, setShowLibrary] = useState(false);
-
-  // Load Wix Media script
-  useEffect(() => {
-    const loadWixMediaScript = () => {
-      if (window.Wix?.Media) return;
-
-      const script = document.createElement('script');
-      script.src = 'https://www.wix.com/media-manager/v1/media-manager.js';
-      script.async = true;
-      document.head.appendChild(script);
-    };
-
-    loadWixMediaScript();
-  }, []);
 
   const openMediaManager = async () => {
     setIsLoading(true);
     try {
-      if (window.Wix?.Media?.openMediaManager) {
-        const result = await window.Wix.Media.openMediaManager({
+      // Call the backend API to open Wix Media Manager
+      const response = await fetch('/api/media-manager', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           multiSelect: true,
           mediaTypes: ['image'],
-        });
+        }),
+      });
 
-        if (result && result.files) {
-          const newMedia: SelectedMedia[] = result.files.map((file: any) => ({
-            id: file.id || crypto.randomUUID(),
-            filename: file.filename || file.name || 'Untitled',
-            url: file.url || '',
-            mediaType: file.mediaType,
-            width: file.width,
-            height: file.height,
-            selected: true,
-          }));
+      if (!response.ok) {
+        throw new Error('Failed to open media manager');
+      }
 
-          setSelectedMedia((prev) => [...prev, ...newMedia]);
-          setShowLibrary(false);
-        }
-      } else {
-        // Fallback: show a message to use Wix Media directly
-        alert('Wix Media Manager is loading. Please try again in a moment.');
+      const result = await response.json();
+
+      if (result && result.files) {
+        const newMedia: SelectedMedia[] = result.files.map((file: any) => ({
+          id: file.id || crypto.randomUUID(),
+          filename: file.filename || file.name || 'Untitled',
+          url: file.url || '',
+          mediaType: file.mediaType,
+          width: file.width,
+          height: file.height,
+          selected: true,
+        }));
+
+        setSelectedMedia((prev) => [...prev, ...newMedia]);
       }
     } catch (error) {
       console.error('Error opening media manager:', error);

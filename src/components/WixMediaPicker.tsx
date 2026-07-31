@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
-import { X } from 'lucide-react';
+import { X, Upload } from 'lucide-react';
 
 interface SelectedMedia {
   url: string;
@@ -13,36 +13,53 @@ interface SelectedMedia {
 
 export default function WixMediaPicker() {
   const [selectedMedia, setSelectedMedia] = useState<SelectedMedia[]>([]);
-  const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const openWixMediaManager = async () => {
+  const handleFileSelect = async (files: FileList | null) => {
+    if (!files) return;
+
+    setIsUploading(true);
     try {
-      // Import the Wix Media Manager SDK
-      const { openMediaManager } = await import('@wix/sdk');
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        
+        // Create FormData for file upload
+        const formData = new FormData();
+        formData.append('file', file);
 
-      // Open the native Wix Media Manager
-      const result = await openMediaManager({
-        multiSelect: true,
-        mediaType: 'image',
-      });
+        // Upload to the backend API
+        const response = await fetch('/api/upload-media', {
+          method: 'POST',
+          body: formData,
+        });
 
-      if (result && result.items && result.items.length > 0) {
-        const newMedia: SelectedMedia[] = result.items.map((item: any) => ({
-          url: item.url || item.src || '',
-          fileId: item.fileId || item.id || '',
-          fileName: item.fileName || item.name || 'Image',
-          width: item.width,
-          height: item.height,
-        }));
+        if (!response.ok) {
+          throw new Error(`Upload failed: ${response.statusText}`);
+        }
 
-        setSelectedMedia((prev) => [...prev, ...newMedia]);
+        const data = await response.json();
+
+        // Add the uploaded media to the list
+        const newMedia: SelectedMedia = {
+          url: data.url || '',
+          fileId: data.fileId || crypto.randomUUID(),
+          fileName: file.name,
+          width: data.width,
+          height: data.height,
+        };
+
+        setSelectedMedia((prev) => [...prev, newMedia]);
       }
     } catch (error) {
-      console.error('Error opening Wix Media Manager:', error);
-      // Fallback: Show alert if SDK not available
-      alert(
-        'Wix Media Manager is not available in this environment. Please ensure you are using this in a Wix site context.'
-      );
+      console.error('Error uploading media:', error);
+      alert('Failed to upload media. Please try again.');
+    } finally {
+      setIsUploading(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -52,17 +69,30 @@ export default function WixMediaPicker() {
 
   return (
     <div className="w-full max-w-4xl mx-auto p-8 bg-secondary/5 rounded-lg border border-secondary/10">
-      <h2 className="font-heading text-3xl text-secondary mb-2">Wix Media Manager</h2>
+      <h2 className="font-heading text-3xl text-secondary mb-2">Media Manager</h2>
       <p className="font-paragraph text-secondary/70 mb-8">
-        Select images from your Wix Media library. The selected images will be displayed below with their URLs and file IDs.
+        Upload and manage images. Select images from your computer to add them to your collection.
       </p>
 
-      {/* Open Media Manager Button */}
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        accept="image/*"
+        onChange={(e) => handleFileSelect(e.target.files)}
+        className="hidden"
+        aria-label="Upload media files"
+      />
+
+      {/* Upload Button */}
       <Button
-        onClick={openWixMediaManager}
-        className="mb-8 bg-primary hover:bg-primary/90 text-background font-paragraph uppercase tracking-widest text-sm py-6 px-8"
+        onClick={() => fileInputRef.current?.click()}
+        disabled={isUploading}
+        className="mb-8 bg-primary hover:bg-primary/90 text-background font-paragraph uppercase tracking-widest text-sm py-6 px-8 flex items-center gap-2"
       >
-        Open Wix Media Manager
+        <Upload className="h-4 w-4" />
+        {isUploading ? 'Uploading...' : 'Upload Images'}
       </Button>
 
       {/* Selected Media Grid */}
@@ -139,7 +169,7 @@ export default function WixMediaPicker() {
 
       {selectedMedia.length === 0 && (
         <div className="text-center py-12 text-secondary/50">
-          <p className="font-paragraph">No media selected yet. Click the button above to open the Wix Media Manager.</p>
+          <p className="font-paragraph">No media uploaded yet. Click the button above to upload images.</p>
         </div>
       )}
     </div>

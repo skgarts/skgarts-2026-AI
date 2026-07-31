@@ -305,23 +305,6 @@ function GalleryManagementContent() {
     <div className="min-h-screen bg-background text-foreground">
       <Header />
 
-      {/* TEST: FastGallery component render */}
-      {FastGalleryComponent && (
-        <section className="w-full max-w-[120rem] mx-auto px-6 lg:px-12 py-12 bg-blue-50 border-2 border-blue-200 rounded">
-          <h2 className="font-heading text-2xl text-blue-900 mb-4">✅ @wix/fast-gallery-vibe Test</h2>
-          <p className="font-paragraph text-sm text-blue-800 mb-4">Component imported successfully! Attempting to render:</p>
-          <div className="bg-white p-4 rounded border border-blue-100">
-            <FastGalleryComponent />
-          </div>
-        </section>
-      )}
-      {!FastGalleryComponent && (
-        <section className="w-full max-w-[120rem] mx-auto px-6 lg:px-12 py-12 bg-red-50 border-2 border-red-200 rounded">
-          <h2 className="font-heading text-2xl text-red-900 mb-2">❌ @wix/fast-gallery-vibe Not Available</h2>
-          <p className="font-paragraph text-sm text-red-800">Package not found or import failed. Check console for details.</p>
-        </section>
-      )}
-
       <section className="w-full max-w-[120rem] mx-auto px-6 lg:px-12 py-32">
         <div className="mb-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
           <div>
@@ -682,6 +665,23 @@ function GalleryManagementContent() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* TEST: FastGallery component render */}
+      {FastGalleryComponent && (
+        <section className="w-full max-w-[120rem] mx-auto px-6 lg:px-12 py-12 bg-blue-50 border-2 border-blue-200 rounded">
+          <h2 className="font-heading text-2xl text-blue-900 mb-4">✅ @wix/fast-gallery-vibe Test</h2>
+          <p className="font-paragraph text-sm text-blue-800 mb-4">Component imported successfully! Attempting to render:</p>
+          <div className="bg-white p-4 rounded border border-blue-100">
+            <FastGalleryComponent />
+          </div>
+        </section>
+      )}
+      {!FastGalleryComponent && (
+        <section className="w-full max-w-[120rem] mx-auto px-6 lg:px-12 py-12 bg-red-50 border-2 border-red-200 rounded">
+          <h2 className="font-heading text-2xl text-red-900 mb-2">❌ @wix/fast-gallery-vibe Not Available</h2>
+          <p className="font-paragraph text-sm text-red-800">Package not found or import failed. Check console for details.</p>
+        </section>
+      )}
 
       <Footer />
     </div>

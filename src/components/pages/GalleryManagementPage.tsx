@@ -1,17 +1,16 @@
-import { useState, useEffect } from 'react';
-import { useMember } from '@/integrations';
-import { MemberProtectedRoute } from '@/components/ui/member-protected-route';
-import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Image } from '@/components/ui/image';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { BaseCrudService } from '@/integrations';
+import { Image } from '@/components/ui/image';
+import { Input } from '@/components/ui/input';
+import { MemberProtectedRoute } from '@/components/ui/member-protected-route';
+import { Textarea } from '@/components/ui/textarea';
 import { ClientGalleries, GalleryPhotos } from '@/entities';
+import { BaseCrudService, useMember } from '@/integrations';
 import { motion } from 'framer-motion';
-import { Plus, Trash2, Edit2, Upload, Link as LinkIcon, Copy, Check } from 'lucide-react';
+import { Check, Copy, Edit2, Image as ImageIcon, Link as LinkIcon, Loader2, Plus, Trash2, Upload, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 function GalleryManagementContent() {
   const { member } = useMember();
@@ -23,6 +22,10 @@ function GalleryManagementContent() {
   const [photos, setPhotos] = useState<GalleryPhotos[]>([]);
   const [isPhotosDialogOpen, setIsPhotosDialogOpen] = useState(false);
   const [selectedGalleryForPhotos, setSelectedGalleryForPhotos] = useState<ClientGalleries | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ done: number; total: number }>({ done: 0, total: 0 });
+  const [uploadErrors, setUploadErrors] = useState<string[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
   const [formData, setFormData] = useState({
     clientName: '',
     description: '',
@@ -40,7 +43,7 @@ function GalleryManagementContent() {
     try {
       const result = await BaseCrudService.getAll<ClientGalleries>('clientgalleries');
       setGalleries(result.items);
-      
+
       // Load all photos
       const photosResult = await BaseCrudService.getAll<GalleryPhotos>('galleryphotos');
       setPhotos(photosResult.items);
@@ -141,10 +144,72 @@ function GalleryManagementContent() {
     return photos.filter(p => p.galleryId === galleryId);
   };
 
+  // Upload one file to Wix Media via the /api/upload-media endpoint, return its URL
+  const uploadOneFile = async (file: File): Promise<string> => {
+    const body = new FormData();
+    body.append('file', file);
+    const res = await fetch('/api/upload-media', { method: 'POST', body });
+    if (!res.ok) {
+      const detail = await res.json().catch(() => ({}));
+      throw new Error(detail?.details || detail?.error || `Upload failed (${res.status})`);
+    }
+    const data = await res.json();
+    if (!data?.url) throw new Error('Upload returned no URL');
+    return data.url as string;
+  };
+
+  // Bulk upload: send many files, save each as a galleryphotos record
+  const handleBulkUpload = async (fileList: FileList | File[]) => {
+    if (!selectedGalleryForPhotos) return;
+    const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+    if (files.length === 0) return;
+
+    setIsUploading(true);
+    setUploadErrors([]);
+    setUploadProgress({ done: 0, total: files.length });
+
+    const errors: string[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      try {
+        const url = await uploadOneFile(file);
+        await BaseCrudService.create<GalleryPhotos>('galleryphotos', {
+          _id: crypto.randomUUID(),
+          title: file.name.replace(/\.[^.]+$/, ''),
+          imageFile: url,
+          galleryId: selectedGalleryForPhotos._id,
+          uploadDate: new Date(),
+        });
+      } catch (err) {
+        errors.push(`${file.name}: ${err instanceof Error ? err.message : 'failed'}`);
+      }
+      setUploadProgress({ done: i + 1, total: files.length });
+    }
+
+    setUploadErrors(errors);
+    setIsUploading(false);
+    await loadGalleries(); // refresh photo list
+  };
+
+  const handleDeletePhoto = async (photoId: string) => {
+    try {
+      await BaseCrudService.delete('galleryphotos', photoId);
+      await loadGalleries();
+    } catch (error) {
+      console.error('Error deleting photo:', error);
+    }
+  };
+
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files?.length) handleBulkUpload(e.dataTransfer.files);
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header />
-      
+
       <section className="w-full max-w-[120rem] mx-auto px-6 lg:px-12 py-32">
         <div className="mb-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
           <div>
@@ -188,24 +253,24 @@ function GalleryManagementContent() {
                     />
                   </div>
                 )}
-                
+
                 <div className="p-6">
                   <h3 className="font-heading text-xl text-secondary mb-2">
                     {gallery.clientName || 'Untitled Gallery'}
                   </h3>
-                  
+
                   {gallery.eventDate && (
                     <p className="font-paragraph text-xs text-secondary/50 uppercase tracking-widest mb-3">
                       {new Date(gallery.eventDate).toLocaleDateString()}
                     </p>
                   )}
-                  
+
                   {gallery.description && (
                     <p className="font-paragraph text-sm text-secondary/70 mb-4 line-clamp-2">
                       {gallery.description}
                     </p>
                   )}
-                  
+
                   <div className="space-y-2 mb-6 p-3 bg-secondary/5 rounded">
                     <p className="font-paragraph text-xs text-secondary/60">
                       <span className="font-semibold">Access Code:</span> {gallery.accessCode || 'N/A'}
@@ -243,7 +308,15 @@ function GalleryManagementContent() {
                       </a>
                     )}
                   </div>
-                  
+
+                  <Button
+                    onClick={() => openPhotosDialog(gallery)}
+                    className="w-full mb-2 bg-primary/10 text-primary hover:bg-primary/20 font-paragraph text-xs uppercase tracking-widest py-2 rounded-none flex items-center justify-center gap-2"
+                  >
+                    <ImageIcon size={14} />
+                    Manage Photos ({getGalleryPhotos(gallery._id).length})
+                  </Button>
+
                   <div className="flex gap-2">
                     <Button
                       onClick={() => handleOpenDialog(gallery)}
@@ -278,6 +351,112 @@ function GalleryManagementContent() {
         )}
       </section>
 
+      {/* Photos Management Dialog */}
+      <Dialog open={isPhotosDialogOpen} onOpenChange={(open) => { setIsPhotosDialogOpen(open); if (!open) { setUploadErrors([]); setSelectedGalleryForPhotos(null); } }}>
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-2xl">
+              Photos — {selectedGalleryForPhotos?.clientName || 'Gallery'}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="py-6 space-y-8">
+            {/* Dropzone */}
+            <label
+              onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={onDrop}
+              className={`flex flex-col items-center justify-center gap-3 border-2 border-dashed rounded-lg py-12 px-6 cursor-pointer transition-colors ${
+                isDragging ? 'border-primary bg-primary/5' : 'border-secondary/20 hover:border-primary/40'
+              }`}
+            >
+              <Upload size={36} className="text-primary" />
+              <p className="font-paragraph text-sm text-secondary">
+                Drag &amp; drop photos here, or <span className="text-primary underline">browse</span>
+              </p>
+              <p className="font-paragraph text-xs text-secondary/50">
+                Select multiple files — they upload to your Wix media and attach to this gallery.
+              </p>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                disabled={isUploading}
+                onChange={(e) => { if (e.target.files?.length) handleBulkUpload(e.target.files); e.currentTarget.value = ''; }}
+              />
+            </label>
+
+            {/* Upload progress */}
+            {isUploading && (
+              <div className="flex items-center gap-3 text-secondary">
+                <Loader2 size={18} className="animate-spin text-primary" />
+                <span className="font-paragraph text-sm">
+                  Uploading {uploadProgress.done} / {uploadProgress.total}…
+                </span>
+                <div className="flex-1 h-1.5 bg-secondary/10 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-primary transition-all"
+                    style={{ width: `${uploadProgress.total ? (uploadProgress.done / uploadProgress.total) * 100 : 0}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Errors */}
+            {uploadErrors.length > 0 && (
+              <div className="bg-[#ED1B23]/5 border border-[#ED1B23]/20 rounded p-4">
+                <p className="font-paragraph text-sm text-[#ED1B23] font-semibold mb-2">
+                  {uploadErrors.length} file(s) failed to upload:
+                </p>
+                <ul className="font-paragraph text-xs text-[#ED1B23]/80 space-y-1 list-disc pl-5">
+                  {uploadErrors.map((err, i) => <li key={i}>{err}</li>)}
+                </ul>
+              </div>
+            )}
+
+            {/* Existing photos grid */}
+            {selectedGalleryForPhotos && (() => {
+              const galleryPhotos = getGalleryPhotos(selectedGalleryForPhotos._id);
+              return galleryPhotos.length > 0 ? (
+                <div>
+                  <p className="font-paragraph text-xs uppercase tracking-widest text-secondary/60 mb-4">
+                    {galleryPhotos.length} photo{galleryPhotos.length === 1 ? '' : 's'} in this gallery
+                  </p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {galleryPhotos.map((photo) => (
+                      <div key={photo._id} className="relative group aspect-square bg-secondary/5 overflow-hidden rounded">
+                        {photo.imageFile && (
+                          <Image
+                            src={photo.imageFile}
+                            alt={photo.title || 'Photo'}
+                            className="w-full h-full object-cover"
+                            width={300}
+                          />
+                        )}
+                        <button
+                          onClick={() => handleDeletePhoto(photo._id)}
+                          className="absolute top-2 right-2 w-7 h-7 rounded-full bg-secondary/70 text-background flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[#ED1B23]"
+                          title="Delete photo"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                !isUploading && (
+                  <p className="font-paragraph text-sm text-secondary/50 text-center py-6">
+                    No photos yet — upload some above.
+                  </p>
+                )
+              );
+            })()}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Edit/Create Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-2xl">
@@ -286,7 +465,7 @@ function GalleryManagementContent() {
               {editingGallery ? 'Edit Gallery' : 'Create New Gallery'}
             </DialogTitle>
           </DialogHeader>
-          
+
           <div className="space-y-6 py-6">
             <div className="space-y-2">
               <label className="font-paragraph text-xs uppercase tracking-widest text-secondary/60">

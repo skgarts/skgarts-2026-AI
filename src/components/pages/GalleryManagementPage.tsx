@@ -1,17 +1,16 @@
-import { useState, useEffect } from 'react';
-import { useMember } from '@/integrations';
-import { MemberProtectedRoute } from '@/components/ui/member-protected-route';
-import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Image } from '@/components/ui/image';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { BaseCrudService } from '@/integrations';
+import { Image } from '@/components/ui/image';
+import { Input } from '@/components/ui/input';
+import { MemberProtectedRoute } from '@/components/ui/member-protected-route';
+import { Textarea } from '@/components/ui/textarea';
 import { ClientGalleries } from '@/entities';
+import { BaseCrudService, useMember } from '@/integrations';
 import { motion } from 'framer-motion';
-import { Plus, Trash2, Edit2, ExternalLink, Copy, Check, Images } from 'lucide-react';
+import { Check, Copy, Edit2, ExternalLink, Images, Plus, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 function GalleryManagementContent() {
   const { member } = useMember();
@@ -23,10 +22,19 @@ function GalleryManagementContent() {
   const [formData, setFormData] = useState({
     clientName: '',
     description: '',
-    accessCode: '',
     eventDate: '',
     slug: '',
+    displayLayout: 'collage',
   });
+
+  const LAYOUT_OPTIONS = [
+    { value: 'collage', label: 'Collage (mosaic)' },
+    { value: 'masonry', label: 'Masonry (columns)' },
+    { value: 'justified', label: 'Justified rows' },
+    { value: 'grid', label: 'Uniform grid' },
+    { value: 'hero', label: 'Hero + grid' },
+    { value: 'filmstrip', label: 'Filmstrip' },
+  ];
 
   // Turn a title into a URL-safe slug: "Sushen Upanayanam!" -> "sushen-upanayanam"
   const slugify = (text: string) =>
@@ -59,13 +67,13 @@ function GalleryManagementContent() {
       setFormData({
         clientName: gallery.clientName || '',
         description: gallery.description || '',
-        accessCode: gallery.accessCode || '',
         eventDate: gallery.eventDate ? new Date(gallery.eventDate).toISOString().split('T')[0] : '',
         slug: (gallery as any).slug || '',
+        displayLayout: (gallery as any).displayLayout || 'collage',
       });
     } else {
       setEditingGallery(null);
-      setFormData({ clientName: '', description: '', accessCode: '', eventDate: '', slug: '' });
+      setFormData({ clientName: '', description: '', eventDate: '', slug: '', displayLayout: 'collage' });
     }
     setIsDialogOpen(true);
   };
@@ -86,18 +94,18 @@ function GalleryManagementContent() {
           _id: editingGallery._id,
           clientName: formData.clientName,
           description: formData.description,
-          accessCode: formData.accessCode,
           eventDate: formData.eventDate ? new Date(formData.eventDate) : undefined,
           slug,
+          displayLayout: formData.displayLayout,
         } as any);
       } else {
         await BaseCrudService.create<ClientGalleries>('clientgalleries', {
           _id: crypto.randomUUID(),
           clientName: formData.clientName,
           description: formData.description,
-          accessCode: formData.accessCode,
           eventDate: formData.eventDate ? new Date(formData.eventDate) : undefined,
           slug,
+          displayLayout: formData.displayLayout,
         } as any);
       }
 
@@ -326,15 +334,20 @@ function GalleryManagementContent() {
 
             <div className="space-y-2">
               <label className="font-paragraph text-xs uppercase tracking-widest text-secondary/60">
-                Access Code
+                Display Layout
               </label>
-              <Input
-                type="text"
-                value={formData.accessCode}
-                onChange={(e) => setFormData({ ...formData, accessCode: e.target.value })}
-                placeholder="e.g. MANHOR2025"
-                className="bg-transparent border-b border-secondary/20 rounded-none px-0 py-2 font-paragraph text-lg focus-visible:ring-0 focus-visible:border-primary transition-colors"
-              />
+              <select
+                value={formData.displayLayout}
+                onChange={(e) => setFormData({ ...formData, displayLayout: e.target.value })}
+                className="w-full bg-transparent border-b border-secondary/20 rounded-none px-0 py-2 font-paragraph text-lg focus:outline-none focus:border-primary transition-colors"
+              >
+                {LAYOUT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+              <p className="font-paragraph text-xs text-secondary/50">
+                How this client’s photos are arranged on their gallery page.
+              </p>
             </div>
 
             <div className="space-y-2">
@@ -362,11 +375,15 @@ function GalleryManagementContent() {
               />
             </div>
 
-            <div className="bg-primary/5 border border-primary/10 p-4">
+            <div className="bg-primary/5 border border-primary/10 p-4 space-y-2">
               <p className="font-paragraph text-xs text-secondary/70">
                 <span className="font-semibold text-secondary">Adding photos:</span> open this gallery&rsquo;s row in the
                 Wix CMS &ldquo;Client Galleries&rdquo; collection and use the <span className="font-semibold">Media Gallery</span> field
-                to bulk-select photos from your Media Manager. They&rsquo;ll appear automatically on the client page.
+                to bulk-select photos from your Media Manager.
+              </p>
+              <p className="font-paragraph text-xs text-secondary/70">
+                <span className="font-semibold text-secondary">Access code:</span> set or change it in the CMS
+                &ldquo;Access Code&rdquo; field. Clients must enter it to view the gallery; it is never shown on the page.
               </p>
             </div>
 

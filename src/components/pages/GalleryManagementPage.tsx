@@ -1,16 +1,17 @@
-import Footer from '@/components/Footer';
-import Header from '@/components/Header';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Image } from '@/components/ui/image';
-import { Input } from '@/components/ui/input';
+import { useState, useEffect } from 'react';
+import { useMember } from '@/integrations';
 import { MemberProtectedRoute } from '@/components/ui/member-protected-route';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Image } from '@/components/ui/image';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { BaseCrudService } from '@/integrations';
 import { ClientGalleries } from '@/entities';
-import { BaseCrudService, useMember } from '@/integrations';
 import { motion } from 'framer-motion';
-import { Check, Copy, Edit2, ExternalLink, Images, Plus, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Plus, Trash2, Edit2, ExternalLink, Copy, Check, Images } from 'lucide-react';
 
 function GalleryManagementContent() {
   const { member } = useMember();

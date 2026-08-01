@@ -10,10 +10,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { BaseCrudService } from '@/integrations';
 import { ClientGalleries } from '@/entities';
 import { motion } from 'framer-motion';
-import { Plus, Trash2, Edit2, ExternalLink, Copy, Check, Images } from 'lucide-react';
+import { Plus, Trash2, Edit2, ExternalLink, Copy, Check, Images, Power } from 'lucide-react';
 
 function GalleryManagementContent() {
-  const { isAuthenticated } = useMember();
+  const { isAuthenticated, actions } = useMember();
   const [galleries, setGalleries] = useState<ClientGalleries[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -149,6 +149,19 @@ function GalleryManagementContent() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header />
+
+      {/* Admin toggle: red = signed out (click to sign in), green = signed in (click to sign out) */}
+      <button
+        onClick={() => (isAuthenticated ? actions.logout() : actions.login())}
+        title={isAuthenticated ? 'Sign out of admin mode' : 'Sign in to manage galleries'}
+        className={`fixed top-24 right-6 z-40 w-11 h-11 rounded-full flex items-center justify-center shadow-lg transition-colors ${
+          isAuthenticated
+            ? 'bg-[#1FA35A] hover:bg-[#188a4a] text-white'
+            : 'bg-[#ED1B23] hover:bg-[#c8151c] text-white'
+        }`}
+      >
+        <Power size={18} />
+      </button>
 
       <section className="w-full max-w-[120rem] mx-auto px-6 lg:px-12 pt-32 lg:pt-40 pb-24">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">

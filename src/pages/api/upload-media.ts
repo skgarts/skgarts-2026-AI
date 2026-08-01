@@ -20,7 +20,7 @@ export const POST: APIRoute = async ({ request }) => {
     const file = formData.get('file') as File | null;
 
     if (!file) {
-      return json({ error: 'No file provided' }, 400);
+      return jsonResponse({ error: 'No file provided' }, 400);
     }
 
     // DEBUG — inspect what actually arrived at the server
@@ -73,7 +73,7 @@ export const POST: APIRoute = async ({ request }) => {
         const r = await genUploadUrl(fileName as any, { mimeType, private: false } as any);
         uploadUrl = r?.uploadUrl;
       } catch (e2) {
-        return json(
+        return jsonResponse(
           {
             error: 'Could not obtain an upload URL from Wix Media',
             details: `attempt1(mime-first): ${errMsg(firstAttemptError)} | attempt2(name-first): ${errMsg(e2)}`,
@@ -84,7 +84,7 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     if (!uploadUrl) {
-      return json({ error: 'Could not obtain an upload URL from Wix Media' }, 500);
+      return jsonResponse({ error: 'Could not obtain an upload URL from Wix Media' }, 500);
     }
 
     // 2) PUT the raw bytes to the returned upload URL.
@@ -97,7 +97,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     if (!putRes.ok) {
       const text = await putRes.text().catch(() => '');
-      return json({ error: 'Upload to Wix Media failed', details: text || `status ${putRes.status}` }, 500);
+      return jsonResponse({ error: 'Upload to Wix Media failed', details: text || `status ${putRes.status}` }, 500);
     }
 
     // 3) The PUT response contains the created file descriptor.
@@ -106,13 +106,13 @@ export const POST: APIRoute = async ({ request }) => {
     const url: string | undefined = descriptor?.url;
 
     if (!url) {
-      return json({ error: 'Upload succeeded but no URL was returned', details: JSON.stringify(uploaded) }, 500);
+      return jsonResponse({ error: 'Upload succeeded but no URL was returned', details: JSON.stringify(uploaded) }, 500);
     }
 
-    return json({ url, fileId: descriptor?.id ?? descriptor?._id ?? null }, 200);
+    return jsonResponse({ url, fileId: descriptor?.id ?? descriptor?._id ?? null }, 200);
   } catch (error) {
     console.error('Media upload error:', error);
-    return json(
+    return jsonResponse(
       { error: 'Failed to upload media', details: error instanceof Error ? error.message : 'Unknown error' },
       500
     );
@@ -125,7 +125,7 @@ function errMsg(e: unknown): string {
   try { return JSON.stringify(e); } catch { return String(e); }
 }
 
-function json(body: unknown, status: number) {
+function jsonResponse(body: unknown, status: number) {
   return new Response(JSON.stringify(body), {
     status,
     headers: { 'Content-Type': 'application/json' },

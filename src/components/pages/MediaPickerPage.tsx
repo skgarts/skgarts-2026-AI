@@ -1,6 +1,8 @@
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import MediaUploader from '@/components/MediaUploader';
 import WixMediaPicker from '@/components/WixMediaPicker';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function MediaPickerPage() {
   return (
@@ -14,13 +16,36 @@ export default function MediaPickerPage() {
               Media Manager
             </h1>
             <p className="font-paragraph text-lg text-secondary/70 max-w-2xl mx-auto">
-              Select and manage images from your Wix Site Files. Click the button below to open the native Wix Media Manager interface and choose images to display.
+              Upload new images or select from your existing Wix Site Files.
             </p>
           </div>
 
           <div className="flex justify-center">
-            <div className="w-full max-w-2xl">
-              <WixMediaPicker />
+            <div className="w-full max-w-3xl">
+              <Tabs defaultValue="upload" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 bg-secondary/10 p-1 rounded-lg">
+                  <TabsTrigger 
+                    value="upload"
+                    className="font-paragraph text-sm data-[state=active]:bg-primary data-[state=active]:text-background"
+                  >
+                    Upload New
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="browse"
+                    className="font-paragraph text-sm data-[state=active]:bg-primary data-[state=active]:text-background"
+                  >
+                    Browse Existing
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="upload" className="mt-8">
+                  <MediaUploader />
+                </TabsContent>
+
+                <TabsContent value="browse" className="mt-8">
+                  <WixMediaPicker />
+                </TabsContent>
+              </Tabs>
             </div>
           </div>
         </div>

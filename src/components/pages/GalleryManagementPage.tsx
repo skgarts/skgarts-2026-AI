@@ -1,16 +1,15 @@
-import { useState, useEffect } from 'react';
-import { useMember } from '@/integrations';
-import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Image } from '@/components/ui/image';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Image } from '@/components/ui/image';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { BaseCrudService } from '@/integrations';
 import { ClientGalleries } from '@/entities';
+import { BaseCrudService, useMember } from '@/integrations';
 import { motion } from 'framer-motion';
-import { Plus, Trash2, Edit2, ExternalLink, Copy, Check, Images, Power } from 'lucide-react';
+import { Check, Copy, Edit2, ExternalLink, Images, Plus, Power, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 function GalleryManagementContent() {
   const { isAuthenticated, actions } = useMember();
@@ -150,19 +149,6 @@ function GalleryManagementContent() {
     <div className="min-h-screen bg-background text-foreground">
       <Header />
 
-      {/* Admin toggle: red = signed out (click to sign in), green = signed in (click to sign out) */}
-      <button
-        onClick={() => (isAuthenticated ? actions.logout() : actions.login())}
-        title={isAuthenticated ? 'Sign out of admin mode' : 'Sign in to manage galleries'}
-        className={`fixed top-24 right-6 z-40 w-11 h-11 rounded-full flex items-center justify-center shadow-lg transition-colors ${
-          isAuthenticated
-            ? 'bg-[#1FA35A] hover:bg-[#188a4a] text-white'
-            : 'bg-[#ED1B23] hover:bg-[#c8151c] text-white'
-        }`}
-      >
-        <Power size={18} />
-      </button>
-
       <section className="w-full max-w-[120rem] mx-auto px-6 lg:px-12 pt-32 lg:pt-40 pb-24">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
           <div>
@@ -175,15 +161,29 @@ function GalleryManagementContent() {
                 : 'Browse our client galleries. Select an album and enter your access code to view the photos.'}
             </p>
           </div>
-          {isAuthenticated && (
-            <Button
-              onClick={() => handleOpenDialog()}
-              className="bg-primary text-background hover:bg-primary/90 font-paragraph text-sm uppercase tracking-widest px-8 py-6 rounded-none flex items-center gap-2 shrink-0"
+          <div className="flex items-center gap-3 shrink-0">
+            {isAuthenticated && (
+              <Button
+                onClick={() => handleOpenDialog()}
+                className="bg-primary text-background hover:bg-primary/90 font-paragraph text-sm uppercase tracking-widest px-8 py-6 rounded-none flex items-center gap-2"
+              >
+                <Plus size={16} />
+                New Gallery
+              </Button>
+            )}
+            {/* Admin toggle: red = signed out (click to sign in), green = signed in (click to sign out) */}
+            <button
+              onClick={() => (isAuthenticated ? actions.logout() : actions.login())}
+              title={isAuthenticated ? 'Sign out of admin mode' : 'Sign in to manage galleries'}
+              className={`w-11 h-11 rounded-full flex items-center justify-center shadow-sm transition-colors shrink-0 ${
+                isAuthenticated
+                  ? 'bg-[#1FA35A] hover:bg-[#188a4a] text-white'
+                  : 'bg-[#ED1B23] hover:bg-[#c8151c] text-white'
+              }`}
             >
-              <Plus size={16} />
-              New Gallery
-            </Button>
-          )}
+              <Power size={18} />
+            </button>
+          </div>
         </div>
 
         {isLoading ? (

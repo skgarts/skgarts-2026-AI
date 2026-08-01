@@ -26,10 +26,162 @@ function Watermark() {
   );
 }
 
+// A single lazy-loaded, watermarked, clickable photo tile.
+type Photo = { id: string; thumb: string; url: string; title?: string; description?: string };
+
+function PhotoTile({
+  photo,
+  index,
+  onOpen,
+  className = '',
+  imgClassName = 'w-full h-auto',
+  delay = 0,
+}: {
+  photo: Photo;
+  index: number;
+  onOpen: (i: number) => void;
+  className?: string;
+  imgClassName?: string;
+  delay?: number;
+}) {
+  return (
+    <motion.button
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ duration: 0.5, delay }}
+      onClick={() => onOpen(index)}
+      title="Click to view"
+      className={`group relative block overflow-hidden bg-secondary/5 ${className}`}
+    >
+      <Image src={photo.thumb} alt={photo.title || 'Gallery photo'} loading="lazy" decoding="async" onLoad={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = '1'; }} style={{ opacity: 0, transition: 'opacity 0.5s ease' }} className={`object-cover transition-transform duration-500 group-hover:scale-[1.04] pointer-events-none ${imgClassName}`} />
+      <Watermark />
+      <div className="absolute inset-0 z-20 bg-secondary/0 group-hover:bg-secondary/10 transition-colors duration-300" />
+    </motion.button>
+  );
+}
+
+// --- Layout: Masonry (Pinterest columns) ---
+function MasonryLayout({ photos, onOpen }: { photos: Photo[]; onOpen: (i: number) => void }) {
+  return (
+    <div className="[column-fill:_balance] columns-1 sm:columns-2 lg:columns-3 gap-4" style={{ columnGap: '1rem' }}>
+      {photos.map((p, i) => (
+        <PhotoTile key={p.id} photo={p} index={i} onOpen={onOpen} delay={Math.min(i * 0.03, 0.5)}
+          className="mb-4 w-full break-inside-avoid" imgClassName="w-full h-auto" />
+      ))}
+    </div>
+  );
+}
+
+// --- Layout: Uniform Grid (equal squares) ---
+function GridLayout({ photos, onOpen }: { photos: Photo[]; onOpen: (i: number) => void }) {
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+      {photos.map((p, i) => (
+        <PhotoTile key={p.id} photo={p} index={i} onOpen={onOpen} delay={Math.min(i * 0.02, 0.4)}
+          className="aspect-square" imgClassName="w-full h-full" />
+      ))}
+    </div>
+  );
+}
+
+// --- Layout: Justified rows (shared row height, flexbox approximation) ---
+function JustifiedLayout({ photos, onOpen }: { photos: Photo[]; onOpen: (i: number) => void }) {
+  return (
+    <div className="flex flex-wrap gap-3">
+      {photos.map((p, i) => (
+        <PhotoTile key={p.id} photo={p} index={i} onOpen={onOpen} delay={Math.min(i * 0.02, 0.4)}
+          className="h-48 md:h-64 flex-grow" imgClassName="w-full h-full" />
+      ))}
+    </div>
+  );
+}
+
+// --- Layout: Collage (mosaic with some spanning tiles) ---
+function CollageLayout({ photos, onOpen }: { photos: Photo[]; onOpen: (i: number) => void }) {
+  // Deterministic pattern: every 5th image spans 2 cols, every 7th spans 2 rows.
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 auto-rows-[180px] md:auto-rows-[220px] gap-3">
+      {photos.map((p, i) => {
+        const wide = i % 5 === 0;
+        const tall = i % 7 === 3;
+        const span = `${wide ? 'md:col-span-2' : ''} ${tall ? 'row-span-2' : ''}`.trim();
+        return (
+          <PhotoTile key={p.id} photo={p} index={i} onOpen={onOpen} delay={Math.min(i * 0.02, 0.4)}
+            className={`${span}`} imgClassName="w-full h-full" />
+        );
+      })}
+    </div>
+  );
+}
+
+// --- Layout: Hero + grid (first image large, rest flow) ---
+function HeroLayout({ photos, onOpen }: { photos: Photo[]; onOpen: (i: number) => void }) {
+  const [first, ...rest] = photos;
+  return (
+    <div className="space-y-4">
+      {first && (
+        <PhotoTile photo={first} index={0} onOpen={onOpen}
+          className="w-full max-h-[70vh]" imgClassName="w-full h-full max-h-[70vh]" />
+      )}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {rest.map((p, i) => (
+          <PhotoTile key={p.id} photo={p} index={i + 1} onOpen={onOpen} delay={Math.min(i * 0.02, 0.4)}
+            className="aspect-square" imgClassName="w-full h-full" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// --- Layout: Filmstrip (large featured + horizontal thumbnail strip) ---
+function FilmstripLayout({ photos, onOpen }: { photos: Photo[]; onOpen: (i: number) => void }) {
+  const [active, setActive] = useState(0);
+  const current = photos[active] || photos[0];
+  return (
+    <div className="space-y-4">
+      {/* Featured */}
+      <div className="relative w-full bg-secondary/5 overflow-hidden">
+        <button onClick={() => onOpen(active)} className="group relative block w-full" title="Click to view">
+          <Image src={current.url} alt={current.title || 'Gallery photo'} loading="lazy" className="w-full max-h-[72vh] object-contain bg-black/5 pointer-events-none" />
+          <Watermark />
+        </button>
+      </div>
+      {/* Strip */}
+      <div className="flex gap-3 overflow-x-auto pb-3">
+        {photos.map((p, i) => (
+          <button
+            key={p.id}
+            onClick={() => setActive(i)}
+            className={`relative shrink-0 w-28 h-20 overflow-hidden transition-all ${
+              active === i ? 'ring-2 ring-primary' : 'ring-1 ring-secondary/15 opacity-70 hover:opacity-100'
+            }`}
+            title={p.title || 'Photo'}
+          >
+            <Image src={p.thumb} alt="" loading="lazy" className="w-full h-full object-cover pointer-events-none" />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function GalleryLayout({ layout, photos, onOpen }: { layout: string; photos: Photo[]; onOpen: (i: number) => void }) {
+  switch ((layout || 'collage').toLowerCase()) {
+    case 'masonry': return <MasonryLayout photos={photos} onOpen={onOpen} />;
+    case 'grid': return <GridLayout photos={photos} onOpen={onOpen} />;
+    case 'justified': return <JustifiedLayout photos={photos} onOpen={onOpen} />;
+    case 'hero': return <HeroLayout photos={photos} onOpen={onOpen} />;
+    case 'filmstrip': return <FilmstripLayout photos={photos} onOpen={onOpen} />;
+    case 'collage':
+    default: return <CollageLayout photos={photos} onOpen={onOpen} />;
+  }
+}
+
 export default function ClientGalleryViewPage() {
   const { clientId } = useParams<{ clientId: string }>();
   const [gallery, setGallery] = useState<ClientGalleries | null>(null);
-  const [photos, setPhotos] = useState<{ url: string; title?: string; description?: string }[]>([])
+  const [photos, setPhotos] = useState<{ id: string; thumb: string; url: string; title?: string; description?: string }[]>([])
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [accessCode, setAccessCode] = useState('');
@@ -90,35 +242,50 @@ export default function ClientGalleryViewPage() {
       }
       setGallery(galleryData);
 
-      // Photos now come from the native Wix CMS "Media Gallery" field (id: mediagallery),
-      // bulk-added via Media Manager. Each item is usually a wix:image:// reference
-      // or an object; normalize every item to a plain https URL the browser can render.
-      const toUrl = (raw: any): string => {
+      // Photos come from the native Wix CMS "Media Gallery" field (id: mediagallery).
+      // We resolve each item to a Wix media id, then build size-optimized URLs:
+      //  - a small "grid" version (fast to load, right-sized for thumbnails)
+      //  - a large "full" version only used in the lightbox.
+      // This dramatically speeds up the grid vs. serving multi-MB originals.
+      const toMediaId = (raw: any): string => {
         if (!raw) return '';
-        // Object shapes Wix may return
         if (typeof raw === 'object') {
           raw = raw.src || raw.url || raw.image || raw.slug || raw.uri || '';
         }
         if (typeof raw !== 'string') return '';
-        if (raw.startsWith('http')) return raw;
         if (raw.startsWith('wix:image://')) {
-          // wix:image://v1/<mediaId>/<filename>#...  ->  static.wixstatic.com/media/<mediaId>
-          const id = raw.replace('wix:image://v1/', '').split('/')[0].split('#')[0];
-          return id ? `https://static.wixstatic.com/media/${id}` : '';
+          return raw.replace('wix:image://v1/', '').split('/')[0].split('#')[0];
         }
-        // Bare media id fallback
-        return `https://static.wixstatic.com/media/${raw}`;
+        if (raw.startsWith('http')) {
+          // Extract the media id from an existing static.wixstatic URL if present
+          const m = raw.match(/\/media\/([^/?#]+)/);
+          return m ? m[1] : '';
+        }
+        return raw; // assume it's already a bare media id
       };
+
+      // Wix on-the-fly image service: /media/<id>/v1/fill/w_W,h_H,q_Q/file.jpg
+      const wixSized = (id: string, w: number, h: number, q = 80) =>
+        id
+          ? `https://static.wixstatic.com/media/${id}/v1/fill/w_${w},h_${h},al_c,q_${q},enc_auto/file.jpg`
+          : '';
+      // Full media URL (original) for lightbox
+      const wixFull = (id: string) => (id ? `https://static.wixstatic.com/media/${id}` : '');
 
       const mg = (galleryData as any).mediagallery;
       const items = Array.isArray(mg) ? mg : [];
       const normalized = items
-        .map((it: any) => ({
-          url: toUrl(typeof it === 'object' ? (it.src || it.url || it.image || it) : it),
-          title: (typeof it === 'object' && (it.title || it.description)) || undefined,
-          description: (typeof it === 'object' && it.description) || undefined,
-        }))
-        .filter((p) => p.url);
+        .map((it: any) => {
+          const id = toMediaId(typeof it === 'object' ? (it.src || it.url || it.image || it) : it);
+          return {
+            id,
+            thumb: wixSized(id, 800, 800, 80), // grid version
+            url: wixFull(id),                  // lightbox version
+            title: (typeof it === 'object' && (it.title || it.description)) || undefined,
+            description: (typeof it === 'object' && it.description) || undefined,
+          };
+        })
+        .filter((p) => p.id);
 
       setPhotos(normalized);
     } catch (error) {
@@ -231,35 +398,11 @@ export default function ClientGalleryViewPage() {
         </div>
 
         {photos.length > 0 ? (
-          <div
-            className="[column-fill:_balance] columns-1 sm:columns-2 lg:columns-3 gap-4"
-            style={{ columnGap: '1rem' }}
-          >
-            {photos.map((photo, index) => (
-              <motion.button
-                key={photo._id}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: Math.min(index * 0.04, 0.4) }}
-                onClick={() => setLightboxIndex(index)}
-                className="group relative mb-4 block w-full break-inside-avoid overflow-hidden bg-secondary/5"
-                title="Click to view"
-              >
-                {photo.url && (
-                  <>
-                    <Image
-                      src={photo.url}
-                      alt={photo.title || 'Gallery photo'}
-                      className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-[1.03] pointer-events-none"
-                      width={800}
-                    />
-                    <Watermark />
-                    <div className="absolute inset-0 z-20 bg-secondary/0 group-hover:bg-secondary/10 transition-colors duration-300" />
-                  </>
-                )}
-              </motion.button>
-            ))}
-          </div>
+          <GalleryLayout
+            layout={(gallery as any).displayLayout || 'collage'}
+            photos={photos}
+            onOpen={setLightboxIndex}
+          />
         ) : (
           <div className="flex flex-col items-center justify-center py-20 border border-secondary/10">
             <p className="font-paragraph text-secondary/50">No photos in this gallery yet</p>

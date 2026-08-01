@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Image } from '@/components/ui/image';
 import { useMember } from '@/integrations';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Menu, X } from 'lucide-react';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -23,9 +23,9 @@ export default function Header() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center">
-            <Image 
-              src="https://static.wixstatic.com/media/897509_46a058e553ed4113a420249d230b42fd~mv2.png" 
-              alt="SKG Arts Logo" 
+            <Image
+              src="https://static.wixstatic.com/media/897509_46a058e553ed4113a420249d230b42fd~mv2.png"
+              alt="SKG Arts Logo"
               width={180}
               className="h-auto"
             />
@@ -42,14 +42,12 @@ export default function Header() {
                 {link.name}
               </a>
             ))}
-            {isAuthenticated && (
-              <Link
-                to="/gallery-management"
-                className="font-paragraph text-base text-foreground hover:text-primary transition-colors font-medium"
-              >
-                Edit Gallery
-              </Link>
-            )}
+            <Link
+              to="/gallery-management"
+              className="font-paragraph text-base text-foreground hover:text-primary transition-colors font-medium"
+            >
+              Galleries
+            </Link>
             <a href="/#contact">
               <button className="bg-gradient-to-r from-primary to-accent-blue text-primary-foreground hover:shadow-lg hover:scale-105 font-paragraph font-bold px-8 py-3 rounded-full text-sm transition-all duration-300">
                 Contact Us
@@ -104,15 +102,13 @@ export default function Header() {
                     {link.name}
                   </a>
                 ))}
-                {isAuthenticated && (
-                  <Link
-                    to="/gallery-management"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="block font-paragraph text-base text-foreground hover:text-primary transition-colors font-medium py-2"
-                  >
-                    Edit Gallery
-                  </Link>
-                )}
+                <Link
+                  to="/gallery-management"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="block font-paragraph text-base text-foreground hover:text-primary transition-colors font-medium py-2"
+                >
+                  Galleries
+                </Link>
                 <a href="/#contact" onClick={() => setIsMenuOpen(false)}>
                   <button className="w-full bg-gradient-to-r from-primary to-accent-blue text-primary-foreground hover:shadow-lg hover:scale-105 font-paragraph font-bold px-6 py-3 rounded-full text-sm transition-all duration-300">
                     Contact Us

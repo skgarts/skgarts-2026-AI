@@ -1,18 +1,20 @@
-import Footer from '@/components/Footer';
+import { useState, useEffect } from 'react';
+import { useMember } from '@/integrations';
+import { MemberProtectedRoute } from '@/components/ui/member-protected-route';
 import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Image } from '@/components/ui/image';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Image } from '@/components/ui/image';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { BaseCrudService } from '@/integrations';
 import { ClientGalleries } from '@/entities';
-import { BaseCrudService, useMember } from '@/integrations';
 import { motion } from 'framer-motion';
-import { Check, Copy, Edit2, ExternalLink, Images, Plus, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Plus, Trash2, Edit2, ExternalLink, Copy, Check, Images } from 'lucide-react';
 
 function GalleryManagementContent() {
-  const { isAuthenticated } = useMember();
+  const { member } = useMember();
   const [galleries, setGalleries] = useState<ClientGalleries[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -153,23 +155,20 @@ function GalleryManagementContent() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
           <div>
             <h1 className="font-heading text-5xl lg:text-7xl text-secondary leading-none mb-4">
-              Galleries
+              Gallery Management
             </h1>
             <p className="font-paragraph text-secondary/60 max-w-xl">
-              {isAuthenticated
-                ? 'Your client albums. Manage album details and shareable links here; add photos natively in the Wix CMS “Media Gallery” field.'
-                : 'Browse our client galleries. Select an album and enter your access code to view the photos.'}
+              Your client albums. Add and organize photos natively in the Wix CMS &ldquo;Media Gallery&rdquo; field;
+              here you manage album details, access codes, and shareable links.
             </p>
           </div>
-          {isAuthenticated && (
-            <Button
-              onClick={() => handleOpenDialog()}
-              className="bg-primary text-background hover:bg-primary/90 font-paragraph text-sm uppercase tracking-widest px-8 py-6 rounded-none flex items-center gap-2 shrink-0"
-            >
-              <Plus size={16} />
-              New Gallery
-            </Button>
-          )}
+          <Button
+            onClick={() => handleOpenDialog()}
+            className="bg-primary text-background hover:bg-primary/90 font-paragraph text-sm uppercase tracking-widest px-8 py-6 rounded-none flex items-center gap-2 shrink-0"
+          >
+            <Plus size={16} />
+            New Gallery
+          </Button>
         </div>
 
         {isLoading ? (
@@ -180,14 +179,12 @@ function GalleryManagementContent() {
           <div className="flex flex-col items-center justify-center py-24 border border-secondary/10 text-center">
             <Images size={40} className="text-secondary/30 mb-4" />
             <p className="font-paragraph text-secondary/50 mb-6">No galleries yet.</p>
-            {isAuthenticated && (
-              <Button
-                onClick={() => handleOpenDialog()}
-                className="bg-primary text-background hover:bg-primary/90 font-paragraph text-sm uppercase tracking-widest px-8 py-4 rounded-none"
-              >
-                Create your first gallery
-              </Button>
-            )}
+            <Button
+              onClick={() => handleOpenDialog()}
+              className="bg-primary text-background hover:bg-primary/90 font-paragraph text-sm uppercase tracking-widest px-8 py-4 rounded-none"
+            >
+              Create your first gallery
+            </Button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -195,10 +192,6 @@ function GalleryManagementContent() {
               const cover = (gallery as any).coverImage as string | undefined;
               const count = photoCount(gallery);
               const link = getGalleryLink(gallery);
-              // Readable production URL for display/copy (the raw link uses the
-              // current origin, which is an ugly host in the Wix preview).
-              const idOrSlug = (gallery as any).slug || gallery._id;
-              const prettyUrl = `https://skgarts.com/gallery/${idOrSlug}`;
               return (
                 <motion.div
                   key={gallery._id}
@@ -240,66 +233,59 @@ function GalleryManagementContent() {
                       </p>
                     )}
 
-                    {isAuthenticated ? (
-                      <>
-                        {/* Admin: shareable client link */}
-                        <div className="bg-secondary/5 p-4 mb-4 mt-auto">
-                          <div className="flex items-center gap-2">
-                            <a
-                              href={link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="font-paragraph text-xs text-primary truncate hover:underline flex-1"
-                              title={prettyUrl}
-                            >
-                              {prettyUrl}
-                            </a>
-                            <button
-                              onClick={() => copyToClipboard(prettyUrl, gallery._id)}
-                              className="text-secondary/50 hover:text-primary transition-colors shrink-0"
-                              title="Copy link"
-                            >
-                              {copiedId === gallery._id ? <Check size={14} /> : <Copy size={14} />}
-                            </button>
-                            <a
-                              href={link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-secondary/50 hover:text-primary transition-colors shrink-0"
-                              title="Open gallery"
-                            >
-                              <ExternalLink size={14} />
-                            </a>
-                          </div>
-                        </div>
+                    {/* Access code + link */}
+                    <div className="bg-secondary/5 p-4 mb-4 mt-auto">
+                      {gallery.accessCode && (
+                        <p className="font-paragraph text-xs text-secondary/60 mb-2">
+                          <span className="uppercase tracking-widest">Access Code:</span>{' '}
+                          <span className="font-semibold text-secondary">{gallery.accessCode}</span>
+                        </p>
+                      )}
+                      <div className="flex items-center gap-2">
+                        <a
+                          href={link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-paragraph text-xs text-primary truncate hover:underline flex-1"
+                        >
+                          {link}
+                        </a>
+                        <button
+                          onClick={() => copyToClipboard(link, gallery._id)}
+                          className="text-secondary/50 hover:text-primary transition-colors shrink-0"
+                          title="Copy link"
+                        >
+                          {copiedId === gallery._id ? <Check size={14} /> : <Copy size={14} />}
+                        </button>
+                        <a
+                          href={link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-secondary/50 hover:text-primary transition-colors shrink-0"
+                          title="Open gallery"
+                        >
+                          <ExternalLink size={14} />
+                        </a>
+                      </div>
+                    </div>
 
-                        {/* Admin: actions */}
-                        <div className="flex gap-2">
-                          <Button
-                            onClick={() => handleOpenDialog(gallery)}
-                            className="flex-1 bg-secondary/10 text-secondary hover:bg-secondary/20 font-paragraph text-xs uppercase tracking-widest py-2 rounded-none flex items-center justify-center gap-2"
-                          >
-                            <Edit2 size={14} />
-                            Edit
-                          </Button>
-                          <Button
-                            onClick={() => handleDelete(gallery._id)}
-                            className="flex-1 bg-[#ED1B23]/5 text-[#ED1B23] hover:bg-[#ED1B23]/10 font-paragraph text-xs uppercase tracking-widest py-2 rounded-none flex items-center justify-center gap-2"
-                          >
-                            <Trash2 size={14} />
-                            Delete
-                          </Button>
-                        </div>
-                      </>
-                    ) : (
-                      /* Visitor: single call-to-action into the album (code-gated) */
-                      <a
-                        href={link}
-                        className="mt-auto block w-full text-center bg-primary text-background hover:bg-primary/90 font-paragraph text-xs uppercase tracking-widest py-3 rounded-none transition-colors"
+                    {/* Actions */}
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => handleOpenDialog(gallery)}
+                        className="flex-1 bg-secondary/10 text-secondary hover:bg-secondary/20 font-paragraph text-xs uppercase tracking-widest py-2 rounded-none flex items-center justify-center gap-2"
                       >
-                        View Gallery
-                      </a>
-                    )}
+                        <Edit2 size={14} />
+                        Edit
+                      </Button>
+                      <Button
+                        onClick={() => handleDelete(gallery._id)}
+                        className="flex-1 bg-[#ED1B23]/5 text-[#ED1B23] hover:bg-[#ED1B23]/10 font-paragraph text-xs uppercase tracking-widest py-2 rounded-none flex items-center justify-center gap-2"
+                      >
+                        <Trash2 size={14} />
+                        Delete
+                      </Button>
+                    </div>
                   </div>
                 </motion.div>
               );
@@ -427,5 +413,9 @@ function GalleryManagementContent() {
 }
 
 export default function GalleryManagementPage() {
-  return <GalleryManagementContent />;
+  return (
+    <MemberProtectedRoute>
+      <GalleryManagementContent />
+    </MemberProtectedRoute>
+  );
 }

@@ -1,13 +1,11 @@
+import { Image } from '@/components/ui/image';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Image } from '@/components/ui/image';
-import { useMember } from '@/integrations';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { isAuthenticated, actions } = useMember();
 
   const navLinks = [
     { name: 'Home', href: '/' },
@@ -53,22 +51,6 @@ export default function Header() {
                 Contact Us
               </button>
             </a>
-            {isAuthenticated && (
-              <button
-                onClick={actions.logout}
-                className="font-paragraph text-base text-foreground hover:text-primary transition-colors font-medium"
-              >
-                Sign Out
-              </button>
-            )}
-            {!isAuthenticated && (
-              <button
-                onClick={actions.login}
-                className="font-paragraph text-base text-foreground hover:text-primary transition-colors font-medium"
-              >
-                Sign In
-              </button>
-            )}
           </nav>
 
           {/* Mobile Menu Button */}
@@ -114,28 +96,6 @@ export default function Header() {
                     Contact Us
                   </button>
                 </a>
-                {isAuthenticated && (
-                  <button
-                    onClick={() => {
-                      actions.logout();
-                      setIsMenuOpen(false);
-                    }}
-                    className="w-full font-paragraph text-base text-foreground hover:text-primary transition-colors font-medium py-2"
-                  >
-                    Sign Out
-                  </button>
-                )}
-                {!isAuthenticated && (
-                  <button
-                    onClick={() => {
-                      actions.login();
-                      setIsMenuOpen(false);
-                    }}
-                    className="w-full font-paragraph text-base text-foreground hover:text-primary transition-colors font-medium py-2"
-                  >
-                    Sign In
-                  </button>
-                )}
               </div>
             </motion.nav>
           )}

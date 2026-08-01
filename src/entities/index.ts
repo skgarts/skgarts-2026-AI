@@ -1,6 +1,6 @@
 /**
  * Auto-generated entity types
- * Contains all CMS collection interfaces in a single file
+ * Contains all CMS collection interfaces in a single file 
  */
 
 /**
@@ -23,12 +23,12 @@ export interface ClientGalleries {
   eventDate?: Date | string;
   /** @wixFieldType text */
   description?: string;
-  /** @wixFieldType text */
-  slug?: string;
+  /** @wixFieldType media_gallery */
+  mediagallery?: any;
   /** @wixFieldType text */
   displayLayout?: string;
-  /** @wixFieldType media-gallery - array of media items (images/videos) added in the CMS */
-  mediagallery?: any[];
+  /** @wixFieldType image - Contains image URL, render with <Image> component, NOT as text */
+  hero?: string;
 }
 
 
@@ -209,8 +209,6 @@ export interface ServiceCategories {
   detailedDescription?: string;
   /** @wixFieldType text */
   slug?: string;
-  /** @wixFieldType text */
-  displayLayout?: string;
   /** @wixFieldType number */
   displayOrder?: number;
 }

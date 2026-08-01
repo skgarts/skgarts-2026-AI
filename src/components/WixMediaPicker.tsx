@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
 import { X, Loader2, FolderOpen } from 'lucide-react';
@@ -16,48 +16,84 @@ interface SelectedMedia extends WixMediaFile {
   selected: boolean;
 }
 
+declare global {
+  interface Window {
+    wix?: any;
+  }
+}
+
 export default function WixMediaPicker() {
   const [selectedMedia, setSelectedMedia] = useState<SelectedMedia[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [wixReady, setWixReady] = useState(false);
+
+  useEffect(() => {
+    // Check if Wix SDK is available
+    if (window.wix) {
+      setWixReady(true);
+    }
+  }, []);
 
   const openMediaManager = async () => {
     setIsLoading(true);
     try {
-      // Call the backend API to open Wix Media Manager
-      const response = await fetch('/api/media-manager', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      // Use Wix Media Manager API if available
+      if (window.wix?.mediaManager) {
+        const result = await window.wix.mediaManager.openMediaManager({
           multiSelect: true,
           mediaTypes: ['image'],
-        }),
-      });
+        });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.details || 'Failed to fetch media files');
-      }
+        if (result && result.files && result.files.length > 0) {
+          const newMedia: SelectedMedia[] = result.files.map((file: any) => ({
+            id: file.id || crypto.randomUUID(),
+            filename: file.filename || file.name || 'Untitled',
+            url: file.url || '',
+            mediaType: file.mediaType,
+            width: file.width,
+            height: file.height,
+            selected: true,
+          }));
 
-      const result = await response.json();
-
-      if (result.success && result.files && result.files.length > 0) {
-        const newMedia: SelectedMedia[] = result.files.map((file: any) => ({
-          id: file.id || crypto.randomUUID(),
-          filename: file.filename || file.name || 'Untitled',
-          url: file.url || '',
-          mediaType: file.mediaType,
-          width: file.width,
-          height: file.height,
-          selected: true,
-        }));
-
-        setSelectedMedia((prev) => [...prev, ...newMedia]);
-      } else if (result.files && result.files.length === 0) {
-        alert('No images found in your media library. Please upload some images first.');
+          setSelectedMedia((prev) => [...prev, ...newMedia]);
+        }
       } else {
-        throw new Error(result.error || 'No files returned from media manager');
+        // Fallback to backend API if Wix SDK is not available
+        const response = await fetch('/api/media-manager', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            multiSelect: true,
+            mediaTypes: ['image'],
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.details || 'Failed to fetch media files');
+        }
+
+        const result = await response.json();
+
+        if (result.success && result.files && result.files.length > 0) {
+          const newMedia: SelectedMedia[] = result.files.map((file: any) => ({
+            id: file.id || crypto.randomUUID(),
+            filename: file.filename || file.name || 'Untitled',
+            url: file.url || '',
+            mediaType: file.mediaType,
+            width: file.width,
+            height: file.height,
+            selected: true,
+          }));
+
+          setSelectedMedia((prev) => [...prev, ...newMedia]);
+        } else if (result.files && result.files.length === 0) {
+          alert('No images found in your media library. Please upload some images first.');
+        } else {
+          throw new Error(result.error || 'No files returned from media manager');
+        }
       }
     } catch (error) {
       console.error('Error opening media manager:', error);

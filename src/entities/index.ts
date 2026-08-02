@@ -29,6 +29,8 @@ export interface ClientGalleries {
   displayLayout?: string;
   /** @wixFieldType media-gallery - array of media items (images/videos) added in the CMS */
   mediagallery?: any[];
+  /** @wixFieldType image - dedicated hero/cover image for the Hero layout; render with <Image>, NOT as text */
+  hero?: string;
 }
 
 

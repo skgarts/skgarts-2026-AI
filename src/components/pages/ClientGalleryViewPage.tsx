@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
 import { Input } from '@/components/ui/input';
 import { ClientGalleries } from '@/entities';
-import { BaseCrudService } from '@/integrations';
 import { motion } from 'framer-motion';
 import { AlertCircle, ChevronLeft, ChevronRight, Lock, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -115,8 +114,28 @@ function CollageLayout({ photos, onOpen }: { photos: Photo[]; onOpen: (i: number
   );
 }
 
-// --- Layout: Hero + grid (first image large, rest flow) ---
-function HeroLayout({ photos, onOpen }: { photos: Photo[]; onOpen: (i: number) => void }) {
+// --- Layout: Hero + grid ---
+// If the gallery has a dedicated `hero` CMS image, use it as the large banner
+// and show ALL photos in the grid below. Otherwise fall back to promoting the
+// first photo as the banner (original behavior).
+function HeroLayout({ photos, onOpen, heroUrl }: { photos: Photo[]; onOpen: (i: number) => void; heroUrl?: string }) {
+  if (heroUrl) {
+    return (
+      <div className="space-y-4">
+        <div className="relative w-full max-h-[70vh] overflow-hidden bg-secondary/5">
+          <Image src={heroUrl} alt="Gallery hero" loading="eager" className="w-full h-full max-h-[70vh] object-cover pointer-events-none" width={1920} />
+          <Watermark />
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {photos.map((p, i) => (
+            <PhotoTile key={p.id} photo={p} index={i} onOpen={onOpen} delay={Math.min(i * 0.02, 0.4)}
+              className="aspect-square" imgClassName="w-full h-full" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   const [first, ...rest] = photos;
   return (
     <div className="space-y-4">
@@ -166,12 +185,12 @@ function FilmstripLayout({ photos, onOpen }: { photos: Photo[]; onOpen: (i: numb
   );
 }
 
-function GalleryLayout({ layout, photos, onOpen }: { layout: string; photos: Photo[]; onOpen: (i: number) => void }) {
+function GalleryLayout({ layout, photos, onOpen, heroUrl }: { layout: string; photos: Photo[]; onOpen: (i: number) => void; heroUrl?: string }) {
   switch ((layout || 'collage').toLowerCase()) {
     case 'masonry': return <MasonryLayout photos={photos} onOpen={onOpen} />;
     case 'grid': return <GridLayout photos={photos} onOpen={onOpen} />;
     case 'justified': return <JustifiedLayout photos={photos} onOpen={onOpen} />;
-    case 'hero': return <HeroLayout photos={photos} onOpen={onOpen} />;
+    case 'hero': return <HeroLayout photos={photos} onOpen={onOpen} heroUrl={heroUrl} />;
     case 'filmstrip': return <FilmstripLayout photos={photos} onOpen={onOpen} />;
     case 'collage':
     default: return <CollageLayout photos={photos} onOpen={onOpen} />;
@@ -180,11 +199,16 @@ function GalleryLayout({ layout, photos, onOpen }: { layout: string; photos: Pho
 
 export default function ClientGalleryViewPage() {
   const { clientId } = useParams<{ clientId: string }>();
-  const [gallery, setGallery] = useState<ClientGalleries | null>(null);
+  // `gallery` now holds only the safe metadata returned by the server endpoint
+  // (client name for the gate; description/date/layout after unlock). Photos and
+  // the access code are NEVER read on the client.
+  const [gallery, setGallery] = useState<Partial<ClientGalleries> | null>(null);
+  const [heroUrl, setHeroUrl] = useState<string>('');
   const [photos, setPhotos] = useState<{ id: string; thumb: string; url: string; title?: string; description?: string }[]>([])
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [accessCode, setAccessCode] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const touchStartX = useRef<number | null>(null);
@@ -218,92 +242,74 @@ export default function ClientGalleryViewPage() {
     loadGallery();
   }, [clientId]);
 
+  // METADATA load: ask the server only for what the gate screen needs (client
+  // name + whether a code is required). No photos and no access code ever reach
+  // the browser here — that's what lets the `clientgalleries` collection read be
+  // locked to Admin-only. Photos are fetched only after a correct code below.
   const loadGallery = async () => {
     setIsLoading(true);
+    setError('');
     try {
-      if (!clientId) return;
-
-      // Resolve the gallery by slug first (pretty URLs), then fall back to the
-      // raw record id so any older /gallery/{uuid} links keep working.
-      let galleryData: ClientGalleries | null = null;
-
-      const all = await BaseCrudService.getAll<ClientGalleries>('clientgalleries');
-      galleryData = all.items.find((g) => (g as any).slug === clientId) || null;
-
-      if (!galleryData) {
-        galleryData =
-          all.items.find((g) => g._id === clientId) ||
-          (await BaseCrudService.getById<ClientGalleries>('clientgalleries', clientId).catch(() => null));
-      }
-
-      if (!galleryData) {
+      if (!clientId) {
         setError('Gallery not found');
         return;
       }
-      setGallery(galleryData);
+      const res = await fetch('/api/gallery-access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        // clientId may be a slug or a raw record id — send as both candidates.
+        body: JSON.stringify({ slug: clientId, id: clientId }),
+      });
+      const data = await res.json().catch(() => ({}));
 
-      // Photos come from the native Wix CMS "Media Gallery" field (id: mediagallery).
-      // We resolve each item to a Wix media id, then build size-optimized URLs:
-      //  - a small "grid" version (fast to load, right-sized for thumbnails)
-      //  - a large "full" version only used in the lightbox.
-      // This dramatically speeds up the grid vs. serving multi-MB originals.
-      const toMediaId = (raw: any): string => {
-        if (!raw) return '';
-        if (typeof raw === 'object') {
-          raw = raw.src || raw.url || raw.image || raw.slug || raw.uri || '';
-        }
-        if (typeof raw !== 'string') return '';
-        if (raw.startsWith('wix:image://')) {
-          return raw.replace('wix:image://v1/', '').split('/')[0].split('#')[0];
-        }
-        if (raw.startsWith('http')) {
-          // Extract the media id from an existing static.wixstatic URL if present
-          const m = raw.match(/\/media\/([^/?#]+)/);
-          return m ? m[1] : '';
-        }
-        return raw; // assume it's already a bare media id
-      };
-
-      // Wix on-the-fly image service: /media/<id>/v1/fill/w_W,h_H,q_Q/file.jpg
-      const wixSized = (id: string, w: number, h: number, q = 80) =>
-        id
-          ? `https://static.wixstatic.com/media/${id}/v1/fill/w_${w},h_${h},al_c,q_${q},enc_auto/file.jpg`
-          : '';
-      // Full media URL (original) for lightbox
-      const wixFull = (id: string) => (id ? `https://static.wixstatic.com/media/${id}` : '');
-
-      const mg = (galleryData as any).mediagallery;
-      const items = Array.isArray(mg) ? mg : [];
-      const normalized = items
-        .map((it: any) => {
-          const id = toMediaId(typeof it === 'object' ? (it.src || it.url || it.image || it) : it);
-          return {
-            id,
-            thumb: wixSized(id, 800, 800, 80), // grid version
-            url: wixFull(id),                  // lightbox version
-            title: (typeof it === 'object' && (it.title || it.description)) || undefined,
-            description: (typeof it === 'object' && it.description) || undefined,
-          };
-        })
-        .filter((p) => p.id);
-
-      setPhotos(normalized);
-    } catch (error) {
-      console.error('Error loading gallery:', error);
+      if (res.status === 404 || (!data?.gallery && !data?.ok)) {
+        setError('Gallery not found');
+        return;
+      }
+      setGallery({ clientName: data.gallery?.clientName || '' });
+    } catch (err) {
+      console.error('Error loading gallery:', err);
       setError('Gallery not found');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleAccessCodeSubmit = (e: React.FormEvent) => {
+  // UNLOCK: the code is validated on the SERVER. Photos are returned only on a
+  // correct code; a wrong code yields a 401 and no images.
+  const handleAccessCodeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (gallery?.accessCode && accessCode === gallery.accessCode) {
-      setIsAuthenticated(true);
-      setError('');
-    } else {
-      setError('Invalid access code');
-      setAccessCode('');
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    setError('');
+    try {
+      const res = await fetch('/api/gallery-access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug: clientId, id: clientId, code: accessCode }),
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok && data?.ok) {
+        setPhotos(Array.isArray(data.photos) ? data.photos : []);
+        setHeroUrl(data.gallery?.heroUrl || '');
+        setGallery((prev) => ({
+          ...(prev || {}),
+          clientName: data.gallery?.clientName || prev?.clientName || '',
+          description: data.gallery?.description || '',
+          eventDate: data.gallery?.eventDate || undefined,
+          displayLayout: data.gallery?.displayLayout || 'collage',
+        }));
+        setIsAuthenticated(true);
+      } else {
+        setError('Invalid access code');
+        setAccessCode('');
+      }
+    } catch (err) {
+      console.error('Error validating access code:', err);
+      setError('Something went wrong. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -364,9 +370,10 @@ export default function ClientGalleryViewPage() {
               )}
               <Button
                 type="submit"
-                className="w-full bg-primary text-background hover:bg-primary/90 font-paragraph uppercase tracking-widest text-sm py-3 rounded-none"
+                disabled={isSubmitting || !accessCode.trim()}
+                className="w-full bg-primary text-background hover:bg-primary/90 font-paragraph uppercase tracking-widest text-sm py-3 rounded-none disabled:opacity-50"
               >
-                Access Gallery
+                {isSubmitting ? 'Checking…' : 'Access Gallery'}
               </Button>
             </form>
           </div>
@@ -402,6 +409,7 @@ export default function ClientGalleryViewPage() {
             layout={(gallery as any).displayLayout || 'collage'}
             photos={photos}
             onOpen={setLightboxIndex}
+            heroUrl={heroUrl}
           />
         ) : (
           <div className="flex flex-col items-center justify-center py-20 border border-secondary/10">

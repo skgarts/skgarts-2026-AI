@@ -48,13 +48,20 @@ function GalleryManagementContent() {
     loadGalleries();
   }, []);
 
+  // Listing comes from the public-safe /api/gallery-list endpoint. It returns
+  // only non-sensitive fields (name, slug, cover, layout, photo COUNT, dates) —
+  // never the access code or the media-gallery contents. This keeps the grid
+  // working for signed-out visitors even when the `clientgalleries` collection
+  // read is locked to Admin-only, without leaking any client photos.
   const loadGalleries = async () => {
     setIsLoading(true);
     try {
-      const result = await BaseCrudService.getAll<ClientGalleries>('clientgalleries');
-      setGalleries(result.items);
+      const res = await fetch('/api/gallery-list');
+      const data = await res.json().catch(() => ({}));
+      setGalleries(Array.isArray(data?.galleries) ? data.galleries : []);
     } catch (error) {
       console.error('Error loading galleries:', error);
+      setGalleries([]);
     } finally {
       setIsLoading(false);
     }
@@ -139,10 +146,12 @@ function GalleryManagementContent() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  // Count of photos in the native Media Gallery field (field ID: mediagallery)
+  // Photo count comes straight from the list endpoint (a bare number). The grid
+  // never receives the media-gallery contents, so we don't compute this from
+  // `mediagallery` anymore.
   const photoCount = (gallery: ClientGalleries) => {
-    const mg = (gallery as any).mediagallery;
-    return Array.isArray(mg) ? mg.length : 0;
+    const c = (gallery as any).photoCount;
+    return typeof c === 'number' ? c : 0;
   };
 
   return (

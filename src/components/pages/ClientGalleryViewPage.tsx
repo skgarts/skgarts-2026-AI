@@ -210,6 +210,7 @@ export default function ClientGalleryViewPage() {
   const [accessCode, setAccessCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [notFound, setNotFound] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const touchStartX = useRef<number | null>(null);
 
@@ -249,9 +250,10 @@ export default function ClientGalleryViewPage() {
   const loadGallery = async () => {
     setIsLoading(true);
     setError('');
+    setNotFound(false);
     try {
       if (!clientId) {
-        setError('Gallery not found');
+        setNotFound(true);
         return;
       }
       const res = await fetch('/api/gallery-access', {
@@ -263,13 +265,13 @@ export default function ClientGalleryViewPage() {
       const data = await res.json().catch(() => ({}));
 
       if (res.status === 404 || (!data?.gallery && !data?.ok)) {
-        setError('Gallery not found');
+        setNotFound(true);
         return;
       }
       setGallery({ clientName: data.gallery?.clientName || '' });
     } catch (err) {
       console.error('Error loading gallery:', err);
-      setError('Gallery not found');
+      setNotFound(true);
     } finally {
       setIsLoading(false);
     }
@@ -301,9 +303,13 @@ export default function ClientGalleryViewPage() {
           displayLayout: data.gallery?.displayLayout || 'collage',
         }));
         setIsAuthenticated(true);
-      } else {
-        setError('Invalid access code');
+      } else if (res.status === 401) {
+        setError('Incorrect access code. Please check it and try again.');
         setAccessCode('');
+      } else {
+        // Not a wrong-code case — surface it distinctly and log the server detail.
+        console.error('Unlock failed:', res.status, data);
+        setError('Something went wrong verifying the code. Please try again.');
       }
     } catch (err) {
       console.error('Error validating access code:', err);
@@ -325,7 +331,7 @@ export default function ClientGalleryViewPage() {
     );
   }
 
-  if (!gallery || error) {
+  if (!gallery || notFound) {
     return (
       <div className="min-h-screen bg-background text-foreground">
         <Header />

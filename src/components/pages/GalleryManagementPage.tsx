@@ -8,9 +8,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { ClientGalleries } from '@/entities';
 import { BaseCrudService, useMember } from '@/integrations';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { Check, Copy, Edit2, ExternalLink, Images, Plus, Power, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 
 function GalleryManagementContent() {
   const { isAuthenticated, actions } = useMember();
@@ -19,6 +19,8 @@ function GalleryManagementContent() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingGallery, setEditingGallery] = useState<ClientGalleries | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState({
     clientName: '',
     description: '',
@@ -69,6 +71,7 @@ function GalleryManagementContent() {
   };
 
   const handleOpenDialog = (gallery?: ClientGalleries) => {
+    setSaveError('');
     if (gallery) {
       setEditingGallery(gallery);
       setFormData({
@@ -86,6 +89,8 @@ function GalleryManagementContent() {
   };
 
   const handleSave = async () => {
+    setSaveError('');
+    setIsSaving(true);
     try {
       // Use provided slug, or generate one from the client name. Keep it unique.
       let slug = formData.slug ? slugify(formData.slug) : slugify(formData.clientName);
@@ -120,6 +125,12 @@ function GalleryManagementContent() {
       await loadGalleries();
     } catch (error) {
       console.error('Error saving gallery:', error);
+      setSaveError(
+        (error instanceof Error ? error.message : String(error)) ||
+        'Could not save. You may not have permission to edit this collection.'
+      );
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -423,17 +434,24 @@ function GalleryManagementContent() {
               </p>
             </div>
 
+            {saveError && (
+              <div className="bg-accent-red/5 border border-accent-red/20 p-3">
+                <p className="font-paragraph text-xs text-accent-red">{saveError}</p>
+              </div>
+            )}
+
             <div className="flex gap-3 pt-2">
               <Button
                 onClick={handleSave}
-                disabled={!formData.clientName.trim()}
+                disabled={!formData.clientName.trim() || isSaving}
                 className="flex-1 bg-primary text-background hover:bg-primary/90 font-paragraph text-sm uppercase tracking-widest py-6 rounded-none disabled:opacity-50"
               >
-                {editingGallery ? 'Save Changes' : 'Create Gallery'}
+                {isSaving ? 'Saving…' : editingGallery ? 'Save Changes' : 'Create Gallery'}
               </Button>
               <Button
                 onClick={() => setIsDialogOpen(false)}
-                className="bg-secondary/10 text-secondary hover:bg-secondary/20 font-paragraph text-sm uppercase tracking-widest px-8 py-6 rounded-none"
+                disabled={isSaving}
+                className="bg-secondary/10 text-secondary hover:bg-secondary/20 font-paragraph text-sm uppercase tracking-widest px-8 py-6 rounded-none disabled:opacity-50"
               >
                 Cancel
               </Button>

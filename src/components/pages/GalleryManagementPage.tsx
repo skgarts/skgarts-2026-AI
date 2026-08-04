@@ -10,6 +10,7 @@ import { BaseCrudService, useMember } from '@/integrations';
 import { motion } from 'framer-motion';
 import { Check, Copy, Edit2, ExternalLink, Images, Plus, Power, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 function GalleryManagementContent() {
   const { isAuthenticated, actions } = useMember();
@@ -219,6 +220,7 @@ function GalleryManagementContent() {
               const count = photoCount(gallery);
               const link = getGalleryLink(gallery);
               const idOrSlug = (gallery as any).slug || gallery._id;
+              const path = `/gallery/${idOrSlug}`; // relative path for client-side navigation
               const prettyUrl = `https://skgarts.com/gallery/${idOrSlug}`;
               return (
                 <motion.div
@@ -282,15 +284,13 @@ function GalleryManagementContent() {
                             >
                               {copiedId === gallery._id ? <Check size={14} /> : <Copy size={14} />}
                             </button>
-                            <a
-                              href={link}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                            <Link
+                              to={path}
                               className="text-secondary/50 hover:text-primary transition-colors shrink-0"
                               title="Open gallery"
                             >
                               <ExternalLink size={14} />
-                            </a>
+                            </Link>
                           </div>
                         </div>
 
@@ -314,12 +314,12 @@ function GalleryManagementContent() {
                       </>
                     ) : (
                       /* Visitor: single call-to-action into the album (code-gated) */
-                      <a
-                        href={link}
+                      <Link
+                        to={path}
                         className="mt-auto block w-full text-center bg-primary text-background hover:bg-primary/90 font-paragraph text-xs uppercase tracking-widest py-3 rounded-none transition-colors"
                       >
                         View Gallery
-                      </a>
+                      </Link>
                     )}
                   </div>
                 </motion.div>

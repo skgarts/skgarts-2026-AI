@@ -122,8 +122,8 @@ function HeroLayout({ photos, onOpen, heroUrl }: { photos: Photo[]; onOpen: (i: 
   if (heroUrl) {
     return (
       <div className="space-y-4">
-        <div className="relative w-full max-h-[70vh] overflow-hidden bg-secondary/5">
-          <Image src={heroUrl} alt="Gallery hero" loading="eager" className="w-full h-full max-h-[70vh] object-cover pointer-events-none" width={1920} />
+        <div className="relative w-full bg-secondary/5">
+          <Image src={heroUrl} alt="Gallery hero" loading="eager" className="w-full h-auto block pointer-events-none" />
           <Watermark />
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

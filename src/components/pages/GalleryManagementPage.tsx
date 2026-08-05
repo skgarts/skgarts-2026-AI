@@ -6,11 +6,11 @@ import { Image } from '@/components/ui/image';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ClientGalleries } from '@/entities';
-import { BaseCrudService, useMember } from '@/integrations';
+import { useMember } from '@/integrations';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
 import { Check, Copy, Edit2, ExternalLink, Images, Plus, Power, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 function GalleryManagementContent() {
   const { isAuthenticated, actions } = useMember();
@@ -101,24 +101,24 @@ function GalleryManagementContent() {
         if (clash) slug = `${slug}-${Math.random().toString(36).slice(2, 6)}`;
       }
 
-      if (editingGallery) {
-        await BaseCrudService.update<ClientGalleries>('clientgalleries', {
-          _id: editingGallery._id,
-          clientName: formData.clientName,
-          description: formData.description,
-          eventDate: formData.eventDate ? new Date(formData.eventDate) : undefined,
-          slug,
-          displayLayout: formData.displayLayout,
-        } as any);
-      } else {
-        await BaseCrudService.create<ClientGalleries>('clientgalleries', {
-          _id: crypto.randomUUID(),
-          clientName: formData.clientName,
-          description: formData.description,
-          eventDate: formData.eventDate ? new Date(formData.eventDate) : undefined,
-          slug,
-          displayLayout: formData.displayLayout,
-        } as any);
+      const galleryData: Record<string, any> = {
+        _id: editingGallery ? editingGallery._id : crypto.randomUUID(),
+        clientName: formData.clientName,
+        description: formData.description,
+        eventDate: formData.eventDate ? new Date(formData.eventDate).toISOString() : undefined,
+        slug,
+        displayLayout: formData.displayLayout,
+      };
+
+      const res = await fetch('/api/gallery-write', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: editingGallery ? 'update' : 'create', data: galleryData }),
+      });
+      const result = await res.json().catch(() => ({}));
+      if (!res.ok || !result?.ok) {
+        const extra = result?.detected ? ` (signed in as ${result.detected})` : '';
+        throw new Error((result?.error || 'Save failed') + extra);
       }
 
       setIsDialogOpen(false);
@@ -139,10 +139,19 @@ function GalleryManagementContent() {
       return;
     }
     try {
-      await BaseCrudService.delete('clientgalleries', galleryId);
+      const res = await fetch('/api/gallery-write', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete', data: { _id: galleryId } }),
+      });
+      const result = await res.json().catch(() => ({}));
+      if (!res.ok || !result?.ok) {
+        throw new Error(result?.error || 'Delete failed');
+      }
       await loadGalleries();
     } catch (error) {
       console.error('Error deleting gallery:', error);
+      alert(`Could not delete: ${error instanceof Error ? error.message : String(error)}`);
     }
   };
 

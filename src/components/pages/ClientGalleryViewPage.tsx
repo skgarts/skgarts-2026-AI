@@ -122,9 +122,11 @@ function HeroLayout({ photos, onOpen, heroUrl }: { photos: Photo[]; onOpen: (i: 
   if (heroUrl) {
     return (
       <div className="space-y-4">
-        <div className="relative w-full bg-secondary/5">
-          <Image src={heroUrl} alt="Gallery hero" loading="eager" className="w-full h-auto block pointer-events-none" />
-          <Watermark />
+        <div className="w-full flex justify-center bg-secondary/5">
+          <div className="relative">
+            <Image src={heroUrl} alt="Gallery hero" loading="eager" className="max-h-[85vh] max-w-full w-auto h-auto block pointer-events-none" />
+            <Watermark />
+          </div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {photos.map((p, i) => (
@@ -137,11 +139,23 @@ function HeroLayout({ photos, onOpen, heroUrl }: { photos: Photo[]; onOpen: (i: 
   }
 
   const [first, ...rest] = photos;
+  // Uncropped, high-res fit URL for the first photo when no dedicated hero is set.
+  const fitUrl = (id: string) =>
+    id ? `https://static.wixstatic.com/media/${id}/v1/fit/w_2560,h_2560,q_90,enc_auto/file.jpg` : '';
   return (
     <div className="space-y-4">
       {first && (
-        <PhotoTile photo={first} index={0} onOpen={onOpen}
-          className="w-full max-h-[70vh]" imgClassName="w-full h-full max-h-[70vh]" />
+        <div className="w-full flex justify-center bg-secondary/5">
+          <button
+            type="button"
+            onClick={() => onOpen(0)}
+            className="relative block cursor-zoom-in"
+            aria-label="Open photo"
+          >
+            <Image src={fitUrl(first.id)} alt="Gallery hero" loading="eager" className="max-h-[85vh] max-w-full w-auto h-auto block pointer-events-none" />
+            <Watermark />
+          </button>
+        </div>
       )}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {rest.map((p, i) => (

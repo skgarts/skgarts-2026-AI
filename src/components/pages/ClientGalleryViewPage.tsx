@@ -115,51 +115,47 @@ function CollageLayout({ photos, onOpen }: { photos: Photo[]; onOpen: (i: number
 }
 
 // --- Layout: Hero + grid ---
-// If the gallery has a dedicated `hero` CMS image, use it as the large banner
-// and show ALL photos in the grid below. Otherwise fall back to promoting the
-// first photo as the banner (original behavior).
+// The hero banner is always shown UNCROPPED and fitted to the screen. We build a
+// scale-to-fit URL from the media id on the client (so it works no matter what
+// URL the endpoint sent) and render a plain <img> — bypassing the Image
+// component, which would otherwise force object-cover for Wix media.
 function HeroLayout({ photos, onOpen, heroUrl }: { photos: Photo[]; onOpen: (i: number) => void; heroUrl?: string }) {
-  if (heroUrl) {
-    return (
-      <div className="space-y-4">
-        <div className="w-full flex justify-center bg-secondary/5">
-          <div className="relative">
-            <Image src={heroUrl} alt="Gallery hero" loading="eager" className="max-h-[85vh] max-w-full w-auto h-auto block pointer-events-none" />
-            <Watermark />
-          </div>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {photos.map((p, i) => (
-            <PhotoTile key={p.id} photo={p} index={i} onOpen={onOpen} delay={Math.min(i * 0.02, 0.4)}
-              className="aspect-square" imgClassName="w-full h-full" />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  const [first, ...rest] = photos;
-  // Uncropped, high-res fit URL for the first photo when no dedicated hero is set.
-  const fitUrl = (id: string) =>
+  // Extract a bare Wix media id from any wixstatic URL (fill, fit, or plain).
+  const idFromUrl = (u?: string) => {
+    const m = (u || '').match(/\/media\/([^/?#]+)/);
+    return m ? m[1] : '';
+  };
+  // Uncropped, high-res scale-to-FIT URL from a media id.
+  const fit = (id: string) =>
     id ? `https://static.wixstatic.com/media/${id}/v1/fit/w_2560,h_2560,q_90,enc_auto/file.jpg` : '';
+
+  const heroId = idFromUrl(heroUrl);
+  const [first, ...rest] = photos;
+
+  // Prefer a dedicated hero image; otherwise use the first photo as the banner.
+  const bannerSrc = heroId ? fit(heroId) : fit(first?.id || '');
+  const gridPhotos = heroId ? photos : rest; // if using first photo as hero, don't repeat it in the grid
+
   return (
     <div className="space-y-4">
-      {first && (
+      {bannerSrc && (
         <div className="w-full flex justify-center bg-secondary/5">
           <button
             type="button"
-            onClick={() => onOpen(0)}
-            className="relative block cursor-zoom-in"
-            aria-label="Open photo"
+            onClick={() => onOpen(heroId ? -1 : 0)}
+            className={`relative block ${heroId ? 'cursor-default' : 'cursor-zoom-in'}`}
+            aria-label="Gallery hero image"
+            disabled={heroId ? true : false}
           >
-            <Image src={fitUrl(first.id)} alt="Gallery hero" loading="eager" className="max-h-[85vh] max-w-full w-auto h-auto block pointer-events-none" />
+            {/* Plain <img>: fitted to viewport, never cropped, centered. */}
+            <Image src={bannerSrc} alt="Gallery hero" loading="eager" className="max-h-[85vh] max-w-full w-auto h-auto block mx-auto pointer-events-none" />
             <Watermark />
           </button>
         </div>
       )}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {rest.map((p, i) => (
-          <PhotoTile key={p.id} photo={p} index={i + 1} onOpen={onOpen} delay={Math.min(i * 0.02, 0.4)}
+        {gridPhotos.map((p, i) => (
+          <PhotoTile key={p.id} photo={p} index={heroId ? i : i + 1} onOpen={onOpen} delay={Math.min(i * 0.02, 0.4)}
             className="aspect-square" imgClassName="w-full h-full" />
         ))}
       </div>

@@ -78,6 +78,16 @@ export const sized = (id: string, w: number, h: number, q = 80) =>
     ? `https://static.wixstatic.com/media/${id}/v1/fill/w_${w},h_${h},al_c,q_${q},enc_auto/file.jpg`
     : '';
 
+/**
+ * Scale-to-FIT URL: preserves the image's aspect ratio (no cropping), scaling it
+ * to fit within a max box. Small images are served at their native size. Used for
+ * the Hero image, which must show the full uncropped frame at high resolution.
+ */
+export const sizedFit = (id: string, max: number, q = 90) =>
+  id
+    ? `https://static.wixstatic.com/media/${id}/v1/fit/w_${max},h_${max},q_${q},enc_auto/file.jpg`
+    : '';
+
 export const full = (id: string) =>
   id ? `https://static.wixstatic.com/media/${id}` : '';
 
@@ -190,7 +200,8 @@ export async function galleryAccessCore(
 
   const photos = buildPhotos(gallery.mediagallery);
   const heroId = toMediaId(gallery.hero);
-  const heroUrl = heroId ? sized(heroId, 1920, 1080, 85) : '';
+  // Hero is shown uncropped at high resolution — scale-to-fit, not fill/crop.
+  const heroUrl = heroId ? sizedFit(heroId, 2560, 90) : '';
 
   return {
     status: 200,

@@ -217,4 +217,6 @@ export interface ServiceCategories {
   displayLayout?: string;
   /** @wixFieldType number */
   displayOrder?: number;
+  /** @wixFieldType media-gallery - array of media items shown as this service's public portfolio gallery */
+  mediagallery?: any[];
 }

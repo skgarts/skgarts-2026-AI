@@ -20,20 +20,29 @@ function coverMediaId(u?: string): string {
   return m ? m[1] : '';
 }
 // Serve the cover scaled-to-FIT (aspect preserved, ~900px). We do NOT crop in the
-// URL — the visible region is controlled by CSS object-position from the focal
-// point, so the crop can be aimed anywhere.
+// URL — the visible region is controlled by CSS (object-position for pan, transform
+// scale for zoom), so the crop can be positioned and resized freely.
 function coverFitUrl(u?: string): string {
   const id = coverMediaId(u);
   return id ? `https://static.wixstatic.com/media/${id}/v1/fit/w_900,h_900,q_85,enc_auto/file.jpg` : '';
 }
-// Parse "X,Y" (0-100) focal percentages; default to horizontal-center, upper area
-// (good for standing portraits) when unset.
-function parseFocal(s?: string): { x: number; y: number } {
-  const [x, y] = (s || '').split(',').map((n) => parseFloat(n.trim()));
+// Parse "X,Y[,Z]" — X,Y are focal percentages (0-100), Z is zoom (>=1). Defaults
+// to horizontal-center / upper area at 1x (good for standing portraits) when unset.
+function parseFocal(s?: string): { x: number; y: number; zoom: number } {
+  const [x, y, z] = (s || '').split(',').map((n) => parseFloat(n.trim()));
   return {
     x: Number.isFinite(x) ? Math.min(100, Math.max(0, x)) : 50,
     y: Number.isFinite(y) ? Math.min(100, Math.max(0, y)) : 20,
+    zoom: Number.isFinite(z) ? Math.min(4, Math.max(1, z)) : 1,
   };
+}
+// CSS style that reproduces the chosen crop (pan + zoom) inside an object-cover box.
+function cropStyle(f: { x: number; y: number; zoom: number }) {
+  return {
+    objectPosition: `${f.x}% ${f.y}%`,
+    transform: `scale(${f.zoom})`,
+    transformOrigin: `${f.x}% ${f.y}%`,
+  } as const;
 }
 
 function GalleryManagementContent() {
@@ -45,9 +54,10 @@ function GalleryManagementContent() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [saveError, setSaveError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-  const [focal, setFocal] = useState<{ x: number; y: number }>({ x: 50, y: 20 });
+  const [focal, setFocal] = useState<{ x: number; y: number; zoom: number }>({ x: 50, y: 20, zoom: 1 });
   const [editCover, setEditCover] = useState<string>(''); // cover URL of the gallery being edited
   const focalBoxRef = useRef<HTMLDivElement | null>(null);
+  const dragStart = useRef<{ px: number; py: number; fx: number; fy: number; w: number; h: number } | null>(null);
   const [formData, setFormData] = useState({
     clientName: '',
     description: '',
@@ -119,14 +129,22 @@ function GalleryManagementContent() {
     setIsDialogOpen(true);
   };
 
-  // Set the focal point from a pointer position over the cover editor box.
-  const pickFocal = (e: React.PointerEvent<HTMLDivElement>) => {
-    const box = focalBoxRef.current;
-    if (!box) return;
-    const rect = box.getBoundingClientRect();
-    const x = Math.min(100, Math.max(0, ((e.clientX - rect.left) / rect.width) * 100));
-    const y = Math.min(100, Math.max(0, ((e.clientY - rect.top) / rect.height) * 100));
-    setFocal({ x, y });
+  // Grab-and-drag panning of the cover within the crop frame.
+  const startPan = (e: React.PointerEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    dragStart.current = { px: e.clientX, py: e.clientY, fx: focal.x, fy: focal.y, w: rect.width, h: rect.height };
+  };
+  const movePan = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.buttons !== 1 || !dragStart.current) return;
+    const d = dragStart.current;
+    const dxPct = ((e.clientX - d.px) / d.w) * 100;
+    const dyPct = ((e.clientY - d.py) / d.h) * 100;
+    setFocal((f) => ({
+      ...f,
+      x: Math.min(100, Math.max(0, d.fx - dxPct)),
+      y: Math.min(100, Math.max(0, d.fy - dyPct)),
+    }));
   };
 
   const handleSave = async () => {
@@ -149,7 +167,7 @@ function GalleryManagementContent() {
         eventDate: formData.eventDate ? new Date(formData.eventDate).toISOString() : undefined,
         slug,
         displayLayout: formData.displayLayout,
-        coverFocal: `${Math.round(focal.x)},${Math.round(focal.y)}`,
+        coverFocal: `${Math.round(focal.x)},${Math.round(focal.y)},${focal.zoom.toFixed(2)}`,
       };
 
       const res = await fetch('/api/gallery-write', {
@@ -292,10 +310,10 @@ function GalleryManagementContent() {
                   transition={{ duration: 0.5, delay: (index % 3) * 0.08 }}
                   className="bg-white border border-secondary/10 flex flex-col"
                 >
-                  {/* Cover */}
-                  <div className="relative h-56 bg-secondary/5 overflow-hidden">
+                  {/* Cover — locked to 16:10 so it matches the editor crop frame exactly */}
+                  <div className="relative aspect-[16/10] bg-secondary/5 overflow-hidden">
                     {cover ? (
-                      <Image src={coverFitUrl(cover)} alt={gallery.clientName || 'Gallery'} loading="lazy" className="w-full h-full object-cover" style={{ objectPosition: `${parseFocal((gallery as any).coverFocal).x}% ${parseFocal((gallery as any).coverFocal).y}%` }} />
+                      <Image src={coverFitUrl(cover)} alt={gallery.clientName || 'Gallery'} loading="lazy" className="w-full h-full object-cover" style={cropStyle(parseFocal((gallery as any).coverFocal))} />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <Images size={32} className="text-secondary/20" />
@@ -471,41 +489,42 @@ function GalleryManagementContent() {
             {editingGallery && (
               <div className="space-y-2">
                 <label className="font-paragraph text-xs uppercase tracking-widest text-secondary/60">
-                  Cover crop
+                  Cover crop &amp; zoom
                 </label>
                 {editCover ? (
                   <>
                     <p className="font-paragraph text-xs text-secondary/50">
-                      Click or drag on the image to choose what stays in the card crop.
+                      Drag inside the frame to reposition, and use the slider to zoom. This frame is exactly how the card cover will look.
                     </p>
-                    <div className="flex flex-wrap gap-4 items-start">
-                      {/* Editor: full cover with a draggable focal dot */}
-                      <div
-                        ref={focalBoxRef}
-                        onPointerDown={(e) => { (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId); pickFocal(e); }}
-                        onPointerMove={(e) => { if (e.buttons === 1) pickFocal(e); }}
-                        className="relative w-48 max-w-full cursor-crosshair select-none touch-none border border-secondary/20"
+                    {/* WYSIWYG crop frame — same aspect as the card cover */}
+                    <div
+                      ref={focalBoxRef}
+                      onPointerDown={startPan}
+                      onPointerMove={movePan}
+                      className="relative w-full max-w-sm aspect-[16/10] overflow-hidden bg-secondary/5 border border-secondary/20 cursor-move select-none touch-none"
+                    >
+                      <Image src={coverFitUrl(editCover)} alt="Cover crop" className="w-full h-full object-cover pointer-events-none" style={cropStyle(focal)} />
+                    </div>
+                    {/* Zoom (resize) control */}
+                    <div className="flex items-center gap-3 max-w-sm pt-1">
+                      <span className="font-paragraph text-xs text-secondary/60 w-10">Zoom</span>
+                      <input
+                        type="range"
+                        min={1}
+                        max={4}
+                        step={0.05}
+                        value={focal.zoom}
+                        onChange={(e) => setFocal((f) => ({ ...f, zoom: parseFloat(e.target.value) }))}
+                        className="flex-1 accent-primary"
+                      />
+                      <span className="font-paragraph text-xs text-secondary/60 w-10 text-right">{focal.zoom.toFixed(1)}×</span>
+                      <button
+                        type="button"
+                        onClick={() => setFocal({ x: 50, y: 20, zoom: 1 })}
+                        className="font-paragraph text-xs text-primary hover:underline shrink-0"
                       >
-                        <Image src={coverFitUrl(editCover)} alt="Cover" className="w-full h-auto block pointer-events-none" />
-                        <div
-                          className="absolute w-5 h-5 -ml-2.5 -mt-2.5 rounded-full border-2 border-white ring-2 ring-primary bg-primary/30 pointer-events-none shadow"
-                          style={{ left: `${focal.x}%`, top: `${focal.y}%` }}
-                        />
-                      </div>
-                      {/* Live preview at the card's aspect ratio */}
-                      <div className="space-y-1">
-                        <div className="w-48 max-w-full h-28 overflow-hidden bg-secondary/5 border border-secondary/20">
-                          <Image src={coverFitUrl(editCover)} alt="Card preview" className="w-full h-full object-cover" style={{ objectPosition: `${focal.x}% ${focal.y}%` }} />
-                        </div>
-                        <p className="font-paragraph text-xs text-secondary/50">Card preview</p>
-                        <button
-                          type="button"
-                          onClick={() => setFocal({ x: 50, y: 20 })}
-                          className="font-paragraph text-xs text-primary hover:underline"
-                        >
-                          Reset
-                        </button>
-                      </div>
+                        Reset
+                      </button>
                     </div>
                   </>
                 ) : (

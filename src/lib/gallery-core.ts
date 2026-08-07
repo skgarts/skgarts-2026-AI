@@ -231,6 +231,7 @@ export interface GalleryListEntry {
   eventDate: string | Date | null;
   displayLayout: string;
   coverImage: unknown; // raw cover ref for the <Image> component; NOT a client photo
+  coverFocal: string;  // "X,Y" focal percentages for the card cover crop
   photoCount: number;  // a count only — never the media ids/urls
   hasCode: boolean;
 }
@@ -255,6 +256,7 @@ export async function galleryListCore(
     eventDate: g.eventDate ?? null,
     displayLayout: g.displayLayout || 'collage',
     coverImage: g.coverImage ?? '',
+    coverFocal: (g.coverFocal as string) || '',
     photoCount: Array.isArray(g.mediagallery) ? g.mediagallery.length : 0,
     hasCode: !!(g.accessCode && String(g.accessCode).trim()),
   }));

@@ -1,6 +1,5 @@
-import Footer from '@/components/Footer';
 import PhotoGallery from '@/components/gallery/PhotoGallery';
-import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import { Image } from '@/components/ui/image';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import WhatsAppButton from '@/components/WhatsAppButton';
@@ -35,8 +34,7 @@ export default function ServiceDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <div className="bg-background">
       <WhatsAppButton />
 
       <div className="pt-24 min-h-[600px]">

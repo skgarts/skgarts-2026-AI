@@ -1,6 +1,4 @@
 // HPI 1.7-G
-import Footer from '@/components/Footer';
-import Header from '@/components/Header';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
@@ -176,7 +174,7 @@ export default function HomePage() {
   const selectedFilmPoster = selectedResolved.poster || selectedFilm?.coverImage || '';
 
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-primary/20 selection:text-secondary overflow-clip">
+    <div className="bg-background text-foreground selection:bg-primary/20 selection:text-secondary overflow-clip">
       <style>{`
         .masonry-grid {
           column-count: 1;
@@ -196,7 +194,6 @@ export default function HomePage() {
           z-index: 10;
         }
       `}</style>
-      <Header />
       <WhatsAppButton />
       {/* 1. HERO SECTION - Cinematic Parallax */}
       <motion.section

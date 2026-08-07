@@ -270,7 +270,7 @@ function HeroLayout({
             aria-label="Gallery hero image"
             disabled={!!heroId}
           >
-            <img src={bannerSrc} alt="Gallery hero" loading="eager" className="max-h-[85vh] max-w-full w-auto h-auto block mx-auto pointer-events-none" />
+            <Image src={bannerSrc} alt="Gallery hero" loading="eager" className="max-h-[85vh] max-w-full w-auto h-auto block mx-auto pointer-events-none" />
             <Mark />
           </button>
         </div>

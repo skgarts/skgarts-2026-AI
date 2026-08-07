@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { BaseCrudService } from '@/integrations';
-import { ServiceCategories } from '@/entities';
+import { ServiceCategories, GalleryPhotos } from '@/entities';
 import { Image } from '@/components/ui/image';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import Header from '@/components/Header';
@@ -13,20 +13,31 @@ import WhatsAppButton from '@/components/WhatsAppButton';
 export default function ServiceDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const [service, setService] = useState<ServiceCategories | null>(null);
+  const [galleryPhotos, setGalleryPhotos] = useState<GalleryPhotos[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     loadService();
+    loadGalleryPhotos();
   }, [slug]);
 
   const loadService = async () => {
-    setIsLoading(true);
     try {
       const { items } = await BaseCrudService.getAll<ServiceCategories>('servicecategories');
       const foundService = items.find(s => s.slug === slug);
       setService(foundService || null);
     } catch (error) {
       console.error('Error loading service:', error);
+    }
+  };
+
+  const loadGalleryPhotos = async () => {
+    setIsLoading(true);
+    try {
+      const { items } = await BaseCrudService.getAll<GalleryPhotos>('galleryphotos');
+      setGalleryPhotos(items);
+    } catch (error) {
+      console.error('Error loading gallery photos:', error);
     } finally {
       setIsLoading(false);
     }
@@ -173,25 +184,47 @@ export default function ServiceDetailPage() {
                 >
                   Sample Work
                 </motion.h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {[1, 2, 3, 4, 5, 6].map((item) => (
-                    <motion.div
-                      key={item}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.6, delay: item * 0.1 }}
-                      className="aspect-[3/4] rounded-lg overflow-hidden"
-                    >
-                      <Image
-                        src="https://static.wixstatic.com/media/897509_73199d91e0d0414fafdb5192aae2011b~mv2.png?originWidth=576&originHeight=768"
-                        alt={`${service.serviceName} sample ${item}`}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                        width={600}
-                      />
-                    </motion.div>
-                  ))}
-                </div>
+                {galleryPhotos.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-max">
+                    {galleryPhotos.map((photo, index) => (
+                      <motion.div
+                        key={photo._id}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6, delay: index * 0.1 }}
+                        className="rounded-lg overflow-hidden group"
+                      >
+                        <div className="relative overflow-hidden bg-secondary/10 rounded-lg">
+                          <Image
+                            src={photo.imageFile || ''}
+                            alt={photo.title || `${service?.serviceName} sample`}
+                            className="w-full h-auto object-cover hover:scale-105 transition-transform duration-500"
+                            width={600}
+                          />
+                        </div>
+                        {photo.title && (
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            whileInView={{ opacity: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.6, delay: index * 0.1 + 0.2 }}
+                            className="mt-4"
+                          >
+                            <h3 className="font-heading text-lg text-secondary">{photo.title}</h3>
+                            {photo.description && (
+                              <p className="font-paragraph text-sm text-foreground/70 mt-2">{photo.description}</p>
+                            )}
+                          </motion.div>
+                        )}
+                      </motion.div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="font-paragraph text-foreground/60">No gallery photos available yet.</p>
+                  </div>
+                )}
               </div>
             </section>
 

@@ -29,6 +29,8 @@ export interface ClientGalleries {
   displayLayout?: string;
   /** @wixFieldType image - Contains image URL, render with <Image> component, NOT as text */
   hero?: string;
+  /** @wixFieldType text */
+  slug?: string;
 }
 
 

@@ -1,4 +1,4 @@
-import PhotoGallery from '@/components/gallery/PhotoGallery';
+import PhotoGallery from '@/components/Gallery/PhotoGallery';
 import Footer from '@/components/Footer';
 import { Image } from '@/components/ui/image';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';

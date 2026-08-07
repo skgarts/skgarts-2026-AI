@@ -12,6 +12,20 @@ import { Check, Copy, Edit2, ExternalLink, Images, Plus, Power, Trash2 } from 'l
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
+// Extract a bare Wix media id from a wix:image ref OR a static wixstatic URL.
+function coverMediaId(u?: string): string {
+  if (!u) return '';
+  if (u.startsWith('wix:image://')) return u.replace('wix:image://v1/', '').split('/')[0].split('#')[0];
+  const m = u.match(/\/media\/([^/?#]+)/);
+  return m ? m[1] : '';
+}
+// Card cover crop, TOP-aligned so faces/subjects (usually in the upper part of a
+// portrait) stay in frame instead of being center-cropped out.
+function coverCropUrl(u?: string): string {
+  const id = coverMediaId(u);
+  return id ? `https://static.wixstatic.com/media/${id}/v1/fill/w_720,h_450,al_t,q_85,enc_auto/file.jpg` : '';
+}
+
 function GalleryManagementContent() {
   const { isAuthenticated, actions } = useMember();
   const [galleries, setGalleries] = useState<ClientGalleries[]>([]);
@@ -253,12 +267,7 @@ function GalleryManagementContent() {
                   {/* Cover */}
                   <div className="relative h-56 bg-secondary/5 overflow-hidden">
                     {cover ? (
-                      <Image
-                        src={cover}
-                        alt={gallery.clientName || 'Gallery'}
-                        className="w-full h-full object-cover"
-                        width={600}
-                      />
+                      <Image src={coverCropUrl(cover)} alt={gallery.clientName || 'Gallery'} loading="lazy" className="w-full h-full object-cover object-top" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <Images size={32} className="text-secondary/20" />

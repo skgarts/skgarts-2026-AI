@@ -1,224 +1,312 @@
-import Footer from '@/components/Footer';
-import PhotoGallery from '@/components/gallery/PhotoGallery';
-import Header from '@/components/Header';
 import { Image } from '@/components/ui/image';
-import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import WhatsAppButton from '@/components/WhatsAppButton';
-import { ServiceCategories } from '@/entities';
-import { BaseCrudService } from '@/integrations';
-import { buildPhotos } from '@/lib/gallery-core';
+import type { Photo } from '@/lib/gallery-core';
 import { motion } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-export default function ServiceDetailPage() {
-  const { slug } = useParams<{ slug: string }>();
-  const [service, setService] = useState<ServiceCategories | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+/**
+ * Reusable photo gallery: 6 layouts (collage/masonry/justified/grid/hero/filmstrip),
+ * a fullscreen lightbox with keyboard + swipe nav, lazy loading, Wix on-the-fly
+ * resizing (via the pre-built Photo.thumb / Photo.url), and an optional tiled
+ * watermark. Used by both the client-gallery viewer and the public service
+ * galleries so they look and behave identically.
+ *
+ * Photos should already be normalized to { id, thumb, url, title?, description? }
+ * — use buildPhotos() from '@/lib/gallery-core'.
+ */
+export default function PhotoGallery({
+  photos,
+  layout = 'collage',
+  heroUrl,
+  watermark = true,
+}: {
+  photos: Photo[];
+  layout?: string;
+  heroUrl?: string;
+  watermark?: boolean;
+}) {
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const touchStartX = useRef<number | null>(null);
+
+  const closeLightbox = useCallback(() => setLightboxIndex(null), []);
+  const showPrev = useCallback(
+    () => setLightboxIndex((i) => (i === null ? i : (i - 1 + photos.length) % photos.length)),
+    [photos.length]
+  );
+  const showNext = useCallback(
+    () => setLightboxIndex((i) => (i === null ? i : (i + 1) % photos.length)),
+    [photos.length]
+  );
 
   useEffect(() => {
-    loadService();
-  }, [slug]);
+    if (lightboxIndex === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeLightbox();
+      else if (e.key === 'ArrowLeft') showPrev();
+      else if (e.key === 'ArrowRight') showNext();
+    };
+    window.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = '';
+    };
+  }, [lightboxIndex, closeLightbox, showPrev, showNext]);
 
-  const loadService = async () => {
-    setIsLoading(true);
-    try {
-      const { items } = await BaseCrudService.getAll<ServiceCategories>('servicecategories');
-      const foundService = items.find(s => s.slug === slug);
-      setService(foundService || null);
-    } catch (error) {
-      console.error('Error loading service:', error);
-    } finally {
-      setIsLoading(false);
+  if (!photos || photos.length === 0) return null;
+
+  const Mark = () => (watermark ? <Watermark /> : null);
+
+  const Tile = ({
+    photo,
+    index,
+    className = '',
+    imgClassName = 'w-full h-auto',
+    delay = 0,
+  }: {
+    photo: Photo;
+    index: number;
+    className?: string;
+    imgClassName?: string;
+    delay?: number;
+  }) => (
+    <motion.button
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ duration: 0.5, delay }}
+      onClick={() => setLightboxIndex(index)}
+      title="Click to view"
+      className={`group relative block overflow-hidden bg-secondary/5 ${className}`}
+    >
+      <Image
+        src={photo.thumb}
+        alt={photo.title || 'Gallery photo'}
+        loading="lazy"
+        decoding="async"
+        onLoad={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = '1'; }}
+        style={{ opacity: 0, transition: 'opacity 0.5s ease' }}
+        className={`object-cover transition-transform duration-500 group-hover:scale-[1.04] pointer-events-none ${imgClassName}`}
+      />
+      <Mark />
+      <div className="absolute inset-0 z-20 bg-secondary/0 group-hover:bg-secondary/10 transition-colors duration-300" />
+      {photo.title && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 p-3 bg-gradient-to-t from-black/65 via-black/25 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <span className="font-paragraph text-xs md:text-sm text-white line-clamp-1">{photo.title}</span>
+        </div>
+      )}
+    </motion.button>
+  );
+
+  const renderLayout = () => {
+    switch ((layout || 'collage').toLowerCase()) {
+      case 'masonry':
+        return (
+          <div className="[column-fill:_balance] columns-1 sm:columns-2 lg:columns-3 gap-4" style={{ columnGap: '1rem' }}>
+            {photos.map((p, i) => (
+              <Tile key={p.id} photo={p} index={i} delay={Math.min(i * 0.03, 0.5)} className="mb-4 w-full break-inside-avoid" imgClassName="w-full h-auto" />
+            ))}
+          </div>
+        );
+      case 'grid':
+        return (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {photos.map((p, i) => (
+              <Tile key={p.id} photo={p} index={i} delay={Math.min(i * 0.02, 0.4)} className="aspect-square" imgClassName="w-full h-full" />
+            ))}
+          </div>
+        );
+      case 'justified':
+        return (
+          <div className="flex flex-wrap gap-3">
+            {photos.map((p, i) => (
+              <Tile key={p.id} photo={p} index={i} delay={Math.min(i * 0.02, 0.4)} className="h-48 md:h-64 flex-grow" imgClassName="w-full h-full" />
+            ))}
+          </div>
+        );
+      case 'hero':
+        return <HeroLayout photos={photos} heroUrl={heroUrl} onOpen={setLightboxIndex} Tile={Tile} Mark={Mark} />;
+      case 'filmstrip':
+        return <FilmstripLayout photos={photos} onOpen={setLightboxIndex} Mark={Mark} />;
+      case 'collage':
+      default:
+        return (
+          <div className="grid grid-cols-2 md:grid-cols-4 auto-rows-[180px] md:auto-rows-[220px] gap-3">
+            {photos.map((p, i) => {
+              const wide = i % 5 === 0;
+              const tall = i % 7 === 3;
+              const span = `${wide ? 'md:col-span-2' : ''} ${tall ? 'row-span-2' : ''}`.trim();
+              return (
+                <Tile key={p.id} photo={p} index={i} delay={Math.min(i * 0.02, 0.4)} className={span} imgClassName="w-full h-full" />
+              );
+            })}
+          </div>
+        );
     }
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <WhatsAppButton />
+    <>
+      {renderLayout()}
 
-      <div className="pt-24 min-h-[600px]">
-        {isLoading ? (
-          <div className="flex items-center justify-center py-32">
-            <LoadingSpinner />
-          </div>
-        ) : !service ? (
-          <div className="max-w-[100rem] mx-auto px-6 lg:px-12 py-32 text-center">
-            <h1 className="font-heading text-4xl text-secondary mb-6">Service Not Found</h1>
-            <p className="font-paragraph text-foreground/80 mb-8">
-              The service you're looking for doesn't exist.
-            </p>
-            <Link to="/" className="inline-flex items-center gap-2 font-paragraph text-primary font-bold hover:text-primary/80 transition-colors">
-              <ArrowLeft size={20} />
-              Back to Home
-            </Link>
-          </div>
-        ) : (
-          <>
-            {/* Hero Section */}
-            <section className="relative w-full h-[60vh] lg:h-[70vh] overflow-hidden">
+      {lightboxIndex !== null && photos[lightboxIndex] && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center"
+          onClick={closeLightbox}
+          onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
+          onTouchEnd={(e) => {
+            if (touchStartX.current === null) return;
+            const dx = e.changedTouches[0].clientX - touchStartX.current;
+            if (dx > 50) showPrev();
+            else if (dx < -50) showNext();
+            touchStartX.current = null;
+          }}
+        >
+          <button
+            onClick={(e) => { e.stopPropagation(); closeLightbox(); }}
+            className="absolute top-5 right-5 z-30 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+            aria-label="Close"
+          >
+            <X size={22} />
+          </button>
+
+          <span className="absolute top-6 left-6 z-30 font-paragraph text-sm text-white/70">
+            {lightboxIndex + 1} / {photos.length}
+          </span>
+
+          {photos.length > 1 && (
+            <button
+              onClick={(e) => { e.stopPropagation(); showPrev(); }}
+              className="absolute left-3 md:left-6 z-30 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+              aria-label="Previous"
+            >
+              <ChevronLeft size={26} />
+            </button>
+          )}
+
+          <div className="relative max-w-[92vw] max-h-[88vh] flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
+            <div className="relative">
               <Image
-                src={service.coverImage || ''}
-                alt={service.serviceName || 'Service'}
-                className="w-full h-full object-cover"
-                width={1920}
+                src={photos[lightboxIndex].url}
+                alt={photos[lightboxIndex].title || 'Gallery photo'}
+                className="max-w-[92vw] max-h-[82vh] w-auto h-auto object-contain pointer-events-none"
+                width={1600}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-secondary/80 via-secondary/40 to-transparent" />
-              <div className="absolute inset-0 flex items-end">
-                <div className="max-w-[100rem] mx-auto px-6 lg:px-12 pb-16 lg:pb-20 w-full">
-                  <Link
-                    to="/"
-                    className="inline-flex items-center gap-2 font-paragraph text-primary-foreground/80 hover:text-primary-foreground font-medium mb-6 transition-colors"
-                  >
-                    <ArrowLeft size={20} />
-                    Back to Home
-                  </Link>
-                  <motion.h1
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8 }}
-                    className="font-heading text-5xl lg:text-7xl text-primary-foreground"
-                  >
-                    {service.serviceName}
-                  </motion.h1>
-                </div>
+              <Mark />
+            </div>
+            {photos[lightboxIndex].title && (
+              <div className="mt-3 text-center">
+                <h3 className="font-heading text-lg text-white">{photos[lightboxIndex].title}</h3>
               </div>
-            </section>
+            )}
+          </div>
 
-            {/* Content Section */}
-            <section className="w-full max-w-[100rem] mx-auto px-6 lg:px-12 py-24 lg:py-32">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
-                <div className="lg:col-span-2 space-y-8">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
-                  >
-                    <h2 className="font-heading text-3xl lg:text-4xl text-secondary mb-6">
-                      About This Service
-                    </h2>
-                    <p className="font-paragraph text-base lg:text-lg text-foreground leading-relaxed whitespace-pre-line">
-                      {service.detailedDescription || service.shortDescription}
-                    </p>
-                  </motion.div>
+          {photos.length > 1 && (
+            <button
+              onClick={(e) => { e.stopPropagation(); showNext(); }}
+              className="absolute right-3 md:right-6 z-30 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+              aria-label="Next"
+            >
+              <ChevronRight size={26} />
+            </button>
+          )}
+        </div>
+      )}
+    </>
+  );
+}
 
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.2 }}
-                    className="bg-secondary/5 rounded-lg p-8"
-                  >
-                    <h3 className="font-heading text-2xl text-secondary mb-4">
-                      Our Approach
-                    </h3>
-                    <p className="font-paragraph text-base text-foreground leading-relaxed">
-                      Every session is crafted with intention and artistry. We believe in capturing authentic moments that tell your unique story. Our fine art approach ensures that each image is not just a photograph, but a timeless piece of art that you'll treasure forever.
-                    </p>
-                  </motion.div>
-                </div>
+// Tiled "SKG Arts" watermark overlay.
+function Watermark() {
+  return (
+    <div
+      className="pointer-events-none absolute inset-0 z-10 select-none overflow-hidden"
+      aria-hidden="true"
+      style={{
+        backgroundImage:
+          "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='160'><text x='50%' y='50%' fill='white' fill-opacity='0.16' font-size='22' font-family='Georgia, serif' font-style='italic' text-anchor='middle' transform='rotate(-30 130 80)'>SKG Arts</text></svg>\")",
+        backgroundRepeat: 'repeat',
+      }}
+    />
+  );
+}
 
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: 0.4 }}
-                  className="space-y-8"
-                >
-                  <div className="bg-primary/5 rounded-lg p-8 border border-primary/20">
-                    <h3 className="font-heading text-2xl text-secondary mb-6">
-                      Ready to Begin?
-                    </h3>
-                    <p className="font-paragraph text-base text-foreground mb-6">
-                      Let's create something beautiful together. Get in touch to discuss your vision and book your session.
-                    </p>
-                    <a href="/#contact">
-                      <button className="w-full bg-transparent border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground font-paragraph font-bold px-6 py-4 rounded-full text-base transition-all duration-300">
-                        Get in Touch
-                      </button>
-                    </a>
-                  </div>
+type TileComp = (props: { photo: Photo; index: number; className?: string; imgClassName?: string; delay?: number }) => JSX.Element;
+type MarkComp = () => JSX.Element | null;
 
-                  <div className="space-y-4">
-                    <h4 className="font-paragraph text-lg font-bold text-secondary">
-                      What's Included
-                    </h4>
-                    <ul className="space-y-3">
-                      {[
-                        'Pre-session consultation',
-                        'Professional photography session',
-                        'Fine art editing & retouching',
-                        'High-resolution digital files',
-                        'Private online gallery',
-                        'Print rights included'
-                      ].map((item, index) => (
-                        <li key={index} className="flex items-start gap-3">
-                          <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
-                          <span className="font-paragraph text-sm text-foreground/80">{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </motion.div>
-              </div>
-            </section>
+function HeroLayout({
+  photos,
+  heroUrl,
+  onOpen,
+  Tile,
+  Mark,
+}: {
+  photos: Photo[];
+  heroUrl?: string;
+  onOpen: (i: number) => void;
+  Tile: TileComp;
+  Mark: MarkComp;
+}) {
+  const idFromUrl = (u?: string) => {
+    const m = (u || '').match(/\/media\/([^/?#]+)/);
+    return m ? m[1] : '';
+  };
+  const fit = (id: string) =>
+    id ? `https://static.wixstatic.com/media/${id}/v1/fit/w_2560,h_2560,q_90,enc_auto/file.jpg` : '';
 
-            {/* Portfolio gallery — this service's photos (public), same viewer as client galleries */}
-            {(() => {
-              const photos = buildPhotos((service as any).mediagallery, { nameFromFilename: true });
-              if (photos.length === 0) return null;
-              return (
-                <section className="w-full bg-secondary/5 py-24 lg:py-32">
-                  <div className="max-w-[100rem] mx-auto px-6 lg:px-12">
-                    <motion.h2
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.6 }}
-                      className="font-heading text-3xl lg:text-4xl text-secondary text-center mb-12"
-                    >
-                      Portfolio
-                    </motion.h2>
-                    <PhotoGallery photos={photos} layout={(service as any).displayLayout || 'collage'} />
-                  </div>
-                </section>
-              );
-            })()}
+  const heroId = idFromUrl(heroUrl);
+  const [first, ...rest] = photos;
+  const bannerSrc = heroId ? fit(heroId) : fit(first?.id || '');
+  const gridPhotos = heroId ? photos : rest;
 
-            {/* CTA Section */}
-            <section className="w-full max-w-[100rem] mx-auto px-6 lg:px-12 py-24 lg:py-32">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8 }}
-                className="text-center max-w-3xl mx-auto"
-              >
-                <h2 className="font-heading text-4xl lg:text-5xl text-secondary mb-6">
-                  Let's Create Your Story
-                </h2>
-                <p className="font-paragraph text-lg text-foreground mb-8">
-                  Every moment deserves to be captured with artistry and intention. Let's discuss how we can bring your vision to life.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <a href="/#contact">
-                    <button className="bg-transparent border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground font-paragraph font-bold px-8 py-4 rounded-full text-base transition-all duration-300">
-                      Book a Consultation
-                    </button>
-                  </a>
-                  <Link to="/">
-                    <button className="bg-transparent text-secondary hover:text-primary font-paragraph font-bold px-8 py-4 rounded-full text-base transition-all duration-300">
-                      View All Services
-                    </button>
-                  </Link>
-                </div>
-              </motion.div>
-            </section>
-          </>
-        )}
+  return (
+    <div className="space-y-4">
+      {bannerSrc && (
+        <div className="w-full flex justify-center bg-secondary/5">
+          <button
+            type="button"
+            onClick={() => onOpen(heroId ? -1 : 0)}
+            className={`relative block ${heroId ? 'cursor-default' : 'cursor-zoom-in'}`}
+            aria-label="Gallery hero image"
+            disabled={!!heroId}
+          >
+            <Image src={bannerSrc} alt="Gallery hero" loading="eager" className="max-h-[85vh] max-w-full w-auto h-auto block mx-auto pointer-events-none" />
+            <Mark />
+          </button>
+        </div>
+      )}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {gridPhotos.map((p, i) => (
+          <Tile key={p.id} photo={p} index={heroId ? i : i + 1} delay={Math.min(i * 0.02, 0.4)} className="aspect-square" imgClassName="w-full h-full" />
+        ))}
       </div>
+    </div>
+  );
+}
 
-      <Footer />
+function FilmstripLayout({ photos, onOpen, Mark }: { photos: Photo[]; onOpen: (i: number) => void; Mark: MarkComp }) {
+  const [active, setActive] = useState(0);
+  const current = photos[active] || photos[0];
+  return (
+    <div className="space-y-4">
+      <div className="relative w-full bg-secondary/5 overflow-hidden">
+        <button onClick={() => onOpen(active)} className="group relative block w-full" title="Click to view">
+          <Image src={current.url} alt={current.title || 'Gallery photo'} loading="lazy" className="w-full max-h-[72vh] object-contain bg-black/5 pointer-events-none" />
+          <Mark />
+        </button>
+      </div>
+      <div className="flex gap-3 overflow-x-auto pb-3">
+        {photos.map((p, i) => (
+          <button
+            key={p.id}
+            onClick={() => setActive(i)}
+            className={`relative shrink-0 w-28 h-20 overflow-hidden transition-all ${active === i ? 'ring-2 ring-primary' : 'ring-1 ring-secondary/15 opacity-70 hover:opacity-100'}`}
+            title={p.title || 'Photo'}
+          >
+            <Image src={p.thumb} alt="" loading="lazy" className="w-full h-full object-cover pointer-events-none" />
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

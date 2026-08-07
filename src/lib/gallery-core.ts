@@ -91,17 +91,34 @@ export const sizedFit = (id: string, max: number, q = 90) =>
 export const full = (id: string) =>
   id ? `https://static.wixstatic.com/media/${id}` : '';
 
-/** Normalize the CMS media-gallery array into sized photo objects. */
-export function buildPhotos(mediagallery: unknown): Photo[] {
+/** Derive a display name from a media reference's original filename. */
+function nameFromRef(raw: unknown): string {
+  let s: unknown = typeof raw === 'object' && raw ? (raw as any).src || (raw as any).url || (raw as any).image || '' : raw;
+  if (typeof s !== 'string' || !s) return '';
+  const seg = s.split('#')[0].split('?')[0].split('/').pop() || '';
+  let name = seg;
+  try { name = decodeURIComponent(seg); } catch { /* keep raw */ }
+  return name.replace(/\.[a-z0-9]+$/i, '').trim(); // strip extension
+}
+
+/**
+ * Normalize the CMS media-gallery array into sized photo objects.
+ * `opts.nameFromFilename` fills a missing title from the file name (used for
+ * public service galleries, where a name-on-hover is wanted out of the box).
+ */
+export function buildPhotos(mediagallery: unknown, opts: { nameFromFilename?: boolean } = {}): Photo[] {
   const items = Array.isArray(mediagallery) ? mediagallery : [];
   return items
     .map((it: any): Photo => {
-      const mid = toMediaId(typeof it === 'object' ? it.src || it.url || it.image || it : it);
+      const raw = typeof it === 'object' ? (it.src || it.url || it.image || it) : it;
+      const mid = toMediaId(raw);
+      let title = (typeof it === 'object' && (it.title || it.description)) || undefined;
+      if (!title && opts.nameFromFilename) title = nameFromRef(raw) || undefined;
       return {
         id: mid,
         thumb: sized(mid, 800, 800, 80),
         url: full(mid),
-        title: (typeof it === 'object' && (it.title || it.description)) || undefined,
+        title,
         description: (typeof it === 'object' && it.description) || undefined,
       };
     })

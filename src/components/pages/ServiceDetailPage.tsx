@@ -1,40 +1,51 @@
-import PhotoGallery from '@/components/Gallery/PhotoGallery';
-import Footer from '@/components/Footer';
-import { Image } from '@/components/ui/image';
-import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import WhatsAppButton from '@/components/WhatsAppButton';
-import { ServiceCategories } from '@/entities';
-import { BaseCrudService } from '@/integrations';
-import { buildPhotos } from '@/lib/gallery-core';
+import { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { BaseCrudService } from '@/integrations';
+import { ServiceCategories, GalleryPhotos } from '@/entities';
+import { Image } from '@/components/ui/image';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import WhatsAppButton from '@/components/WhatsAppButton';
 
 export default function ServiceDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const [service, setService] = useState<ServiceCategories | null>(null);
+  const [galleryPhotos, setGalleryPhotos] = useState<GalleryPhotos[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     loadService();
+    loadGalleryPhotos();
   }, [slug]);
 
   const loadService = async () => {
-    setIsLoading(true);
     try {
       const { items } = await BaseCrudService.getAll<ServiceCategories>('servicecategories');
       const foundService = items.find(s => s.slug === slug);
       setService(foundService || null);
     } catch (error) {
       console.error('Error loading service:', error);
+    }
+  };
+
+  const loadGalleryPhotos = async () => {
+    setIsLoading(true);
+    try {
+      const { items } = await BaseCrudService.getAll<GalleryPhotos>('galleryphotos');
+      setGalleryPhotos(items);
+    } catch (error) {
+      console.error('Error loading gallery photos:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="bg-background">
+    <div className="min-h-screen bg-background">
+      <Header />
       <WhatsAppButton />
 
       <div className="pt-24 min-h-[600px]">
@@ -161,27 +172,61 @@ export default function ServiceDetailPage() {
               </div>
             </section>
 
-            {/* Portfolio gallery — this service's photos (public), same viewer as client galleries */}
-            {(() => {
-              const photos = buildPhotos((service as any).mediagallery, { nameFromFilename: true });
-              if (photos.length === 0) return null;
-              return (
-                <section className="w-full bg-secondary/5 py-24 lg:py-32">
-                  <div className="max-w-[100rem] mx-auto px-6 lg:px-12">
-                    <motion.h2
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.6 }}
-                      className="font-heading text-3xl lg:text-4xl text-secondary text-center mb-12"
-                    >
-                      Portfolio
-                    </motion.h2>
-                    <PhotoGallery photos={photos} layout={(service as any).displayLayout || 'collage'} />
+            {/* Gallery Preview Section */}
+            <section className="w-full bg-secondary/5 py-24 lg:py-32">
+              <div className="max-w-[100rem] mx-auto px-6 lg:px-12">
+                <motion.h2
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6 }}
+                  className="font-heading text-3xl lg:text-4xl text-secondary text-center mb-12"
+                >
+                  Sample Work
+                </motion.h2>
+                {galleryPhotos.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-max">
+                    {galleryPhotos.map((photo, index) => (
+                      <motion.div
+                        key={photo._id}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6, delay: index * 0.1 }}
+                        className="rounded-lg overflow-hidden group"
+                      >
+                        <div className="relative overflow-hidden bg-secondary/10 rounded-lg">
+                          <Image
+                            src={photo.imageFile || ''}
+                            alt={photo.title || `${service?.serviceName} sample`}
+                            className="w-full h-auto object-cover hover:scale-105 transition-transform duration-500"
+                            width={600}
+                          />
+                        </div>
+                        {photo.title && (
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            whileInView={{ opacity: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.6, delay: index * 0.1 + 0.2 }}
+                            className="mt-4"
+                          >
+                            <h3 className="font-heading text-lg text-secondary">{photo.title}</h3>
+                            {photo.description && (
+                              <p className="font-paragraph text-sm text-foreground/70 mt-2">{photo.description}</p>
+                            )}
+                          </motion.div>
+                        )}
+                      </motion.div>
+                    ))}
                   </div>
-                </section>
-              );
-            })()}
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="font-paragraph text-foreground/60">No gallery photos available yet.</p>
+                  </div>
+                )}
+              </div>
+            </section>
 
             {/* CTA Section */}
             <section className="w-full max-w-[100rem] mx-auto px-6 lg:px-12 py-24 lg:py-32">

@@ -331,17 +331,20 @@ export default function ClientGalleryViewPage() {
 
   if (isLoading) {
     return (
-      <div className="bg-background text-foreground">
+      <div className="min-h-screen bg-background text-foreground">
+        <Header />
         <div className="flex items-center justify-center min-h-screen">
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
         </div>
+        <Footer />
       </div>
     );
   }
 
   if (!gallery || notFound) {
     return (
-      <div className="bg-background text-foreground">
+      <div className="min-h-screen bg-background text-foreground">
+        <Header />
         <section className="w-full max-w-[120rem] mx-auto px-6 lg:px-12 py-32 flex flex-col items-center justify-center min-h-screen">
           <AlertCircle size={48} className="text-accent-red mb-4" />
           <h1 className="font-heading text-4xl text-secondary mb-4">Gallery Not Found</h1>

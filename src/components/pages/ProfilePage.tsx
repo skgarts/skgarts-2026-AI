@@ -1,5 +1,6 @@
 // SKG Arts — Profile / About page
 import Footer from '@/components/Footer';
+import Header from '@/components/Header';
 import { Image } from '@/components/ui/image';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import { BaseCrudService } from '@/integrations';
@@ -130,7 +131,8 @@ export default function ProfilePage() {
   }, []);
 
   return (
-    <div className="bg-background text-foreground overflow-clip">
+    <div className="min-h-screen bg-background text-foreground overflow-clip">
+      <Header />
       <WhatsAppButton />
 
       {/* 1. HERO — photo + intro */}

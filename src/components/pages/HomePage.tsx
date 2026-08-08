@@ -113,11 +113,13 @@ export default function HomePage() {
     // break the rest of the page. If this fails, the strip simply shows nothing extra.
     try {
       const filmsRes = await BaseCrudService.getAll<any>('films');
-      setFilms(
-        [...filmsRes.items].sort(
-          (a, b) => (a.displayOrder ?? a.order ?? 0) - (b.displayOrder ?? b.order ?? 0)
-        )
-      );
+      // Order by the CMS "position" field (Number), ascending. Films without a
+      // valid position fall to the end rather than jumping to the front.
+      const pos = (f: any) => {
+        const n = Number(f?.position);
+        return Number.isFinite(n) ? n : Number.MAX_SAFE_INTEGER;
+      };
+      setFilms([...filmsRes.items].sort((a, b) => pos(a) - pos(b)));
     } catch (error) {
       console.error('Error loading films (collection "films"):', error);
     }

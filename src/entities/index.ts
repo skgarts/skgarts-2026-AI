@@ -1,6 +1,6 @@
 /**
  * Auto-generated entity types
- * Contains all CMS collection interfaces in a single file 
+ * Contains all CMS collection interfaces in a single file
  */
 
 /**
@@ -79,6 +79,8 @@ export interface Films {
   videoId?: string;
   /** @wixFieldType video */
   film?: string;
+  /** @wixFieldType number - portfolio strip ordering (ascending) */
+  position?: number;
 }
 
 

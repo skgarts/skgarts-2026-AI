@@ -808,8 +808,8 @@ export default function HomePage() {
                 </div>
                 <div className="group">
                   <span className="font-paragraph text-xs uppercase tracking-[0.2em] text-secondary/40 block mb-2">Direct</span>
-                  <a href="mailto:hello@skgarts.com" className="font-heading text-2xl text-secondary hover:text-primary transition-colors block">
-                    hello@skgarts.com
+                  <a href="mailto:srikanth@skgarts.com" className="font-heading text-2xl text-secondary hover:text-primary transition-colors block">
+                    srikanth@skgarts.com
                   </a>
                   <a href="tel:+919740076381" className="font-heading text-2xl text-secondary hover:text-primary transition-colors block mt-2">
                     +91 97400 76381
@@ -874,7 +874,7 @@ export default function HomePage() {
                 )}
                 {inquiryStatus === 'err' && (
                   <p className="font-paragraph text-sm text-[#ED1B23]">
-                    Something went wrong sending your inquiry. Please try again, or email hello@skgarts.com directly.
+                    Something went wrong sending your inquiry. Please try again, or email srikanth@skgarts.com directly.
                   </p>
                 )}
 

@@ -1,18 +1,18 @@
 // HPI 1.7-G
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
+import { ImageViewer } from '@/components/ImageViewer';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ImageViewer } from '@/components/ImageViewer';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import WixMediaPicker from '@/components/WixMediaPicker';
-import { ClientGalleries, FrequentlyAskedQuestions, PortraitGallery, ServiceCategories } from '@/entities';
+import { FrequentlyAskedQuestions, PortraitGallery, ServiceCategories } from '@/entities';
 import { BaseCrudService } from '@/integrations';
-import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion';
-import { ArrowRight, ExternalLink, Instagram, Lock, Play } from 'lucide-react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { ArrowRight, ExternalLink, Instagram, Play } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -21,11 +21,10 @@ export default function HomePage() {
   const [portraits, setPortraits] = useState<PortraitGallery[]>([]);
   const [services, setServices] = useState<ServiceCategories[]>([]);
   const [faqs, setFaqs] = useState<FrequentlyAskedQuestions[]>([]);
-  const [clientGalleries, setClientGalleries] = useState<ClientGalleries[]>([]);
   const [fineArtGallery, setFineArtGallery] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [accessCode, setAccessCode] = useState('');
-  const [accessError, setAccessError] = useState('');
+  const [inquirySending, setInquirySending] = useState(false);
+  const [inquiryStatus, setInquiryStatus] = useState<null | 'ok' | 'err'>(null);
   const [containerWidth, setContainerWidth] = useState(100);
   const [containerHeight, setContainerHeight] = useState(120);
   const [headerHeight, setHeaderHeight] = useState(0);
@@ -73,11 +72,10 @@ export default function HomePage() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [portraitsRes, servicesRes, faqsRes, galleriesRes, fineArtRes] = await Promise.all([
+      const [portraitsRes, servicesRes, faqsRes, fineArtRes] = await Promise.all([
         BaseCrudService.getAll<PortraitGallery>('portraitgallery'),
         BaseCrudService.getAll<ServiceCategories>('servicecategories'),
         BaseCrudService.getAll<FrequentlyAskedQuestions>('faq'),
-        BaseCrudService.getAll<ClientGalleries>('clientgalleries'),
         BaseCrudService.getAll<any>('fineartgallery')
       ]);
 
@@ -105,7 +103,6 @@ export default function HomePage() {
       });
       setServices(reorderedServices);
       setFaqs(faqsRes.items.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0)));
-      setClientGalleries(galleriesRes.items);
       setFineArtGallery(fineArtRes.items.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0)));
     } catch (error) {
       console.error('Error loading data:', error);
@@ -127,14 +124,35 @@ export default function HomePage() {
     }
   };
 
-  const handleAccessGallery = () => {
-    setAccessError('');
-    const gallery = clientGalleries.find(g => g.accessCode === accessCode);
-    if (gallery && gallery.galleryLink) {
-      window.open(gallery.galleryLink, '_blank');
-      setAccessCode('');
-    } else {
-      setAccessError('Invalid access code. Please try again.');
+  // Send the contact inquiry via Web3Forms (emails srikanth@skgarts.com).
+  const handleInquiry = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (inquirySending) return;
+    setInquirySending(true);
+    setInquiryStatus(null);
+    try {
+      const formData = new FormData(e.currentTarget);
+      formData.append('access_key', '06b975b9-1381-4a42-b962-ee17fe4ffcfb');
+      formData.append('subject', 'New inquiry from skgarts.com');
+      formData.append('from_name', 'SKG Arts Website');
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { Accept: 'application/json' },
+        body: formData,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data?.success) {
+        setInquiryStatus('ok');
+        e.currentTarget.reset();
+      } else {
+        console.error('Inquiry send failed:', data);
+        setInquiryStatus('err');
+      }
+    } catch (err) {
+      console.error('Inquiry send error:', err);
+      setInquiryStatus('err');
+    } finally {
+      setInquirySending(false);
     }
   };
 
@@ -724,63 +742,6 @@ export default function HomePage() {
           </motion.div>
         </div>
       </section>
-      {/* 7. CLIENT GALLERY - Minimalist Portal */}
-      <section id="client-gallery" className="w-full bg-background text-secondary py-32 lg:py-48 relative border-t border-[#ED1B23]/20" style={{ borderImage: 'linear-gradient(90deg, #ED1B23, #F4911C, #F9C400, #88C73F, #007090, #0072B4, #2C3081, #8A2889) 1' }}>
-        <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'radial-gradient(circle at center, #12355A 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-
-        <div className="max-w-[100rem] mx-auto px-6 lg:px-12 relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="max-w-xl mx-auto text-center"
-          >
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full border border-secondary/20 mb-8">
-              <Lock className="text-secondary/60" size={24} />
-            </div>
-            <h2 className="font-heading text-4xl lg:text-5xl mb-6 text-secondary">
-              Private Collection
-            </h2>
-            <p className="font-paragraph text-secondary/60 mb-12 font-light">
-              Enter your unique access code to view and download your curated gallery.
-            </p>
-
-            <div className="space-y-6">
-              <div className="relative">
-                <Input
-                  type="text"
-                  placeholder="Enter Access Code"
-                  value={accessCode}
-                  onChange={(e) => setAccessCode(e.target.value)}
-                  className="w-full bg-transparent border-0 border-b border-secondary/20 rounded-none px-0 py-4 text-center font-paragraph text-xl text-secondary placeholder:text-secondary/30 focus-visible:ring-0 focus-visible:border-primary transition-colors"
-                />
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[1px] bg-primary transition-all duration-300 peer-focus:w-full" />
-              </div>
-
-              <AnimatePresence>
-                {accessError && (
-                  <motion.p
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="text-[#ED1B23] font-paragraph text-sm"
-                  >
-                    {accessError}
-                  </motion.p>
-                )}
-              </AnimatePresence>
-
-              <Button
-                onClick={handleAccessGallery}
-                className="w-full bg-primary text-background hover:bg-primary/90 font-paragraph uppercase tracking-widest text-sm py-8 rounded-none transition-all duration-500 mt-8"
-              >
-                Enter Gallery
-              </Button>
-            </div>
-          </motion.div>
-        </div>
-      </section>
       {/* 8. FAQ - Elegant Accordion */}
       <section id="faq" className="w-full max-w-[80rem] mx-auto px-6 lg:px-12 py-32 lg:py-48 border-t border-[#ED1B23]/20" style={{ borderImage: 'linear-gradient(90deg, #ED1B23, #F4911C, #F9C400, #88C73F, #007090, #0072B4, #2C3081, #8A2889) 1' }}>
         <div className="text-center mb-20">
@@ -866,15 +827,15 @@ export default function HomePage() {
             >
               <form
                 className="space-y-10"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  alert('Thank you for your message! We will get back to you soon.');
-                }}
+                onSubmit={handleInquiry}
               >
+                {/* Honeypot spam trap — hidden from humans */}
+                <input type="checkbox" name="botcheck" tabIndex={-1} autoComplete="off" className="hidden" style={{ display: 'none' }} aria-hidden="true" />
                 <div className="space-y-2">
                   <label className="font-paragraph text-xs uppercase tracking-widest text-secondary/60">Name</label>
                   <Input
                     type="text"
+                    name="name"
                     required
                     className="bg-transparent border-0 border-b border-secondary/20 rounded-none px-0 py-2 font-paragraph text-lg focus-visible:ring-0 focus-visible:border-primary transition-colors"
                   />
@@ -883,6 +844,7 @@ export default function HomePage() {
                   <label className="font-paragraph text-xs uppercase tracking-widest text-secondary/60">Email</label>
                   <Input
                     type="email"
+                    name="email"
                     required
                     className="bg-transparent border-0 border-b border-secondary/20 rounded-none px-0 py-2 font-paragraph text-lg focus-visible:ring-0 focus-visible:border-primary transition-colors"
                   />
@@ -891,22 +853,37 @@ export default function HomePage() {
                   <label className="font-paragraph text-xs uppercase tracking-widest text-secondary/60">Phone (Optional)</label>
                   <Input
                     type="tel"
+                    name="phone"
                     className="bg-transparent border-0 border-b border-secondary/20 rounded-none px-0 py-2 font-paragraph text-lg focus-visible:ring-0 focus-visible:border-primary transition-colors"
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="font-paragraph text-xs uppercase tracking-widest text-secondary/60">Project Details</label>
                   <Textarea
+                    name="message"
                     required
                     rows={4}
                     className="bg-transparent border-0 border-b border-secondary/20 rounded-none px-0 py-2 font-paragraph text-lg resize-none focus-visible:ring-0 focus-visible:border-primary transition-colors"
                   />
                 </div>
+
+                {inquiryStatus === 'ok' && (
+                  <p className="font-paragraph text-sm text-[#007090]">
+                    Thank you — your inquiry has been sent. We&rsquo;ll be in touch soon.
+                  </p>
+                )}
+                {inquiryStatus === 'err' && (
+                  <p className="font-paragraph text-sm text-[#ED1B23]">
+                    Something went wrong sending your inquiry. Please try again, or email hello@skgarts.com directly.
+                  </p>
+                )}
+
                 <Button
                   type="submit"
-                  className="w-full bg-secondary text-background hover:bg-primary font-paragraph uppercase tracking-widest text-sm py-8 rounded-none transition-all duration-500"
+                  disabled={inquirySending}
+                  className="w-full bg-secondary text-background hover:bg-primary font-paragraph uppercase tracking-widest text-sm py-8 rounded-none transition-all duration-500 disabled:opacity-60"
                 >
-                  Submit Inquiry
+                  {inquirySending ? 'Sending…' : 'Submit Inquiry'}
                 </Button>
               </form>
             </motion.div>

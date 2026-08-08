@@ -1,6 +1,6 @@
 /**
  * Auto-generated entity types
- * Contains all CMS collection interfaces in a single file
+ * Contains all CMS collection interfaces in a single file 
  */
 
 /**
@@ -23,15 +23,15 @@ export interface ClientGalleries {
   eventDate?: Date | string;
   /** @wixFieldType text */
   description?: string;
+  /** @wixFieldType media_gallery */
+  mediagallery?: any;
+  /** @wixFieldType text */
+  displayLayout?: string;
+  /** @wixFieldType image - Contains image URL, render with <Image> component, NOT as text */
+  hero?: string;
   /** @wixFieldType text */
   slug?: string;
   /** @wixFieldType text */
-  displayLayout?: string;
-  /** @wixFieldType media-gallery - array of media items (images/videos) added in the CMS */
-  mediagallery?: any[];
-  /** @wixFieldType image - dedicated hero/cover image for the Hero layout; render with <Image>, NOT as text */
-  hero?: string;
-  /** @wixFieldType text - cover crop focal point as "X,Y" percentages (0-100); controls object-position of the card cover */
   coverFocal?: string;
 }
 
@@ -213,10 +213,8 @@ export interface ServiceCategories {
   detailedDescription?: string;
   /** @wixFieldType text */
   slug?: string;
-  /** @wixFieldType text */
-  displayLayout?: string;
   /** @wixFieldType number */
   displayOrder?: number;
-  /** @wixFieldType media-gallery - array of media items shown as this service's public portfolio gallery */
-  mediagallery?: any[];
+  /** @wixFieldType media_gallery */
+  mediagallery?: any;
 }

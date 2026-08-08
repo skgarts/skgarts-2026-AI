@@ -8,9 +8,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="space-y-4">
             <h3 className="font-heading text-2xl font-bold text-secondary">SKG Arts</h3>
-            <p className="font-paragraph text-sm text-secondary/70 leading-relaxed">
-              Fine art photography and cinematography by Srikanth Gumma. Making memories into art since 2016.
-            </p>
+            <p className="font-paragraph text-sm text-secondary/70 leading-relaxed">Fine art photography and cinematography by Srikanth Gumma. Making memories into art since 2014.</p>
           </div>
 
           {/* Quick Links */}

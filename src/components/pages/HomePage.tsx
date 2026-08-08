@@ -8,7 +8,6 @@ import { Image } from '@/components/ui/image';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import WhatsAppButton from '@/components/WhatsAppButton';
-import WixMediaPicker from '@/components/WixMediaPicker';
 import { FrequentlyAskedQuestions, PortraitGallery, ServiceCategories } from '@/entities';
 import { BaseCrudService } from '@/integrations';
 import { motion, useScroll, useTransform } from 'framer-motion';
@@ -889,27 +888,6 @@ export default function HomePage() {
             </motion.div>
 
           </div>
-        </div>
-      </section>
-
-      {/* Wix Media Manager Section */}
-      <section className="w-full bg-background py-24 lg:py-32 border-t border-secondary/10">
-        <div className="max-w-[120rem] mx-auto px-6 lg:px-12">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="mb-16"
-          >
-            <h2 className="font-heading text-5xl lg:text-6xl text-secondary mb-6">
-              Wix Media Manager Integration
-            </h2>
-            <p className="font-paragraph text-lg text-secondary/70 max-w-2xl">
-              Use the native Wix Media Manager to select existing images from your Wix Media library. Get back URLs and file IDs for use throughout your site.
-            </p>
-          </motion.div>
-          <WixMediaPicker />
         </div>
       </section>
 
